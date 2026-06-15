@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "source": "https://mammothmurals.com/",
+    "capturedFrom": "capture-animation.js",
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "scan",
+    "elementsMoved": 7
+  },
+  "summary": "Staggered 4-item animation (e.g. split text): each item height: 59px -> 137.562px, ~213.9ms apart, measured verify.",
+  "stagger": {
+    "items": 4,
+    "staggerMs": 213.9,
+    "order": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "findings": [
+    {
+      "selector": "div.g_faq_item.w-dyn-item",
+      "frameCount": 20,
+      "type": "height",
+      "from": "59px",
+      "to": "137.562px",
+      "timing": {
+        "duration": "measured",
+        "easing": "verify"
+      },
+      "technique": "height: 59px -> 137.562px",
+      "timeline": [
+        {
+          "t": 0,
+          "v": "59px"
+        },
+        {
+          "t": 74.7,
+          "v": "60.0625px"
+        },
+        {
+          "t": 108.1,
+          "v": "61.6094px"
+        },
+        {
+          "t": 174.8,
+          "v": "68.9219px"
+        },
+        {
+          "t": 241.5,
+          "v": "100.562px"
+        },
+        {
+          "t": 308.3,
+          "v": "122.562px"
+        },
+        {
+          "t": 341.5,
+          "v": "127.172px"
+        },
+        {
+          "t": 408.4,
+          "v": "132.656px"
+        },
+        {
+          "t": 475,
+          "v": "135.547px"
+        },
+        {
+          "t": 541.6,
+          "v": "137.016px"
+        },
+        {
+          "t": 575.1,
+          "v": "137.375px"
+        },
+        {
+          "t": 641.7,
+          "v": "137.562px"
+        }
+      ]
+    },
+    {
+      "note": "+6 sibling items animate identically, ~213.9ms apart"
+    }
+  ]
+}

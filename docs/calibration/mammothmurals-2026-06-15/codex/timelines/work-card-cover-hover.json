@@ -1,0 +1,373 @@
+{
+  "meta": {
+    "source": "https://mammothmurals.com/",
+    "capturedFrom": "capture-animation.js",
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "scan",
+    "elementsMoved": 3
+  },
+  "summary": "3 layers animate together: div.work_home_cover_deco [scale 1.1->1]; div.work_home_link_overlay [opacity: 0 -> 0.8]; div.work_home_link_clip [scale 1->0.8] — 0.65s cubic-bezier(0.16, 1, 0.3, 1).",
+  "stagger": null,
+  "findings": [
+    {
+      "selector": "div.work_home_cover_deco",
+      "frameCount": 20,
+      "type": "transform",
+      "from": {
+        "scaleX": 1.1,
+        "scaleY": 1.1,
+        "rotate": 0,
+        "x": 0,
+        "y": 0
+      },
+      "to": {
+        "scaleX": 1,
+        "scaleY": 1,
+        "rotate": 0,
+        "x": 0,
+        "y": 0
+      },
+      "timing": {
+        "duration": "0.65s",
+        "easing": "cubic-bezier(0.16, 1, 0.3, 1)"
+      },
+      "technique": "scale 1.1->1",
+      "timeline": [
+        {
+          "t": 0,
+          "v": {
+            "scaleX": 1.1,
+            "scaleY": 1.1,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 100.2,
+          "v": {
+            "scaleX": 1.05,
+            "scaleY": 1.05,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 133.5,
+          "v": {
+            "scaleX": 1.034,
+            "scaleY": 1.034,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 200.3,
+          "v": {
+            "scaleX": 1.017,
+            "scaleY": 1.017,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 266.8,
+          "v": {
+            "scaleX": 1.008,
+            "scaleY": 1.008,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 333.7,
+          "v": {
+            "scaleX": 1.004,
+            "scaleY": 1.004,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 367,
+          "v": {
+            "scaleX": 1.003,
+            "scaleY": 1.003,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 433.6,
+          "v": {
+            "scaleX": 1.001,
+            "scaleY": 1.001,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 500.3,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 567.1,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 600.4,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 667.2,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        }
+      ]
+    },
+    {
+      "selector": "div.work_home_link_overlay",
+      "frameCount": 15,
+      "type": "opacity",
+      "from": "0",
+      "to": "0.8",
+      "timing": {
+        "duration": "0.45s",
+        "easing": "cubic-bezier(0.31, 0.75, 0.22, 1)"
+      },
+      "technique": "opacity: 0 -> 0.8",
+      "timeline": [
+        {
+          "t": 0,
+          "v": "0"
+        },
+        {
+          "t": 66.8,
+          "v": "0.150854"
+        },
+        {
+          "t": 133.5,
+          "v": "0.471537"
+        },
+        {
+          "t": 166.9,
+          "v": "0.592103"
+        },
+        {
+          "t": 200.3,
+          "v": "0.669336"
+        },
+        {
+          "t": 233.6,
+          "v": "0.717084"
+        },
+        {
+          "t": 300.3,
+          "v": "0.767715"
+        },
+        {
+          "t": 333.8,
+          "v": "0.781056"
+        },
+        {
+          "t": 367,
+          "v": "0.789795"
+        },
+        {
+          "t": 400.4,
+          "v": "0.795324"
+        },
+        {
+          "t": 467,
+          "v": "0.799848"
+        },
+        {
+          "t": 500.3,
+          "v": "0.8"
+        }
+      ]
+    },
+    {
+      "selector": "div.work_home_link_clip",
+      "frameCount": 21,
+      "type": "transform",
+      "from": {
+        "scaleX": 1,
+        "scaleY": 1,
+        "rotate": 0,
+        "x": 0,
+        "y": 0
+      },
+      "to": {
+        "scaleX": 0.8,
+        "scaleY": 0.8,
+        "rotate": 0,
+        "x": 0,
+        "y": 0
+      },
+      "timing": {
+        "duration": "0.65s",
+        "easing": "cubic-bezier(0.16, 1, 0.3, 1)"
+      },
+      "technique": "scale 1->0.8",
+      "timeline": [
+        {
+          "t": 0,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 100.2,
+          "v": {
+            "scaleX": 0.899,
+            "scaleY": 0.899,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 167,
+          "v": {
+            "scaleX": 0.848,
+            "scaleY": 0.848,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 200.3,
+          "v": {
+            "scaleX": 0.833,
+            "scaleY": 0.833,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 266.9,
+          "v": {
+            "scaleX": 0.816,
+            "scaleY": 0.816,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 333.8,
+          "v": {
+            "scaleX": 0.808,
+            "scaleY": 0.808,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 400.4,
+          "v": {
+            "scaleX": 0.803,
+            "scaleY": 0.803,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 467,
+          "v": {
+            "scaleX": 0.801,
+            "scaleY": 0.801,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 533.9,
+          "v": {
+            "scaleX": 0.8,
+            "scaleY": 0.8,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 567.2,
+          "v": {
+            "scaleX": 0.8,
+            "scaleY": 0.8,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 633.7,
+          "v": {
+            "scaleX": 0.8,
+            "scaleY": 0.8,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 700.4,
+          "v": {
+            "scaleX": 0.8,
+            "scaleY": 0.8,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        }
+      ]
+    }
+  ]
+}

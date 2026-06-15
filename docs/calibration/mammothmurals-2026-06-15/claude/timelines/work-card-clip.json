@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "source": "https://mammothmurals.com/",
+    "capturedFrom": "capture-animation.js",
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "single",
+    "elementsMoved": 0
+  },
+  "summary": "no animation captured",
+  "stagger": null,
+  "findings": []
+}

@@ -1,0 +1,196 @@
+{
+  "meta": {
+    "source": "https://mammothmurals.com/",
+    "capturedFrom": "capture-animation.js",
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "scan",
+    "elementsMoved": 24
+  },
+  "summary": "Staggered 23-item animation (e.g. split text): each item y 166.16->0px, ~163.9ms apart, 0.9372s (measured) unknown (rAF/JS) \u2014 verify.",
+  "stagger": {
+    "items": 23,
+    "staggerMs": 163.9,
+    "order": [
+      0,
+      3,
+      5,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      14,
+      15,
+      16,
+      17,
+      18,
+      20,
+      21,
+      22,
+      4,
+      6,
+      13,
+      19,
+      1,
+      2
+    ]
+  },
+  "findings": [
+    {
+      "selector": "div.lines-split",
+      "frameCount": 30,
+      "type": "transform",
+      "from": {
+        "scaleX": 1,
+        "scaleY": 1,
+        "rotate": 0,
+        "x": 0,
+        "y": 166.16
+      },
+      "to": {
+        "scaleX": 1,
+        "scaleY": 1,
+        "rotate": 0,
+        "x": 0,
+        "y": 0
+      },
+      "timing": {
+        "duration": "0.9372s (measured)",
+        "easing": "unknown (rAF/JS) \u2014 verify"
+      },
+      "technique": "y 166.16->0px",
+      "timeline": [
+        {
+          "t": 0,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 166.16
+          }
+        },
+        {
+          "t": 70.3,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 123.51
+          }
+        },
+        {
+          "t": 136.9,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 88.75
+          }
+        },
+        {
+          "t": 236.8,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 48.29
+          }
+        },
+        {
+          "t": 337,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 25.91
+          }
+        },
+        {
+          "t": 403.6,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 17.18
+          }
+        },
+        {
+          "t": 503.6,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 9.13
+          }
+        },
+        {
+          "t": 570.3,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 5.81
+          }
+        },
+        {
+          "t": 670.3,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 2.6
+          }
+        },
+        {
+          "t": 770.4,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 0.88
+          }
+        },
+        {
+          "t": 837.1,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 0.33
+          }
+        },
+        {
+          "t": 937.2,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        }
+      ]
+    },
+    {
+      "note": "+23 sibling items animate identically, ~163.9ms apart"
+    }
+  ]
+}

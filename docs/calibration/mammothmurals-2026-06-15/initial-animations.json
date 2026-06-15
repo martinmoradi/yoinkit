@@ -1,0 +1,222 @@
+{
+  "meta": {
+    "url": "https://mammothmurals.com/",
+    "capturedAt": "2026-06-14",
+    "viewport": [1280, 800],
+    "stack": ["GSAP", "ScrollTrigger", "Lenis", "Webflow", "jQuery"],
+    "method": "Headless MAP (agent-browser + injected engine) read ScrollTrigger.getAll() / gsap.globalTimeline / CSS; real-browser CAPTURE (claude-mcp Chrome) for hover + onEnter reveals.",
+    "notes": "Webflow present but IX2 unused (data-w-id 0, ix2 module null) — all motion is GSAP/ScrollTrigger + CSS. Scrub-parallaxes and CSS effects were spec'd fully from the registry/CSS with no capture. onEnter-callback reveals are not in any registry and needed live capture; several capture quirks below (see _assessment)."
+  },
+
+  "tokens": {
+    "ease.signature": { "bezier": "cubic-bezier(0.16,1,0.3,1)", "gsap": "expo.out" },
+    "dur.base": "0.65s",
+    "ease.accordion": { "bezier": "cubic-bezier(0.31,0.75,0.22,1)" },
+    "dur.accordion": "0.75s",
+    "ease.accordionIcon": { "bezier": "cubic-bezier(0.625,0.05,0,1)" },
+    "sprite.loop": "0.5s steps(4) infinite"
+  },
+
+  "patterns": [
+    {
+      "id": "scroll-parallax",
+      "trigger": "scroll",
+      "appliesTo": "hero image, work header, section wraps (4 ScrollTriggers)",
+      "summary": "scrub-linked transform (y / yPercent), ease none. Each section drifts as the next scrolls in; stacking depth effect.",
+      "confidence": "measured"
+    },
+    {
+      "id": "sprite-loop",
+      "trigger": "load",
+      "appliesTo": ".u-sprite (x7: hero deco, work stop, testimonial backquote, contact, footer, transition smiley/nge)",
+      "summary": "CSS sprite-sheet: 4-frame stepped background animation, 0.5s steps(4), infinite.",
+      "confidence": "measured"
+    },
+    {
+      "id": "scroll-reveal-onenter",
+      "trigger": "scroll",
+      "appliesTo": "partners_home_wrap, work_home_cover, g_cta_collection (ScrollTrigger onEnter callbacks)",
+      "summary": "Imperative GSAP reveal fired in a ScrollTrigger onEnter callback. Not readable from the registry — captured live where possible.",
+      "confidence": "unknown — verify"
+    }
+  ],
+
+  "animations": [
+    {
+      "id": "hero-headline-reveal",
+      "label": "Hero headline + paragraph line-mask reveal on load",
+      "selector": "h1.hero_home_heading",
+      "trigger": "load",
+      "mechanism": "splittext",
+      "patternId": null,
+      "layers": 3,
+      "stagger": { "items": 3, "ms": null },
+      "lead": { "selector": "div.lines-split", "from": { "yPercent": 100 }, "to": { "yPercent": 0 }, "duration": "0.65s", "ease": "ease.signature", "easeBezier": "cubic-bezier(0.16,1,0.3,1)" },
+      "confidence": "unknown — verify",
+      "timelineRef": null,
+      "notes": "SplitText line reveal: 3 div.lines-split slide up from behind div.lines-split-mask (overflow-hidden). Hero H1 + paragraph. MAP initially missed this as a distinct animation; surfaced during capture. NOT captured: fires on load before the agent can arm (see _assessment.loadRace). Duration/ease inferred from the site signature token, not measured."
+    },
+    {
+      "id": "hero-image-parallax",
+      "label": "Hero image vertical parallax on scroll",
+      "selector": "img.hero_home_image",
+      "trigger": "scroll",
+      "mechanism": "transform",
+      "patternId": "scroll-parallax",
+      "layers": 1,
+      "stagger": null,
+      "lead": { "selector": "img.hero_home_image", "from": { "y": 0 }, "to": { "y": 125 }, "duration": "scrub", "ease": "none" },
+      "confidence": "measured",
+      "timelineRef": null,
+      "notes": "ScrollTrigger #1, scrub:true, start 'top bottom' end 'bottom top'. y in px. Read from tween vars."
+    },
+    {
+      "id": "work-header-parallax",
+      "label": "Work header counter-parallax on scroll",
+      "selector": "div.work_home_inner",
+      "trigger": "scroll",
+      "mechanism": "transform",
+      "patternId": "scroll-parallax",
+      "layers": 1,
+      "stagger": null,
+      "lead": { "selector": "div.work_home_inner", "from": { "y": 0 }, "to": { "y": -125 }, "duration": "scrub", "ease": "none" },
+      "confidence": "measured",
+      "timelineRef": null,
+      "notes": "ScrollTrigger #2, scrub:true. Moves opposite the hero image. Read from tween vars."
+    },
+    {
+      "id": "section-stack-parallax",
+      "label": "Section stacking parallax (prev section drifts as next enters)",
+      "selector": "section.work_home_wrap, section.services_home_wrap",
+      "trigger": "scroll",
+      "mechanism": "transform",
+      "patternId": "scroll-parallax",
+      "layers": 2,
+      "stagger": null,
+      "lead": { "selector": "section.work_home_wrap", "from": { "yPercent": 0 }, "to": { "yPercent": 20 }, "duration": "scrub", "ease": "none" },
+      "confidence": "measured",
+      "timelineRef": null,
+      "notes": "ScrollTriggers #4 (services triggers work_home_wrap yPercent 20) and #5 (about triggers services_home_wrap yPercent 20). Same mechanism, two instances. Read from tween vars."
+    },
+    {
+      "id": "work-card-hover",
+      "label": "Work card cover reveal on hover",
+      "selector": ".work_home_item_link",
+      "trigger": "hover",
+      "mechanism": "transform",
+      "patternId": null,
+      "layers": 6,
+      "stagger": { "items": 5, "ms": 125 },
+      "lead": { "selector": "div.work_home_cover_deco", "from": { "scale": 1.1 }, "to": { "scale": 1 }, "duration": "0.65s", "ease": "ease.signature", "easeBezier": "cubic-bezier(0.16,1,0.3,1)" },
+      "confidence": "measured",
+      "timelineRef": "timelines/work-card-hover.json",
+      "notes": "GSAP-driven (not a CSS transition, so absent from the CSS sweep). Captured live with scan(); 6 layers move, 5-item stagger ~125ms. 20 frames, full timing read back. Reproducible across two captures."
+    },
+    {
+      "id": "work-cover-crossfade",
+      "label": "Work cover image crossfade on scroll-in",
+      "selector": "div.work_home_cover",
+      "trigger": "scroll",
+      "mechanism": "opacity",
+      "patternId": "scroll-reveal-onenter",
+      "layers": 2,
+      "stagger": null,
+      "lead": { "selector": "img.work_home_image", "from": { "opacity": 1 }, "to": { "opacity": 0 }, "duration": "measured", "ease": "verify" },
+      "confidence": "unknown — verify",
+      "timelineRef": "timelines/work-cover-crossfade.json",
+      "notes": "CORRECTED: MAP guessed 'spray-text/splittext' — wrong. Live capture shows an image opacity crossfade (two img.work_home_image swap, 1->0 and 0->1). Only 2 frames caught (fast); duration/ease unread. ScrollTrigger #7 onEnter."
+    },
+    {
+      "id": "partners-logo-reveal",
+      "label": "Partner logos staggered reveal on scroll",
+      "selector": "div.partners_logo_target",
+      "trigger": "scroll",
+      "mechanism": "transform",
+      "patternId": "scroll-reveal-onenter",
+      "layers": 6,
+      "stagger": { "items": 6, "ms": 7 },
+      "lead": { "selector": "div.partners_logo_target", "from": { "y": "small (verify)" }, "to": { "y": 0 }, "duration": "measured (partial)", "ease": "unknown (rAF/JS) — verify" },
+      "confidence": "unknown — verify",
+      "timelineRef": "timelines/partners-logo-reveal.json",
+      "notes": "ScrollTrigger #0 onEnter (trigger partners_home_wrap), 6 logo targets. Capture WEAK: only y 0.18px caught over ~135ms — caught the tail, not the full reveal (see _assessment.fastFling). globalTimeline showed partners_logo_target tweens at 0.65s + one 0.25s; real reveal likely larger y/opacity. Recapture with slow approach to confirm."
+    },
+    {
+      "id": "cta-reveal",
+      "label": "CTA collection reveal on scroll ('Let's paint something unforgettable')",
+      "selector": "div.g_cta_collection",
+      "trigger": "scroll",
+      "mechanism": "transform",
+      "patternId": "scroll-reveal-onenter",
+      "layers": null,
+      "stagger": null,
+      "lead": null,
+      "confidence": "unknown — verify",
+      "timelineRef": null,
+      "notes": "ScrollTrigger #3 onEnter (trigger g_cta_collection). No split children — a collection-item reveal (like partners). NOT captured: a fast Lenis fling carried it from below-fold to mid-screen in one momentum burst, so the onEnter fired and finished before the engine sampled (see _assessment.fastFling). toggleActions 'play' (no replay on re-enter) so it can't be re-captured without reload."
+    },
+    {
+      "id": "faq-accordion",
+      "label": "FAQ accordion open/close",
+      "selector": "button.accordion_css_item_top",
+      "trigger": "click",
+      "mechanism": "height",
+      "patternId": null,
+      "layers": 2,
+      "stagger": null,
+      "lead": { "selector": "span.accordion_css_item_contain", "from": {}, "to": {}, "duration": "0.75s", "ease": "ease.accordion", "easeBezier": "cubic-bezier(0.31,0.75,0.22,1)" },
+      "confidence": "unknown — verify",
+      "timelineRef": null,
+      "notes": "Click toggles the panel; verified visually it opens (icon + -> -, 'CLOSE'). PRIMARY motion is a height/layout expansion of the answer panel, which the engine does NOT sample (it tracks transform/opacity/filter/clip/bg/color only) — capture returned 0. CSS sweep found a secondary transform transition on span.accordion_css_item_contain 0.75s cubic-bezier(0.31,0.75,0.22,1) and icon rotate 0.6s cubic-bezier(0.625,0.05,0,1). Recreate as height/grid-rows transition + that easing."
+    },
+    {
+      "id": "sprite-loops",
+      "label": "Decorative sprite-sheet loops",
+      "selector": ".u-sprite",
+      "trigger": "load",
+      "mechanism": "backgroundPosition",
+      "patternId": "sprite-loop",
+      "layers": 7,
+      "stagger": null,
+      "lead": { "selector": "div.hero_home_deco", "from": {}, "to": {}, "duration": "0.5s", "ease": "steps(4)" },
+      "confidence": "measured",
+      "timelineRef": null,
+      "notes": "animation-name spriteFrames, 0.5s steps(4) infinite. ~7 instances across hero/work/testimonial/contact/footer/transition. Read from computed CSS."
+    },
+    {
+      "id": "page-transition-wiggle",
+      "label": "Page-transition overlay text wiggle",
+      "selector": "div.transition_text",
+      "trigger": "load",
+      "mechanism": "transform",
+      "patternId": null,
+      "layers": 1,
+      "stagger": null,
+      "lead": { "selector": "div.transition_text", "from": {}, "to": {}, "duration": "0.23s", "ease": "steps(2)" },
+      "confidence": "measured",
+      "timelineRef": null,
+      "notes": "animation-name wiggle 0.23s steps(2) infinite. Part of the page-transition preloader overlay; visible during route transitions only."
+    }
+  ],
+
+  "unspecced": [
+    {
+      "id": "nav-scroll-progress",
+      "note": "ScrollTrigger #6: trigger null, start 'top -300' end 'max', onUpdate only. A scroll-progress driver (likely nav show/hide or progress bar), not a discrete reveal."
+    },
+    {
+      "id": "vimeo-lightbox-ui",
+      "note": "Lightbox controls (div.vimeo-lightbox__btn opacity 0.3s; button.vimeo-lightbox__close all 0.5s cubic-bezier(0.625,0.05,0,1)). Third-party lightbox polish, not site-signature."
+    },
+    {
+      "id": "view-all-work-arrows",
+      "note": "'VIEW ALL WORK' / 'LEARN ABOUT OUR SERVICES' rows have animated arrow clusters (-> -> ->). Likely hover/marquee; not individually captured this pass."
+    }
+  ],
+
+  "_assessment": {
+    "loadRace": "Load-triggered reveals (hero-headline-reveal) finish before the agent can arm post-navigation. Fix options: throttle network to slow load, an init-script that auto-arms the engine before page JS, or re-trigger the GSAP timeline (tried for hero — tweens were auto-removed, failed).",
+    "fastFling": "onEnter scroll reveals (partners, cta) capture weakly or as 0 when reached via a large Lenis momentum fling: the site fires onEnter at 0% visibility and the reveal completes before the engine's first throttled scan. Fix: approach the target with SMALL final scroll increments (work-cover-crossfade captured cleanly this way). toggleActions 'play' means no replay on re-enter, so a miss requires reload to retry.",
+    "engineGap": "The engine samples transform/opacity/filter/clipPath/backgroundPosition/color only — NOT height/width/grid-template. Height-based accordions/expanders (faq-accordion) read as 0 moved. Consider adding height sampling, or rely on the CSS sweep for these.",
+    "mapMiss": "MAP via ScrollTrigger.getAll() + gsap.globalTimeline + CSS covered 7/11 animations precisely. It MISSED hero-headline-reveal (counted split elements but didn't classify them as a load animation) and MIS-LABELED work-cover (guessed splittext; it's an image crossfade). Capture corrected both. Lesson: MAP mechanism guesses for onEnter callbacks are unreliable; treat them as 'needs capture', and add a load-reveal classifier for SplitText/mask structures."
+  }
+}

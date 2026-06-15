@@ -1,0 +1,63 @@
+{
+  "meta": {
+    "source": "https://mammothmurals.com/",
+    "capturedFrom": "capture-animation.js",
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "scan",
+    "elementsMoved": 2
+  },
+  "summary": "2 layers animate together: img.work_home_image.u-ratio-3-2 [opacity: 1 -> 0]; img.work_home_image.u-ratio-3-2 [opacity: 0 -> 1] \u2014 measured verify.",
+  "stagger": null,
+  "findings": [
+    {
+      "selector": "img.work_home_image.u-ratio-3-2",
+      "frameCount": 2,
+      "type": "opacity",
+      "from": "1",
+      "to": "0",
+      "timing": {
+        "duration": "measured",
+        "easing": "verify"
+      },
+      "technique": "opacity: 1 -> 0",
+      "timeline": [
+        {
+          "t": 0,
+          "v": "1"
+        },
+        {
+          "t": 315.7,
+          "v": "0"
+        }
+      ]
+    },
+    {
+      "selector": "img.work_home_image.u-ratio-3-2",
+      "frameCount": 2,
+      "type": "opacity",
+      "from": "0",
+      "to": "1",
+      "timing": {
+        "duration": "measured",
+        "easing": "verify"
+      },
+      "technique": "opacity: 0 -> 1",
+      "timeline": [
+        {
+          "t": 0,
+          "v": "0"
+        },
+        {
+          "t": 315.7,
+          "v": "1"
+        }
+      ]
+    }
+  ]
+}

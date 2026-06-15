@@ -1,0 +1,191 @@
+{
+  "meta": {
+    "source": "https://mammothmurals.com/",
+    "capturedFrom": "capture-animation.js",
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "scan",
+    "elementsMoved": 2
+  },
+  "summary": "2 layers animate together: div.partners_logo_target [y 0->-24.84px]; div.partners_logo_target [y 0->-21.47px] \u2014 3.4845s (measured) unknown (rAF/JS) \u2014 verify.",
+  "stagger": null,
+  "findings": [
+    {
+      "selector": "div.partners_logo_target",
+      "frameCount": 8,
+      "type": "transform",
+      "from": {
+        "scaleX": 1,
+        "scaleY": 1,
+        "rotate": 0,
+        "x": 0,
+        "y": 0
+      },
+      "to": {
+        "scaleX": 1,
+        "scaleY": 1,
+        "rotate": 0,
+        "x": 0,
+        "y": -24.84
+      },
+      "timing": {
+        "duration": "3.4845s (measured)",
+        "easing": "unknown (rAF/JS) \u2014 verify"
+      },
+      "technique": "y 0->-24.84px",
+      "timeline": [
+        {
+          "t": 0,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 3284.2,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": -8.63
+          }
+        },
+        {
+          "t": 3317.6,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": -16.93
+          }
+        },
+        {
+          "t": 3351,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": -21.47
+          }
+        },
+        {
+          "t": 3384.5,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": -23.36
+          }
+        },
+        {
+          "t": 3417.8,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": -24.26
+          }
+        },
+        {
+          "t": 3451,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": -24.69
+          }
+        },
+        {
+          "t": 3484.5,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": -24.84
+          }
+        }
+      ]
+    },
+    {
+      "selector": "div.partners_logo_target",
+      "frameCount": 4,
+      "type": "transform",
+      "from": {
+        "scaleX": 1,
+        "scaleY": 1,
+        "rotate": 0,
+        "x": 0,
+        "y": 0
+      },
+      "to": {
+        "scaleX": 1,
+        "scaleY": 1,
+        "rotate": 0,
+        "x": 0,
+        "y": -21.47
+      },
+      "timing": {
+        "duration": "3.4845s (measured)",
+        "easing": "unknown (rAF/JS) \u2014 verify"
+      },
+      "technique": "y 0->-21.47px",
+      "timeline": [
+        {
+          "t": 0,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 3417.8,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": -8.63
+          }
+        },
+        {
+          "t": 3451.1,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": -17.13
+          }
+        },
+        {
+          "t": 3484.5,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": -21.47
+          }
+        }
+      ]
+    }
+  ]
+}

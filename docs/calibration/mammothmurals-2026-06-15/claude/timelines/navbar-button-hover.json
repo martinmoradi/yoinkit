@@ -1,0 +1,371 @@
+{
+  "meta": {
+    "source": "https://mammothmurals.com/",
+    "capturedFrom": "capture-animation.js",
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "scan",
+    "elementsMoved": 2
+  },
+  "summary": "2 layers animate together: span.navbar_btn_container [scale 1->0]; span.navbar_btn_container.is-duplicate [y 44.02->0px, rotateX -34.4->0deg, rotateY -19.1->0deg, rotateZ 23.1->0deg] \u2014 0.45s cubic-bezier(0.31, 0.75, 0.22, 1).",
+  "stagger": null,
+  "findings": [
+    {
+      "selector": "span.navbar_btn_container",
+      "frameCount": 15,
+      "type": "transform",
+      "from": {
+        "scaleX": 1,
+        "scaleY": 1,
+        "rotate": 0,
+        "x": 0,
+        "y": 0
+      },
+      "to": {
+        "scaleX": 0,
+        "scaleY": 0,
+        "rotate": 0,
+        "x": 0,
+        "y": 0
+      },
+      "timing": {
+        "duration": "0.45s",
+        "easing": "cubic-bezier(0.31, 0.75, 0.22, 1)"
+      },
+      "technique": "scale 1->0",
+      "timeline": [
+        {
+          "t": 0,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 33.2,
+          "v": {
+            "scaleX": 0.812,
+            "scaleY": 0.812,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 99.9,
+          "v": {
+            "scaleX": 0.41,
+            "scaleY": 0.41,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 133.2,
+          "v": {
+            "scaleX": 0.26,
+            "scaleY": 0.26,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 166.6,
+          "v": {
+            "scaleX": 0.163,
+            "scaleY": 0.163,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 200,
+          "v": {
+            "scaleX": 0.104,
+            "scaleY": 0.104,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 266.7,
+          "v": {
+            "scaleX": 0.04,
+            "scaleY": 0.04,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 300.1,
+          "v": {
+            "scaleX": 0.024,
+            "scaleY": 0.024,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 333.4,
+          "v": {
+            "scaleX": 0.013,
+            "scaleY": 0.013,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 366.8,
+          "v": {
+            "scaleX": 0.006,
+            "scaleY": 0.006,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 433.4,
+          "v": {
+            "scaleX": 0,
+            "scaleY": 0,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 466.8,
+          "v": {
+            "scaleX": 0,
+            "scaleY": 0,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        }
+      ]
+    },
+    {
+      "selector": "span.navbar_btn_container.is-duplicate",
+      "frameCount": 15,
+      "type": "transform",
+      "from": {
+        "scaleX": 1,
+        "scaleY": 1,
+        "scaleZ": 1,
+        "rotateX": -34.4,
+        "rotateY": -19.1,
+        "rotateZ": 23.1,
+        "x": 0,
+        "y": 44.02,
+        "z": 0,
+        "_approx3d": true
+      },
+      "to": {
+        "scaleX": 1,
+        "scaleY": 1,
+        "rotate": 0,
+        "x": 0,
+        "y": 0
+      },
+      "timing": {
+        "duration": "0.45s",
+        "easing": "cubic-bezier(0.31, 0.75, 0.22, 1)"
+      },
+      "technique": "y 44.02->0px, rotateX -34.4->0deg, rotateY -19.1->0deg, rotateZ 23.1->0deg",
+      "timeline": [
+        {
+          "t": 0,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": -34.4,
+            "rotateY": -19.1,
+            "rotateZ": 23.1,
+            "x": 0,
+            "y": 44.02,
+            "z": 0,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 33.2,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": -27,
+            "rotateY": -17.4,
+            "rotateZ": 16.9,
+            "x": 0,
+            "y": 35.72,
+            "z": 0,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 99.9,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": -12.5,
+            "rotateY": -10.4,
+            "rotateZ": 6.4,
+            "x": 0,
+            "y": 18.06,
+            "z": 0,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 133.3,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": -7.6,
+            "rotateY": -6.9,
+            "rotateZ": 3.5,
+            "x": 0,
+            "y": 11.43,
+            "z": 0,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 166.6,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": -4.7,
+            "rotateY": -4.4,
+            "rotateZ": 2,
+            "x": 0,
+            "y": 7.18,
+            "z": 0,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 200.1,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": -3,
+            "rotateY": -2.8,
+            "rotateZ": 1.2,
+            "x": 0,
+            "y": 4.56,
+            "z": 0,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 266.7,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": -1.1,
+            "rotateY": -1.1,
+            "rotateZ": 0.4,
+            "x": 0,
+            "y": 1.77,
+            "z": 0,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 300.1,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": -0.7,
+            "rotateY": -0.7,
+            "rotateZ": 0.2,
+            "x": 0,
+            "y": 1.04,
+            "z": 0,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 333.4,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": -0.4,
+            "rotateY": -0.4,
+            "rotateZ": 0.1,
+            "x": 0,
+            "y": 0.56,
+            "z": 0,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 366.9,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": -0.2,
+            "rotateY": -0.2,
+            "rotateZ": 0.1,
+            "x": 0,
+            "y": 0.26,
+            "z": 0,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 433.5,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": 0,
+            "rotateY": 0,
+            "rotateZ": 0,
+            "x": 0,
+            "y": 0.01,
+            "z": 0,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 466.8,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        }
+      ]
+    }
+  ]
+}

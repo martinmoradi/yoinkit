@@ -1,0 +1,61 @@
+{
+  "meta": {
+    "source": "https://mammothmurals.com/",
+    "capturedFrom": "capture-animation.js",
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "scan",
+    "elementsMoved": 2
+  },
+  "summary": "2 layers animate together: div.testimonials_heading_backquote.u-sprite [CSS sprite-sheet: 4 frames stepped via background-position]; div.testimonials_heading_backquote.u-sprite [CSS sprite-sheet: 4 frames stepped via background-position] \u2014 ? .",
+  "stagger": null,
+  "findings": [
+    {
+      "selector": "div.testimonials_heading_backquote.u-sprite",
+      "frameCount": 22,
+      "type": "css-sprite",
+      "technique": "CSS sprite-sheet: 4 frames stepped via background-position",
+      "spriteSheet": "https://cdn.prod.website-files.com/6870db6428fa0046e4e9dc88/688852b5f43884f1d839021d_Quotation%20open.avif",
+      "backgroundSize": "579.58px 145px",
+      "animation": {
+        "name": "spriteFrames",
+        "duration": "0.5s",
+        "timing": "steps(4)",
+        "iteration": "infinite"
+      },
+      "fps": 8,
+      "framePositions": [
+        "-434.685px 0px",
+        "0px 0px",
+        "-144.895px 0px",
+        "-289.79px 0px"
+      ]
+    },
+    {
+      "selector": "div.testimonials_heading_backquote.u-sprite",
+      "frameCount": 22,
+      "type": "css-sprite",
+      "technique": "CSS sprite-sheet: 4 frames stepped via background-position",
+      "spriteSheet": "https://cdn.prod.website-files.com/6870db6428fa0046e4e9dc88/688852b5f43884f1d839021d_Quotation%20open.avif",
+      "backgroundSize": "579.58px 145px",
+      "animation": {
+        "name": "spriteFrames",
+        "duration": "0.5s",
+        "timing": "steps(4)",
+        "iteration": "infinite"
+      },
+      "fps": 8,
+      "framePositions": [
+        "-434.685px 0px",
+        "0px 0px",
+        "-144.895px 0px",
+        "-289.79px 0px"
+      ]
+    }
+  ]
+}

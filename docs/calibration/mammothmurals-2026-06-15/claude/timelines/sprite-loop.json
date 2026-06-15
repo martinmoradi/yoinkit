@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "source": "https://mammothmurals.com/",
+    "capturedFrom": "capture-animation.js",
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "scan",
+    "elementsMoved": 1
+  },
+  "summary": "CSS sprite-sheet: 4 frames at ~8fps, looping (0.5s steps(4)).",
+  "stagger": null,
+  "findings": [
+    {
+      "selector": "div.hero_home_deco.u-sprite",
+      "frameCount": 4,
+      "type": "css-sprite",
+      "technique": "CSS sprite-sheet: 4 frames stepped via background-position",
+      "spriteSheet": "https://cdn.prod.website-files.com/6870db6428fa0046e4e9dc88/68a84f74a437cee3c4b0d99c_playbtn.avif",
+      "backgroundSize": "1434px 361px",
+      "animation": {
+        "name": "spriteFrames",
+        "duration": "0.5s",
+        "timing": "steps(4)",
+        "iteration": "infinite"
+      },
+      "fps": 8,
+      "framePositions": [
+        "-717px 0px",
+        "-1075.5px 0px",
+        "0px 0px",
+        "-358.5px 0px"
+      ]
+    }
+  ]
+}

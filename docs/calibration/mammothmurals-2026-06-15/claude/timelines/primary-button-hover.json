@@ -1,0 +1,371 @@
+{
+  "meta": {
+    "source": "https://mammothmurals.com/",
+    "capturedFrom": "capture-animation.js",
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "scan",
+    "elementsMoved": 2
+  },
+  "summary": "2 layers animate together: div.g_btn_container [scale 1->0]; div.g_btn_container.is-duplicate [y 37.41->0px, x -6.9->0px, rotateX 34.4->0deg, rotateY 19.1->0deg, rotateZ 23.1->0deg] \u2014 0.45s cubic-bezier(0.31, 0.75, 0.22, 1).",
+  "stagger": null,
+  "findings": [
+    {
+      "selector": "div.g_btn_container",
+      "frameCount": 15,
+      "type": "transform",
+      "from": {
+        "scaleX": 1,
+        "scaleY": 1,
+        "rotate": 0,
+        "x": 0,
+        "y": 0
+      },
+      "to": {
+        "scaleX": 0,
+        "scaleY": 0,
+        "rotate": 0,
+        "x": 0,
+        "y": 0
+      },
+      "timing": {
+        "duration": "0.45s",
+        "easing": "cubic-bezier(0.31, 0.75, 0.22, 1)"
+      },
+      "technique": "scale 1->0",
+      "timeline": [
+        {
+          "t": 0,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 33.3,
+          "v": {
+            "scaleX": 0.812,
+            "scaleY": 0.812,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 99.9,
+          "v": {
+            "scaleX": 0.41,
+            "scaleY": 0.41,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 133.2,
+          "v": {
+            "scaleX": 0.259,
+            "scaleY": 0.259,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 166.7,
+          "v": {
+            "scaleX": 0.163,
+            "scaleY": 0.163,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 200.2,
+          "v": {
+            "scaleX": 0.103,
+            "scaleY": 0.103,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 266.6,
+          "v": {
+            "scaleX": 0.04,
+            "scaleY": 0.04,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 300,
+          "v": {
+            "scaleX": 0.024,
+            "scaleY": 0.024,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 333.4,
+          "v": {
+            "scaleX": 0.013,
+            "scaleY": 0.013,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 366.8,
+          "v": {
+            "scaleX": 0.006,
+            "scaleY": 0.006,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 433.1,
+          "v": {
+            "scaleX": 0,
+            "scaleY": 0,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "t": 466.4,
+          "v": {
+            "scaleX": 0,
+            "scaleY": 0,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        }
+      ]
+    },
+    {
+      "selector": "div.g_btn_container.is-duplicate",
+      "frameCount": 15,
+      "type": "transform",
+      "from": {
+        "scaleX": 1,
+        "scaleY": 1,
+        "scaleZ": 1,
+        "rotateX": 34.4,
+        "rotateY": 19.1,
+        "rotateZ": 23.1,
+        "x": -6.9,
+        "y": 37.41,
+        "z": 24.04,
+        "_approx3d": true
+      },
+      "to": {
+        "scaleX": 1,
+        "scaleY": 1,
+        "rotate": 0,
+        "x": 0,
+        "y": 0
+      },
+      "timing": {
+        "duration": "0.45s",
+        "easing": "cubic-bezier(0.31, 0.75, 0.22, 1)"
+      },
+      "technique": "y 37.41->0px, x -6.9->0px, rotateX 34.4->0deg, rotateY 19.1->0deg, rotateZ 23.1->0deg",
+      "timeline": [
+        {
+          "t": 0,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": 34.4,
+            "rotateY": 19.1,
+            "rotateZ": 23.1,
+            "x": -6.9,
+            "y": 37.41,
+            "z": 24.04,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 33.3,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": 27.2,
+            "rotateY": 16.6,
+            "rotateZ": 17.7,
+            "x": -5.6,
+            "y": 30.37,
+            "z": 19.52,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 99.9,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": 12.9,
+            "rotateY": 9.4,
+            "rotateZ": 7.9,
+            "x": -2.83,
+            "y": 15.35,
+            "z": 9.87,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 133.3,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": 8,
+            "rotateY": 6.2,
+            "rotateZ": 4.7,
+            "x": -1.79,
+            "y": 9.7,
+            "z": 6.24,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 166.8,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": 5,
+            "rotateY": 4,
+            "rotateZ": 2.9,
+            "x": -1.13,
+            "y": 6.11,
+            "z": 3.92,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 200.2,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": 3.1,
+            "rotateY": 2.5,
+            "rotateZ": 1.8,
+            "x": -0.71,
+            "y": 3.87,
+            "z": 2.49,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 266.7,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": 1.2,
+            "rotateY": 1,
+            "rotateZ": 0.7,
+            "x": -0.28,
+            "y": 1.51,
+            "z": 0.97,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 300.1,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": 0.7,
+            "rotateY": 0.6,
+            "rotateZ": 0.4,
+            "x": -0.16,
+            "y": 0.89,
+            "z": 0.57,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 333.5,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": 0.4,
+            "rotateY": 0.3,
+            "rotateZ": 0.2,
+            "x": -0.09,
+            "y": 0.48,
+            "z": 0.31,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 366.8,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": 0.2,
+            "rotateY": 0.1,
+            "rotateZ": 0.1,
+            "x": -0.04,
+            "y": 0.22,
+            "z": 0.14,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 433.2,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "rotateX": 0,
+            "rotateY": 0,
+            "rotateZ": 0,
+            "x": 0,
+            "y": 0.01,
+            "z": 0,
+            "_approx3d": true
+          }
+        },
+        {
+          "t": 466.4,
+          "v": {
+            "scaleX": 1,
+            "scaleY": 1,
+            "rotate": 0,
+            "x": 0,
+            "y": 0
+          }
+        }
+      ]
+    }
+  ]
+}
