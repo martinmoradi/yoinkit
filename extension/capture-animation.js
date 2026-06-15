@@ -26,15 +26,25 @@
  *
  * Triggers: 'hover' (default) | 'scroll' | 'load' | 'manual'
  * Output: a SPEC (not code) — { summary, findings[] } with per-layer measured
- *         timing/easing + frame timeline. Pure JSON to clipboard + window.__capLast
+ *         timing/easing + frame timeline. ::before / ::after motion (underline
+ *         grows, scaleX reveals, expanding backgrounds) is sampled for tracked
+ *         elements and emitted as its own layer, labelled `<sel>::after`.
+ *         Pure JSON to clipboard + window.__capLast
  *         (or pass {copy:false} when driving from automation).
  *         Hand it to an LLM to write the recreation in your stack.
  * ========================================================================== */
 (() => {
   const PROPS = ['transform', 'opacity', 'filter', 'clipPath',
-                 'backgroundPosition', 'backgroundColor', 'color', 'height', 'width'];
+                 'backgroundSize', 'backgroundPosition', 'backgroundColor', 'color', 'height', 'width'];
   const LEAD_PROPS = ['transform', 'opacity', 'filter', 'clipPath',
-                      'backgroundPosition', 'height', 'width', 'backgroundColor', 'color'];
+                      'backgroundPosition', 'backgroundSize', 'height', 'width', 'backgroundColor', 'color'];
+  // ::before / ::after carry a huge share of hover motion (underline grows,
+  // scaleX reveals, expanding backgrounds) yet are NOT real DOM nodes, so an
+  // element-only sampler never sees them — the single most common cause of
+  // false-empty hover captures. We sample them as their own tracks, but only
+  // for elements we already track, never the whole tree (see PSEUDO_SCAN_CAP).
+  const PSEUDO_ELEMENTS = ['::before', '::after'];
+  const PSEUDO_SCAN_CAP = 1500;   // bound per-frame pseudo reads in scan mode
   const INTERACTIVE_SELECTOR = 'a, button, [role="button"], [onclick], [tabindex]:not([tabindex="-1"])';
   const VISUAL_LAYER_SELECTOR = [
     'img', 'video', 'picture', 'canvas', 'svg',
@@ -410,10 +420,13 @@
   }
 
   /* ---- authoritative easing/duration for CSS transitions ---------------- */
-  function cssTiming(el, prop) {
-    const cs = getComputedStyle(el);
+  function cssTiming(el, prop, pseudo) {
+    const cs = pseudo ? getComputedStyle(el, pseudo) : getComputedStyle(el);
     const props = splitTop(cs.transitionProperty);
-    const idx = props.findIndex(p => p === prop || p === 'all');
+    // transition-property lists CSS kebab names (background-size); our prop keys
+    // are camelCase. Match either so multi-word props get authoritative timing.
+    const kebab = prop.replace(/[A-Z]/g, m => '-' + m.toLowerCase());
+    const idx = props.findIndex(p => p === prop || p === kebab || p === 'all');
     if (idx === -1) return null;
     const durs = splitTop(cs.transitionDuration);
     const tims = splitTop(cs.transitionTimingFunction);
@@ -426,7 +439,8 @@
   /* ====================================================================== */
   const S = { armed: false, mode: null, t0: 0, raf: 0, tracks: [], cleanup: [],
               started: false, lastChange: 0, root: null, candidates: null,
-              baseline: null, lastScan: 0, trigger: null, terminationReason: null,
+              baseline: null, pseudoCandidates: [], pseudoBaseline: [],
+              lastScan: 0, trigger: null, terminationReason: null,
               finishedAt: 0, captureSource: null, captureWindowStart: 0,
               captureWindowEnd: 0 };
 
@@ -471,23 +485,43 @@
     return value;
   }
 
-  function readVals(el) {
-    const cs = getComputedStyle(el);
+  // A pseudo-element is only generated when its `content` resolves to something
+  // other than none/normal — a cheap one-time gate so we never create or sample
+  // tracks for pseudos the page doesn't render.
+  function pseudoExists(el, pseudo) {
+    try {
+      const c = getComputedStyle(el, pseudo).content;
+      return !!c && c !== 'none' && c !== 'normal';
+    } catch (e) { return false; }
+  }
+
+  function readVals(el, pseudo) {
+    const cs = pseudo ? getComputedStyle(el, pseudo) : getComputedStyle(el);
     const rect = el.getBoundingClientRect();
     const o = {};
     for (const p of PROPS) o[p] = normalizeLayoutValue(el, p, cs[p], rect);
     return o;
   }
 
-  function track(el) {
-    const t = makeTrack(el);
+  function track(el, pseudo) {
+    const t = makeTrack(el, pseudo);
     S.tracks.push(t);
     return t;
   }
 
-  function makeTrack(el) {
+  function makeTrack(el, pseudo) {
     const locator = locatorFor(el);
-    return { el, sel: locator.shortSelector, locator, frames: [] };
+    const sel = pseudo ? (locator.shortSelector || cssPath(el) || '') + pseudo : locator.shortSelector;
+    return { el, pseudo: pseudo || null, sel, locator, frames: [] };
+  }
+
+  // Arm pseudo-element tracks for one element we already track. Sampling pseudos
+  // only for tracked nodes (not every element on the page) keeps getComputedStyle
+  // volume bounded; loopScan applies the same idea with a hard cap.
+  function trackPseudos(el) {
+    for (const pseudo of PSEUDO_ELEMENTS) {
+      if (pseudoExists(el, pseudo)) track(el, pseudo);
+    }
   }
 
   function pushFrame(t, vals) {
@@ -499,7 +533,7 @@
   }
 
   function loopSingle() {
-    for (const t of S.tracks) pushFrame(t, readVals(t.el));
+    for (const t of S.tracks) pushFrame(t, readVals(t.el, t.pseudo));
     const elapsed = now() - S.t0;
     const settled = S.lastChange && (now() - S.lastChange > SETTLE_MS) &&
                     S.tracks.some(t => t.frames.length > 1);
@@ -517,8 +551,20 @@
         const vals = readVals(el);
         const base = S.baseline[i];
         if (PROPS.some(p => base[p] !== vals[p])) {
-          let t = S.tracks.find(x => x.el === el);
+          let t = S.tracks.find(x => x.el === el && !x.pseudo);
           if (!t) { t = track(el); t.frames.push({ t: 0, vals: base }); }
+          pushFrame(t, vals);
+        }
+      }
+      // Pseudo-elements that move (underline ::after scaleX, expanding ::before
+      // backgrounds) become their own tracks — bounded by buildPseudoCandidates.
+      for (let i = 0; i < S.pseudoCandidates.length; i++) {
+        const { el, pseudo } = S.pseudoCandidates[i];
+        const vals = readVals(el, pseudo);
+        const base = S.pseudoBaseline[i];
+        if (PROPS.some(p => base[p] !== vals[p])) {
+          let t = S.tracks.find(x => x.el === el && x.pseudo === pseudo);
+          if (!t) { t = track(el, pseudo); t.frames.push({ t: 0, vals: base }); }
           pushFrame(t, vals);
         }
       }
@@ -530,17 +576,38 @@
     S.raf = requestAnimationFrame(loopScan);
   }
 
+  // Scan mode: find which candidate pseudos exist and snapshot their rest state,
+  // so loopScan can diff them like real elements. The existence probe runs once
+  // here (not per frame), and the cap keeps the per-frame pseudo read count from
+  // growing with the whole tree.
+  function buildPseudoCandidates() {
+    S.pseudoCandidates = [];
+    let capped = false;
+    for (const el of S.candidates) {
+      for (const pseudo of PSEUDO_ELEMENTS) {
+        if (pseudoExists(el, pseudo)) S.pseudoCandidates.push({ el, pseudo });
+      }
+      if (S.pseudoCandidates.length >= PSEUDO_SCAN_CAP) { capped = true; break; }
+    }
+    if (capped) {
+      S.pseudoCandidates = S.pseudoCandidates.slice(0, PSEUDO_SCAN_CAP);
+      console.warn(`[capture] pseudo-scan capped at ${PSEUDO_SCAN_CAP} pseudo-elements — element-level capture is unaffected`);
+    }
+    S.pseudoBaseline = S.pseudoCandidates.map(c => readVals(c.el, c.pseudo));
+  }
+
   function start() {
     if (S.started) return;
     S.started = true; S.t0 = now(); S.lastChange = 0; S.lastScan = 0;
     S.terminationReason = null; S.finishedAt = 0;
     S.captureWindowStart = now(); S.captureWindowEnd = 0;
     if (S.mode === 'scan') {
-      S.baseline = S.candidates.map(readVals);
+      S.baseline = S.candidates.map(el => readVals(el));
+      buildPseudoCandidates();
       S.raf = requestAnimationFrame(loopScan);
     } else {
       // snapshot the true rest state as frame 0, before the trigger moves it
-      for (const t of S.tracks) t.frames.push({ t: 0, vals: readVals(t.el) });
+      for (const t of S.tracks) t.frames.push({ t: 0, vals: readVals(t.el, t.pseudo) });
       S.raf = requestAnimationFrame(loopSingle);
     }
     console.log('%c[capture] recording…', 'color:#fa0', 'interact now, then run __cap.dump()');
@@ -590,14 +657,14 @@
 
   function propertyAnalysis(t, prop, includeRaw) {
     const f = t.frames;
-    const cs = getComputedStyle(t.el);
+    const cs = t.pseudo ? getComputedStyle(t.el, t.pseudo) : getComputedStyle(t.el);
     if (prop === 'transform') {
       const a = decodeTransform(f[0].vals.transform);
       const b = decodeTransform(f[f.length - 1].vals.transform);
       return {
         from: a,
         to: b,
-        timing: cssTiming(t.el, 'transform') || measuredTiming(f),
+        timing: cssTiming(t.el, 'transform', t.pseudo) || measuredTiming(f),
         technique: describeTransform(a, b),
         timeline: downsample(f, fr => decodeTransform(fr.vals.transform)),
         rawFrames: rawTimeline(f, fr => decodeTransform(fr.vals.transform), includeRaw),
@@ -628,7 +695,7 @@
     return {
       from: f[0].vals[prop],
       to: f[f.length - 1].vals[prop],
-      timing: cssTiming(t.el, prop) || measuredTiming(f),
+      timing: cssTiming(t.el, prop, t.pseudo) || measuredTiming(f),
       technique: `${prop}: ${f[0].vals[prop]} -> ${f[f.length - 1].vals[prop]}`,
       timeline: downsample(f, fr => fr.vals[prop]),
       rawFrames: rawTimeline(f, fr => fr.vals[prop], includeRaw),
@@ -643,6 +710,7 @@
       locator: t.locator || locatorFor(t.el),
       frameCount: f.length,
     };
+    if (t.pseudo) out.pseudoElement = t.pseudo;   // motion lives on ::before/::after
     Object.defineProperty(out, '_el', { value: t.el, enumerable: false });
     if (!changed.length) { out.type = 'none'; return out; }
 
@@ -863,6 +931,7 @@
     S.cleanup.forEach(fn => fn()); S.cleanup = [];
     Object.assign(S, { armed: false, mode: null, t0: 0, raf: 0, tracks: [],
       started: false, lastChange: 0, root: null, candidates: null, baseline: null,
+      pseudoCandidates: [], pseudoBaseline: [],
       lastScan: 0, trigger: null, terminationReason: null, finishedAt: 0,
       captureSource: null, captureWindowStart: 0, captureWindowEnd: 0 });
   }
@@ -1181,7 +1250,7 @@
       if (!el) { console.warn('[capture] no element for', target); return; }
       S.mode = 'single'; S.root = el; S.captureSource = opts.captureSource || null;
       const kids = staggerChildren(el);
-      (kids || [el]).forEach(track);
+      (kids || [el]).forEach(node => { track(node); trackPseudos(node); });
       console.log(`[capture] tracking ${kids ? kids.length + ' child items (stagger)' : '1 element'}`);
       arm(opts.trigger || 'hover', el);
       return this;
@@ -1255,6 +1324,7 @@
           captureSource: opts.captureSource || S.captureSource || undefined,
           terminationReason: S.terminationReason,
           sampledProperties: [...PROPS],
+          sampledPseudoElements: [...PSEUDO_ELEMENTS],
           rootSelector: rootLocator && (rootLocator.uniqueSelector || rootLocator.shortSelector),
           rootLocator,
           durationMs: captureDuration(),
