@@ -42,7 +42,9 @@ every time. Agents should save JSON from `window.__capLast` /
 `bin/capture-browser`. It creates run folders, opens the target with the engine
 injected, saves `__cap.map()`, runs manifest-defined captures, stores timeline
 JSON, assembles `animations.json`, renders `animations.md`, and writes a compact
-`report.md`.
+`report.md`. It also writes `page-state.json`, a small readiness log that records
+whether the page looked ready, stuck behind a loader, or blocked by a challenge /
+rate limiter before map and capture phases.
 
 The recommended flow is two commands:
 
@@ -84,6 +86,7 @@ Artifacts are written under `runs/<domain>/<date>-<slug>/`:
 
 ```text
 map.json
+page-state.json
 manifest.json
 manifest.proposed.json
 capture-plan.json
@@ -103,17 +106,24 @@ Manifest captures are deliberately small. The CLI supports `hover`, `click`,
 {
   "url": "https://mammothmurals.com/",
   "viewport": [1280, 800],
+  "captureStrategy": "reuse-page",
+  "captureGroups": {
+    "main-page-after-intro": { "resetScroll": true }
+  },
   "captures": [
     {
       "id": "faq-accordion",
       "type": "click",
       "root": "div.g_faq_item.w-dyn-item",
       "action": "click div.g_faq_item.w-dyn-item",
+      "fresh": true,
       "waitMs": 900
     },
     {
       "id": "hero-load",
       "type": "boot",
+      "fresh": true,
+      "seedReuse": true,
       "boot": { "selectors": ["h1", "[class*=split]"], "ms": 4000 },
       "waitMs": 4300
     }
@@ -124,6 +134,27 @@ Manifest captures are deliberately small. The CLI supports `hover`, `click`,
 For automation, the CLI always finalizes with `dump({ copy:false })` or
 `bootDump({ copy:false })` and saves from the returned object. It does not read
 from the clipboard.
+
+By default, generated manifests use `captureStrategy: "reuse-page"`. The runner
+opens a fresh page for `boot` / `load`, then can reuse that settled page for
+ordinary hover, scroll, and manual captures in the same `group`. This avoids
+replaying long intro overlays and avoids hammering a site with one full
+navigation per capture. Per-capture controls:
+
+- `fresh: true` forces a new page for that capture.
+- `group: "name"` batches reusable captures on the same loaded page.
+- `setupAction` runs before a capture, after any group setup.
+- `resetAction` runs after a capture; click captures only reuse by default when
+  they provide one.
+- `reusePage: true` opts a stateful capture into reuse; `reusePage: false` opts
+  out.
+- `seedReuse: true` on a boot/load capture lets the settled post-load page seed
+  a reusable group, usually `main-page-after-intro`.
+
+Agents should edit these fields when the page demands judgment. For example, a
+site with a long hero intro should do one boot/load capture, let it seed the
+main group, and then run the hover/scroll captures on that settled page. A modal
+or menu flow should either be `fresh: true` or include a reliable `resetAction`.
 
 The assembler is intentionally conservative. Registry-backed ScrollTrigger
 tweens and CSS loops are marked `measured`; CSS hover timings, callback-only
@@ -138,6 +169,20 @@ pipeline continues to the next manifest item. `report.md` calls these out under
 **Empty Captures** or **Failed Captures** so selector misses, hidden elements,
 covered hover points, and bad trigger recipes stay visible during calibration.
 
+Before it maps or captures, the CLI waits for the page to become stable and
+records the outcome. If the page appears rate-limited, captcha/challenge gated,
+or otherwise blocked, it records that blocker and stops spending additional
+visits on the target. Fresh opens are throttled by a small polite delay
+(`--open-delay-ms`, default `750`) because a full run can otherwise look like a
+burst of reloads to a production site. The readiness behavior can be tuned with
+`--ready-timeout-ms`, `--ready-stable-ms`, or disabled with `--no-ready-wait`.
+
+Hover/click captures also run a selector preflight. The CLI checks that the
+target exists before scrolling, then verifies the hovered/clicked point is not
+covered after scroll/settle. Preflight failures are saved as normal
+`status: "error"` capture results, so a bad selector explains itself without
+aborting the whole pipeline.
+
 `plan` reads `map.json` and writes `manifest.proposed.json` plus
 `capture-plan.md`. It proposes boot captures for split reveals, scroll captures
 for callback-only ScrollTriggers, representative CSS hovers by timing group,
@@ -147,9 +192,10 @@ before passing the proposed manifest to `capture`.
 
 The planner applies a few conservative selector preferences learned from the
 Mammoth calibration: prefer interaction owners over child decoration layers,
-avoid generated Webflow node IDs, click the accordion button while scanning the
-item root, and treat obvious in-view marquees as manual loop captures rather
-than scroll reveals.
+avoid generated Webflow node IDs and generic bare tags, derive accordion roots
+from the mapped site selectors, click the best-looking accordion trigger while
+scanning the item root, and treat obvious in-view marquees as manual loop
+captures rather than scroll reveals.
 
 ## Two ways to load it
 

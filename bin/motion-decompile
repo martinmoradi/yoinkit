@@ -11,21 +11,34 @@ const AB = path.join(ROOT, 'bin', 'capture-browser');
 const ENGINE = path.join(ROOT, 'extension', 'capture-animation.js');
 const DEFAULT_VIEWPORT = [1280, 800];
 const DEFAULT_MAX_OUTPUT = 5_000_000;
+const DEFAULT_READY_TIMEOUT_MS = 8_000;
+const DEFAULT_READY_STABLE_MS = 700;
+const DEFAULT_OPEN_DELAY_MS = 750;
+
+let lastOpenAt = 0;
 
 function usage() {
   console.log(`motion-decompile
 
 Usage:
-  bin/motion-decompile scout <url> [--viewport 1280x800] [--slug name] [--runs-dir runs] [--max-hover-captures 10] [--keep-open]
-  bin/motion-decompile decompile <url> [--viewport 1280x800] [--slug name] [--runs-dir runs] [--max-hover-captures 10] [--keep-open]
-  bin/motion-decompile decompile <run-dir> [manifest.json] [--keep-open]
+  bin/motion-decompile scout <url> [--viewport 1280x800] [--slug name] [--runs-dir runs] [--max-hover-captures 10] [--keep-open] [--ready-timeout-ms 8000] [--capture-strategy reuse-page]
+  bin/motion-decompile decompile <url> [--viewport 1280x800] [--slug name] [--runs-dir runs] [--max-hover-captures 10] [--keep-open] [--ready-timeout-ms 8000] [--capture-strategy reuse-page]
+  bin/motion-decompile decompile <run-dir> [manifest.json] [--keep-open] [--ready-timeout-ms 8000] [--capture-strategy reuse-page]
   bin/motion-decompile init <url> [--viewport 1280x800] [--slug name] [--runs-dir runs] [--no-open]
   bin/motion-decompile map <run-dir>
   bin/motion-decompile plan <run-dir> [--out manifest.proposed.json] [--max-hover-captures 10]
-  bin/motion-decompile capture <run-dir> [manifest.json]
+  bin/motion-decompile capture <run-dir> [manifest.json] [--ready-timeout-ms 8000] [--capture-strategy reuse-page]
   bin/motion-decompile assemble <run-dir>
   bin/motion-decompile report <run-dir>
-  bin/motion-decompile run <manifest.json> [--slug name] [--runs-dir runs] [--keep-open]
+  bin/motion-decompile run <manifest.json> [--slug name] [--runs-dir runs] [--keep-open] [--ready-timeout-ms 8000] [--capture-strategy reuse-page]
+
+Readiness/rate-limit options:
+  --ready-timeout-ms N   wait this long for real page content before mapping/capturing
+  --ready-stable-ms N    require a stable DOM/text snapshot for this long
+  --open-delay-ms N      polite delay between fresh page opens
+  --no-ready-wait        skip page-state readiness checks
+  --capture-strategy S   reuse-page (default) or fresh
+  --fresh-captures       shorthand for --capture-strategy fresh
 
 Manifest capture examples:
   { "id": "work-card-hover", "type": "hover", "root": "a.work_home_item_link", "waitMs": 1200 }
@@ -49,6 +62,18 @@ function parseFlags(argv) {
       flags.out = argv[++i];
     } else if (arg === '--max-hover-captures') {
       flags.maxHoverCaptures = Number(argv[++i]);
+    } else if (arg === '--ready-timeout-ms') {
+      flags.readyTimeoutMs = Number(argv[++i]);
+    } else if (arg === '--ready-stable-ms') {
+      flags.readyStableMs = Number(argv[++i]);
+    } else if (arg === '--open-delay-ms') {
+      flags.openDelayMs = Number(argv[++i]);
+    } else if (arg === '--no-ready-wait') {
+      flags.noReadyWait = true;
+    } else if (arg === '--capture-strategy') {
+      flags.captureStrategy = argv[++i];
+    } else if (arg === '--fresh-captures') {
+      flags.captureStrategy = 'fresh';
     } else if (arg === '--no-open') {
       flags.noOpen = true;
     } else if (arg === '--keep-open') {
@@ -179,6 +204,293 @@ function evalStatement(js, runDir) {
   evalJson(`(() => { ${body}; return { ok: true }; })()`, runDir, 200_000);
 }
 
+class PageBlockedError extends Error {
+  constructor(message, state) {
+    super(message);
+    this.name = 'PageBlockedError';
+    this.fatalPageState = true;
+    this.state = state;
+  }
+}
+
+function finiteNumber(value, fallback) {
+  return Number.isFinite(Number(value)) ? Number(value) : fallback;
+}
+
+function optionNumber(...values) {
+  for (const value of values) {
+    if (value !== undefined && value !== null && value !== '') return Number(value);
+  }
+  return undefined;
+}
+
+function readyOptions(manifest = {}, flags = {}, capture = {}) {
+  return {
+    skip: Boolean(flags.noReadyWait || manifest.waitForReady === false || capture.waitForReady === false),
+    timeoutMs: finiteNumber(
+      optionNumber(capture.readyTimeoutMs, manifest.readyTimeoutMs, flags.readyTimeoutMs),
+      DEFAULT_READY_TIMEOUT_MS
+    ),
+    stableMs: finiteNumber(
+      optionNumber(capture.readyStableMs, manifest.readyStableMs, flags.readyStableMs),
+      DEFAULT_READY_STABLE_MS
+    ),
+  };
+}
+
+function openDelayMs(manifest = {}, flags = {}, capture = {}) {
+  return Math.max(0, finiteNumber(
+    optionNumber(capture.openDelayMs, manifest.openDelayMs, flags.openDelayMs),
+    DEFAULT_OPEN_DELAY_MS
+  ));
+}
+
+function pageStateProbe() {
+  return `(() => {
+    const textOf = el => (el && (el.innerText || el.textContent) || '').replace(/\\s+/g, ' ').trim();
+    const short = value => String(value || '').replace(/\\s+/g, ' ').trim().slice(0, 180);
+    const cssPath = el => {
+      if (!el || el.nodeType !== 1) return '';
+      if (el.id) return '#' + CSS.escape(el.id);
+      const tag = el.tagName.toLowerCase();
+      const classes = Array.from(el.classList || []).slice(0, 3).map(cls => '.' + CSS.escape(cls)).join('');
+      return tag + classes;
+    };
+    const visible = el => {
+      if (!el || el.nodeType !== 1) return false;
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity || 1) === 0) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 2 && r.height > 2;
+    };
+    const bodyText = textOf(document.body);
+    const haystack = (document.title + '\\n' + bodyText).toLowerCase();
+    const blockers = [];
+    const addTextBlocker = (type, pattern) => {
+      const match = haystack.match(pattern);
+      if (match) blockers.push({ type, evidence: short(match[0]) });
+    };
+    addTextBlocker('rate-limit', /\\b429\\b|too many requests|rate limit(?:ed)?|try again later|request limit|temporarily unavailable/);
+    addTextBlocker('challenge', /just a moment|checking (?:your|if the) (?:browser|site)|verify you are human|captcha|hcaptcha|recaptcha|cloudflare ray|attention required|access denied/);
+
+    const loaderSelector = [
+      '[aria-busy="true"]',
+      '[role="progressbar"]',
+      '.loader',
+      '.loading',
+      '.preloader',
+      '[class*="loader"]',
+      '[class*="loading"]',
+      '[class*="preloader"]',
+      '[class*="page-transition"]',
+      '[class*="splash"]',
+      '[id*="loader"]',
+      '[id*="loading"]',
+      '[id*="preloader"]'
+    ].join(',');
+    for (const el of Array.from(document.querySelectorAll(loaderSelector)).slice(0, 20)) {
+      if (!visible(el)) continue;
+      const r = el.getBoundingClientRect();
+      const areaRatio = Math.min(1, (r.width * r.height) / Math.max(1, innerWidth * innerHeight));
+      const descriptor = short([cssPath(el), el.id, el.className, textOf(el)].join(' '));
+      if (areaRatio > 0.25 || /load|preload|progress|splash|transition/i.test(descriptor)) {
+        blockers.push({ type: 'loading', evidence: descriptor || cssPath(el), areaRatio: Math.round(areaRatio * 100) / 100 });
+        break;
+      }
+    }
+
+    const waitingShell = bodyText.length < 80 && /loading|please wait|one moment|initializing/i.test(bodyText);
+    if (waitingShell) blockers.push({ type: 'loading', evidence: short(bodyText) });
+
+    const blockerTypes = [...new Set(blockers.map(item => item.type))];
+    const blocked = blockerTypes.some(type => type === 'rate-limit' || type === 'challenge');
+    const loading = blockerTypes.includes('loading') || (document.readyState === 'loading');
+    const state = {
+      url: location.href,
+      title: document.title || '',
+      readyState: document.readyState,
+      textLength: bodyText.length,
+      textSample: short(bodyText),
+      elementCount: document.getElementsByTagName('*').length,
+      linkCount: document.links.length,
+      buttonCount: document.querySelectorAll('button,[role="button"]').length,
+      scrollHeight: document.documentElement.scrollHeight,
+      viewport: [innerWidth, innerHeight],
+      blockers,
+      blocked,
+      loading,
+      stabilityKey: [document.readyState, bodyText.length, document.getElementsByTagName('*').length, document.documentElement.scrollHeight, blockerTypes.join(',')].join('|'),
+    };
+    state.ready = !blocked && !loading && document.readyState !== 'loading';
+    return state;
+  })()`;
+}
+
+function recordPageState(runDir, record) {
+  const file = path.join(runDir, 'page-state.json');
+  const existing = optionalJson(file, { records: [] });
+  existing.updatedAt = new Date().toISOString();
+  existing.records = Array.isArray(existing.records) ? existing.records : [];
+  existing.records.push(plainStrings(record));
+  writeJson(file, existing);
+}
+
+function pageBlockerSummary(state) {
+  const blockers = state?.blockers || [];
+  if (!blockers.length) return 'unknown page blocker';
+  return blockers.map(item => `${item.type}${item.evidence ? ` (${item.evidence})` : ''}`).join(', ');
+}
+
+function waitForPageReady(runDir, phase, manifest = {}, flags = {}, capture = {}) {
+  const opts = readyOptions(manifest, flags, capture);
+  if (opts.skip) {
+    appendLog(runDir, `\nPage readiness skipped for ${phase}.\n`);
+    return null;
+  }
+
+  const started = Date.now();
+  let lastKey = null;
+  let stableSince = 0;
+  let latest = null;
+  let outcome = 'timeout';
+  const samples = [];
+
+  while (Date.now() - started <= opts.timeoutMs) {
+    latest = evalJson(pageStateProbe(), runDir, 700_000);
+    samples.push(latest);
+    if (latest?.blocked) {
+      outcome = 'blocked';
+      recordPageState(runDir, {
+        phase,
+        outcome,
+        waitedMs: Date.now() - started,
+        state: latest,
+        sampledAt: new Date().toISOString(),
+      });
+      throw new PageBlockedError(`Page appears blocked before ${phase}: ${pageBlockerSummary(latest)}`, latest);
+    }
+
+    if (latest?.ready) {
+      if (latest.stabilityKey === lastKey) {
+        if (!stableSince) stableSince = Date.now();
+      } else {
+        lastKey = latest.stabilityKey;
+        stableSince = Date.now();
+      }
+      if (Date.now() - stableSince >= opts.stableMs) {
+        outcome = 'ready';
+        break;
+      }
+    } else {
+      lastKey = latest?.stabilityKey || null;
+      stableSince = 0;
+    }
+    sleepMs(250);
+  }
+
+  if (outcome !== 'ready' && latest?.loading) outcome = 'timeout-loading';
+  recordPageState(runDir, {
+    phase,
+    outcome,
+    waitedMs: Date.now() - started,
+    state: latest,
+    sampleCount: samples.length,
+    sampledAt: new Date().toISOString(),
+  });
+  appendLog(runDir, `\nPage readiness ${phase}: ${outcome}${latest ? ` (${latest.readyState}, text ${latest.textLength}, elements ${latest.elementCount})` : ''}.\n`);
+  return latest;
+}
+
+function selectorPreflight(selector) {
+  return `(() => {
+    const selector = ${JSON.stringify(selector)};
+    const cssPath = el => {
+      if (!el || el.nodeType !== 1) return '';
+      if (el.id) return '#' + CSS.escape(el.id);
+      const tag = el.tagName.toLowerCase();
+      const classes = Array.from(el.classList || []).slice(0, 3).map(cls => '.' + CSS.escape(cls)).join('');
+      return tag + classes;
+    };
+    const visible = el => {
+      const cs = getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      return cs.display !== 'none' && cs.visibility !== 'hidden' && Number(cs.opacity || 1) > 0 && r.width > 1 && r.height > 1;
+    };
+    const matches = Array.from(document.querySelectorAll(selector));
+    const candidates = matches.map((el, index) => {
+      const r = el.getBoundingClientRect();
+      return {
+        index,
+        selector: cssPath(el),
+        visible: visible(el),
+        rect: { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) },
+      };
+    });
+    const chosen = matches.find(visible);
+    if (!matches.length) return { selector, status: 'not-found', matchCount: 0, visibleMatchCount: 0, message: 'selector matched no elements' };
+    if (!chosen) return { selector, status: 'not-visible', matchCount: matches.length, visibleMatchCount: 0, candidates, message: 'selector matched no visible elements' };
+    const rect = chosen.getBoundingClientRect();
+    const x = Math.max(1, Math.min(innerWidth - 1, rect.left + rect.width / 2));
+    const y = Math.max(1, Math.min(innerHeight - 1, rect.top + rect.height / 2));
+    const top = document.elementFromPoint(x, y);
+    const hittable = Boolean(top && (top === chosen || chosen.contains(top)));
+    const topPath = cssPath(top);
+    return {
+      selector,
+      status: hittable ? 'ok' : 'covered',
+      matchCount: matches.length,
+      visibleMatchCount: candidates.filter(item => item.visible).length,
+      chosen: cssPath(chosen),
+      point: { x: Math.round(x), y: Math.round(y) },
+      rect: { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) },
+      coveredBy: hittable ? null : topPath,
+      message: hittable ? 'selector appears hittable' : 'selector center is covered by ' + (topPath || 'another element'),
+    };
+  })()`;
+}
+
+function selectorPresence(selector) {
+  return `(() => {
+    const selector = ${JSON.stringify(selector)};
+    const matches = Array.from(document.querySelectorAll(selector));
+    const visibleCount = matches.filter(el => {
+      const cs = getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      return cs.display !== 'none' && cs.visibility !== 'hidden' && Number(cs.opacity || 1) > 0 && r.width > 1 && r.height > 1;
+    }).length;
+    return {
+      selector,
+      status: matches.length ? (visibleCount ? 'ok' : 'not-visible') : 'not-found',
+      matchCount: matches.length,
+      visibleMatchCount: visibleCount,
+      message: matches.length ? (visibleCount ? 'selector is present' : 'selector matched no visible elements') : 'selector matched no elements',
+    };
+  })()`;
+}
+
+function preflightPresence(runDir, selector, label = 'selector', capture = {}) {
+  if (!selector || capture.preflight === false) return null;
+  const result = evalJson(selectorPresence(selector), runDir, 300_000);
+  if (result.status !== 'ok') {
+    throw new Error(`Preflight failed for ${label} ${selector}: ${result.message}`);
+  }
+  return result;
+}
+
+function preflightAction(runDir, action, capture = {}) {
+  if (capture.preflight === false) return null;
+  if (!action || Array.isArray(action) || typeof action === 'object') return null;
+  const { command, rest } = splitAction(action);
+  if (!rest) return null;
+  if (command === 'scrollintoview') return preflightPresence(runDir, rest, command, capture);
+  if (!['click', 'dblclick', 'hover'].includes(command)) return null;
+  const result = evalJson(selectorPreflight(rest), runDir, 500_000);
+  if (result.status !== 'ok') {
+    throw new Error(`Preflight failed for ${command} ${rest}: ${result.message}`);
+  }
+  return result;
+}
+
 function loadManifest(runDir, manifestPath) {
   let file = manifestPath ? path.resolve(manifestPath) : path.join(runDir, 'manifest.json');
   if (manifestPath && !fs.existsSync(file) && !path.isAbsolute(manifestPath)) {
@@ -196,12 +508,18 @@ function normalizeViewport(manifest, flags = {}) {
   return DEFAULT_VIEWPORT;
 }
 
-function openPage(runDir, url, viewport, initScripts = [ENGINE]) {
+function openPage(runDir, url, viewport, initScripts = [ENGINE], options = {}) {
+  const delayMs = Math.max(0, finiteNumber(options.openDelayMs, DEFAULT_OPEN_DELAY_MS));
+  if (lastOpenAt && delayMs) {
+    const remaining = delayMs - (Date.now() - lastOpenAt);
+    if (remaining > 0) sleepMs(remaining);
+  }
   runBrowser(['close', '--all'], { runDir });
   sleepMs(350);
   const args = ['open', url, '--headed'];
   for (const script of initScripts) args.push('--init-script', script);
   runBrowser(args, { runDir });
+  lastOpenAt = Date.now();
   runBrowser(['set', 'viewport', String(viewport[0]), String(viewport[1])], { runDir });
 }
 
@@ -337,9 +655,64 @@ function timelineResult(runDir, id, type, file, timeline) {
   };
 }
 
+function captureStrategy(manifest = {}, flags = {}) {
+  const strategy = String(flags.captureStrategy || manifest.captureStrategy || 'reuse-page');
+  if (!['reuse-page', 'fresh'].includes(strategy)) {
+    throw new Error(`Invalid captureStrategy "${strategy}". Use "reuse-page" or "fresh".`);
+  }
+  return strategy;
+}
+
+function captureGroupConfig(manifest = {}, group) {
+  const groups = manifest.captureGroups || manifest.groups || {};
+  return group && groups && typeof groups === 'object' ? (groups[group] || {}) : {};
+}
+
+function defaultCaptureGroup(type) {
+  if (type === 'click' || type === 'dblclick') return 'stateful-interactions';
+  return 'main-page-after-intro';
+}
+
+function reusableCaptureGroup(capture, type) {
+  return capture.group || defaultCaptureGroup(type);
+}
+
+function captureCanReuse(manifest, flags, capture, type) {
+  if (captureStrategy(manifest, flags) !== 'reuse-page') return false;
+  if (type === 'boot' || type === 'load') return false;
+  if (capture.fresh === true || capture.reusePage === false) return false;
+  if (capture.fresh === false || capture.reusePage === true) return true;
+  if (type === 'click' || type === 'dblclick') return Boolean(capture.resetAction);
+  return true;
+}
+
+function reusablePageKey(url, viewport, group) {
+  return JSON.stringify({ url, viewport, group });
+}
+
+function resetReusablePage(runDir, capture, type) {
+  if (capture.resetScroll === false) return;
+  if (type === 'manual' && capture.resetScroll !== true) return;
+  evalStatement(`
+    try {
+      if (window.lenis && typeof window.lenis.scrollTo === 'function') window.lenis.scrollTo(0, { immediate: true, force: true });
+    } catch (e) {}
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  `, runDir);
+  runBrowser(['wait', String(capture.reuseSettleMs || 250)], { runDir });
+}
+
+function runMaybeAction(action, runDir) {
+  if (!action) return;
+  runAction(action, runDir);
+}
+
 function runMap(runDir, manifest, flags = {}) {
   const viewport = normalizeViewport(manifest, flags);
-  openPage(runDir, manifest.url, viewport, [ENGINE]);
+  openPage(runDir, manifest.url, viewport, [ENGINE], { openDelayMs: openDelayMs(manifest, flags) });
+  waitForPageReady(runDir, 'map', manifest, flags);
   runBrowser(['wait', String(manifest.initialWaitMs || 1000)], { runDir });
   const map = evalJson('(() => window.__cap.map())()', runDir);
   writeJson(path.join(runDir, 'map.json'), map);
@@ -347,14 +720,18 @@ function runMap(runDir, manifest, flags = {}) {
   return map;
 }
 
-function runCapture(runDir, manifest, manifestFile) {
+function runCapture(runDir, manifest, manifestFile, flags = {}) {
   const viewport = normalizeViewport(manifest);
+  const strategy = captureStrategy(manifest, flags);
   const captures = Array.isArray(manifest.captures) ? manifest.captures : [];
   if (!captures.length) throw new Error('Manifest has no captures.');
   writeJson(path.join(runDir, 'manifest.json'), manifest);
   appendLog(runDir, `\nUsing manifest: \`${manifestFile || path.join(runDir, 'manifest.json')}\`\n`);
+  appendLog(runDir, `Capture strategy: \`${strategy}\`\n`);
 
   const results = [];
+  let currentPage = null;
+
   for (const [index, capture] of captures.entries()) {
     const id = captureId(capture, index);
     const type = captureType(capture);
@@ -374,29 +751,70 @@ function runCapture(runDir, manifest, manifestFile) {
     try {
       const url = capture.url || manifest.url;
       const waitMs = capture.waitMs == null ? null : Number(capture.waitMs);
+      const canReuse = captureCanReuse(manifest, flags, capture, type);
+      const group = canReuse ? reusableCaptureGroup(capture, type) : null;
+      const groupConfig = canReuse ? captureGroupConfig(manifest, group) : {};
+      const pageKey = canReuse ? reusablePageKey(url, viewport, group) : null;
       appendLog(runDir, `\n## Capture ${id}\n\nType: \`${type}\`\n`);
 
       if (type === 'boot' || type === 'load') {
+        currentPage = null;
         const init = bootInitFile(capture, id);
         try {
-          openPage(runDir, url, viewport, [init.file, ENGINE]);
+          openPage(runDir, url, viewport, [init.file, ENGINE], { openDelayMs: openDelayMs(manifest, flags, capture) });
           runBrowser(['wait', String(waitMs == null ? init.boot.ms + 300 : waitMs)], { runDir });
+          waitForPageReady(runDir, `capture:${id}:after-boot`, manifest, flags, capture);
           const timeline = evalJson('(() => window.__cap.bootDump({ copy: false }))()', runDir);
           const file = saveTimeline(runDir, id, timeline);
-          results.push(timelineResult(runDir, id, type, file, timeline));
+          const result = timelineResult(runDir, id, type, file, timeline);
+          result.page = { strategy: 'fresh', opened: true, group: null, seededReusablePage: false };
+          results.push(result);
+          if (strategy === 'reuse-page' && capture.seedReuse !== false && url === manifest.url) {
+            const seededGroup = capture.seedGroup || 'main-page-after-intro';
+            currentPage = {
+              key: reusablePageKey(url, viewport, seededGroup),
+              url,
+              group: seededGroup,
+              seededBy: id,
+              setupDone: false,
+            };
+            result.page.seededReusablePage = true;
+            result.page.seedGroup = seededGroup;
+          }
         } finally {
           fs.rmSync(init.file, { force: true });
         }
         continue;
       }
 
-      openPage(runDir, url, viewport, [ENGINE]);
-      runBrowser(['wait', String(capture.initialWaitMs || manifest.captureInitialWaitMs || 1000)], { runDir });
+      const opened = !canReuse || !currentPage || currentPage.key !== pageKey;
+      if (opened) {
+        openPage(runDir, url, viewport, [ENGINE], { openDelayMs: openDelayMs(manifest, flags, capture) });
+        currentPage = canReuse ? { key: pageKey, url, group, seededBy: null, setupDone: false } : null;
+        waitForPageReady(runDir, `capture:${id}:open`, manifest, flags, capture);
+        runBrowser(['wait', String(capture.initialWaitMs || groupConfig.initialWaitMs || manifest.captureInitialWaitMs || 1000)], { runDir });
+        if (canReuse) {
+          runMaybeAction(groupConfig.setupAction || groupConfig.action, runDir);
+          currentPage.setupDone = true;
+        }
+      } else {
+        appendLog(runDir, `Reusing page group \`${group}\` for ${id}.\n`);
+        if (canReuse && currentPage && !currentPage.setupDone) {
+          runMaybeAction(groupConfig.setupAction || groupConfig.action, runDir);
+          currentPage.setupDone = true;
+        }
+      }
+
+      if (canReuse) resetReusablePage(runDir, Object.assign({}, groupConfig, capture), type);
+      runMaybeAction(capture.setupAction || capture.beforeAction, runDir);
 
       const action = defaultAction(capture, type);
       const actionSelector = selectorFromAction(action);
       const scrollTarget = capture.scrollTarget || capture.root || actionSelector;
+      const preflights = [];
       if (scrollTarget && type !== 'scroll' && type !== 'scroll-reveal') {
+        const presence = preflightPresence(runDir, scrollTarget, 'scroll target', capture);
+        if (presence) preflights.push(presence);
         runBrowser(['scrollintoview', scrollTarget], { runDir });
         runBrowser(['wait', String(capture.settleMs || 250)], { runDir });
       }
@@ -406,12 +824,30 @@ function runCapture(runDir, manifest, manifestFile) {
 
       const arm = defaultArm(capture, type, id);
       if (arm) evalStatement(arm, runDir);
+      const actionPreflight = preflightAction(runDir, action, capture);
+      if (actionPreflight) preflights.push(actionPreflight);
       if (action) runAction(action, runDir);
       runBrowser(['wait', String(waitMs == null ? 1200 : waitMs)], { runDir });
 
       const timeline = evalJson('(() => window.__cap.dump({ copy: false }))()', runDir);
       const file = saveTimeline(runDir, id, timeline);
-      results.push(timelineResult(runDir, id, type, file, timeline));
+      const result = timelineResult(runDir, id, type, file, timeline);
+      if (preflights.length) result.preflight = preflights.length === 1 ? preflights[0] : preflights;
+      result.page = {
+        strategy: canReuse ? 'reuse-page' : 'fresh',
+        opened,
+        group,
+        seededBy: currentPage && currentPage.group === group ? currentPage.seededBy : null,
+      };
+      results.push(result);
+      if (capture.resetAction) {
+        try {
+          runAction(capture.resetAction, runDir);
+        } catch (resetError) {
+          appendLog(runDir, `\nReset action failed after ${id}: ${resetError.message || resetError}\n`);
+          currentPage = null;
+        }
+      }
     } catch (error) {
       const message = error.message || String(error);
       appendLog(runDir, `\nCapture failed: ${message}\n`);
@@ -423,7 +859,27 @@ function runCapture(runDir, manifest, manifestFile) {
         findings: 0,
         stop: 'error',
         error: message,
+        pageState: error.state || undefined,
+        page: {
+          strategy: captureCanReuse(manifest, flags, capture, type) ? 'reuse-page' : 'fresh',
+          group: captureCanReuse(manifest, flags, capture, type) ? reusableCaptureGroup(capture, type) : null,
+        },
       });
+      if (type === 'click' || type === 'dblclick' || capture.invalidatePageOnError === true) currentPage = null;
+      if (error.fatalPageState) {
+        for (const [offset, remaining] of captures.slice(index + 1).entries()) {
+          const remainingId = captureId(remaining, index + 1 + offset);
+          results.push({
+            id: remainingId,
+            type: captureType(remaining),
+            status: 'skipped',
+            summary: `aborted after page blocker: ${pageBlockerSummary(error.state)}`,
+            findings: 0,
+            stop: 'skipped',
+          });
+        }
+        break;
+      }
     }
   }
 
@@ -439,6 +895,9 @@ function runCapture(runDir, manifest, manifestFile) {
       findings: result.findings,
       stop: result.stop || null,
       error: result.error,
+      preflight: result.preflight,
+      pageState: result.pageState,
+      page: result.page,
     })),
   });
   appendLog(runDir, `\nSaved ${timelineCount(results)} timeline(s); ${results.length} capture result(s).\n`);
@@ -466,7 +925,7 @@ function runFromManifestFile(manifestFile, flags = {}) {
     writeJson(path.join(runDir, 'manifest.json'), manifest);
     appendLog(runDir, `Running full pipeline from ${manifestFile}`);
     const map = runMap(runDir, manifest, flags);
-    const results = runCapture(runDir, manifest, manifestFile);
+    const results = runCapture(runDir, manifest, manifestFile, flags);
     const spec = assembleSpec(runDir);
     buildReport(runDir);
     return { runDir, map, results, spec };
@@ -499,7 +958,7 @@ function decompileRunDir(runDir, manifestArg, flags = {}) {
   try {
     writeJson(path.join(runDir, 'manifest.json'), manifest);
     appendLog(runDir, `Decompiling from ${manifestFile}`);
-    const results = runCapture(runDir, manifest, manifestFile);
+    const results = runCapture(runDir, manifest, manifestFile, flags);
     const spec = assembleSpec(runDir);
     buildReport(runDir);
     return { runDir, manifestFile, results, spec };
@@ -513,7 +972,7 @@ function decompileUrl(url, flags = {}) {
   const manifestFile = path.join(scout.runDir, 'manifest.proposed.json');
   const manifest = readJson(manifestFile);
   try {
-    const results = runCapture(scout.runDir, manifest, manifestFile);
+    const results = runCapture(scout.runDir, manifest, manifestFile, flags);
     const spec = assembleSpec(scout.runDir);
     buildReport(scout.runDir);
     return { runDir: scout.runDir, map: scout.map, plan: scout.plan, manifestFile, results, spec };
@@ -738,6 +1197,10 @@ function generatedSelector(selector) {
   return /^#w-node-/i.test(String(selector || ''));
 }
 
+function genericSelector(selector) {
+  return /^(a|button|div|span|svg|img|li|ul|p|section|article|nav|header|footer)$/i.test(String(selector || '').trim());
+}
+
 function cssHoverCoveredByParent(hover, map) {
   const selector = String(hover?.sel || '');
   const candidates = map.hoverCandidates || [];
@@ -761,15 +1224,36 @@ function inferAccordionRoot(map) {
     ...(map.cssHovers || []).map(item => item.sel),
     ...(map.hoverCandidates || []),
   ].filter(Boolean);
-  if (!selectors.some(selector => /accordion|faq/i.test(selector))) return null;
-  if ((map.libs || []).includes('Webflow')) return 'div.g_faq_item.w-dyn-item';
-  return '[class*="accordion"], [class*="faq"]';
+  const matches = selectors.filter(selector => /accordion|faq/i.test(selector) && !generatedSelector(selector) && !genericSelector(selector));
+  if (!matches.length) return null;
+  const scored = matches.map(selector => {
+    const s = selector.toLowerCase();
+    let score = hoverSelectorScore(selector);
+    if (/item|row|entry|question|faq/.test(s)) score -= 25;
+    if (/button|btn|trigger|toggle|top|header|heading|title|label|icon|svg|text|content|bottom|panel|body|answer/.test(s)) score += 18;
+    if (/^button[.#]|^a[.#]|\[role="button"\]/.test(s)) score += 12;
+    if (/^section[.#]|^div[.#]/.test(s)) score -= 5;
+    return { selector, score };
+  }).sort((a, b) => a.score - b.score);
+  return scored[0].selector;
 }
 
 function inferAccordionAction(map, root) {
-  const candidates = map.hoverCandidates || [];
-  if (candidates.includes('button.accordion_css_item_top')) return 'click button.accordion_css_item_top';
-  return `click ${root}`;
+  const candidates = [
+    ...(map.hoverCandidates || []),
+    ...(map.cssHovers || []).map(item => item.sel),
+  ].filter(Boolean)
+    .filter(selector => /accordion|faq/i.test(selector) && !generatedSelector(selector) && !genericSelector(selector));
+  const scored = candidates.map(selector => {
+    const s = selector.toLowerCase();
+    let score = hoverSelectorScore(selector);
+    if (/button|btn|trigger|toggle|top|header|heading|title|question/.test(s)) score -= 35;
+    if (/icon|svg|text|content|bottom|panel|body|answer/.test(s)) score += 20;
+    if (/^button[.#]|\[role="button"\]/.test(s)) score -= 12;
+    if (selector === root) score += 8;
+    return { selector, score };
+  }).sort((a, b) => a.score - b.score);
+  return `click ${(scored[0] && scored[0].selector) || root}`;
 }
 
 function splitBootSelectors(map) {
@@ -795,6 +1279,7 @@ function scrollTriggerCapture(st) {
       type: 'manual',
       label: `${selectorLabel(st.trigger)} in-view loop`,
       root: st.trigger,
+      group: 'main-page-after-intro',
       waitMs: 1600,
       reason: `ScrollTrigger ${st.i} gates an in-view loop/marquee. Scroll into view first, then capture with a manual scan.`,
     };
@@ -805,6 +1290,7 @@ function scrollTriggerCapture(st) {
     label: `${selectorLabel(st.trigger)} scroll callback reveal`,
     root: st.trigger,
     action: `scrollintoview ${st.trigger}`,
+    group: 'main-page-after-intro',
     waitMs: 1600,
     reason: `ScrollTrigger ${st.i} has callbacks (${st.callbacks.join(', ')}) but no bound tween in the registry.`,
   };
@@ -832,6 +1318,9 @@ function planFromMap(runDir, flags = {}) {
       id: 'boot-load-reveals',
       type: 'boot',
       label: 'Boot/load split reveal capture',
+      fresh: true,
+      seedReuse: true,
+      seedGroup: 'main-page-after-intro',
       boot: { selectors: splitSelectors, ms: 4000 },
       waitMs: 4300,
       reason: `Map found ${(map.splitReveals || []).length} split reveal host(s); load captures require __capAutoBoot before page JS runs.`,
@@ -860,14 +1349,19 @@ function planFromMap(runDir, flags = {}) {
       label: 'Accordion open/close',
       root: accordionRoot,
       action: inferAccordionAction(map, accordionRoot),
+      fresh: true,
       waitMs: 900,
-      reason: 'Accordion or FAQ selectors were present in the map. Scan a tight item root to catch height motion.',
+      reason: 'Accordion or FAQ selectors were present in the map. Stateful click is isolated by default; add resetAction + reusePage:true if batching is safe.',
     });
   }
 
   const groupedCssHovers = new Map();
   for (const hover of map.cssHovers || []) {
     if (!hover.sel || /accordion|faq/i.test(hover.sel)) continue;
+    if (genericSelector(hover.sel)) {
+      state.skipped.push({ id: slugify(`css-hover-${hover.sel}`), reason: 'Generic tag selector is too broad for a default live capture.' });
+      continue;
+    }
     const coveredReason = cssHoverCoveredByParent(hover, map);
     if (coveredReason) {
       state.skipped.push({ id: slugify(`css-hover-${hover.sel}`), reason: `${coveredReason}.` });
@@ -883,6 +1377,7 @@ function planFromMap(runDir, flags = {}) {
       label: `${selectorLabel(hover.sel)} CSS hover`,
       root: hover.sel,
       action: `hover ${hover.sel}`,
+      group: 'main-page-after-intro',
       waitMs: Math.min(2200, Math.max(900, Math.round(maxTransitionMs(hover.dur) + 650))),
       reason: `Representative CSS hover group: ${hover.prop} ${hover.dur} ${hover.ease}.`,
     });
@@ -894,6 +1389,10 @@ function planFromMap(runDir, flags = {}) {
   for (const selector of map.hoverCandidates || []) {
     if (!selector || coveredSelectors.has(selector)) continue;
     if (/accordion|faq/i.test(selector)) continue;
+    if (genericSelector(selector)) {
+      state.skipped.push({ id: slugify(`hover-${selector}`), reason: 'Generic tag selector is too broad for a default live capture.' });
+      continue;
+    }
     if (/u-sprite|sprite/i.test(selector)) {
       state.skipped.push({ id: slugify(`hover-${selector}`), reason: 'Sprite/keyframe elements are represented by loop entries, not hover captures.' });
       continue;
@@ -919,6 +1418,7 @@ function planFromMap(runDir, flags = {}) {
       label: `${selectorLabel(item.selector)} hover`,
       root: item.selector,
       action: `hover ${item.selector}`,
+      group: 'main-page-after-intro',
       waitMs: 1300,
       reason: `Representative hover candidate for ${groupId}; deduped from ${map.hoverCandidates.length} mapped hover candidate(s).`,
     });
@@ -927,6 +1427,13 @@ function planFromMap(runDir, flags = {}) {
   const proposed = plainStrings({
     url: manifest.url,
     viewport: normalizeViewport(manifest),
+    captureStrategy: manifest.captureStrategy || 'reuse-page',
+    captureGroups: Object.assign({
+      'main-page-after-intro': {
+        resetScroll: true,
+        reason: 'Reusable settled page for non-stateful hover, scroll, and manual captures.',
+      },
+    }, manifest.captureGroups || {}),
     initialWaitMs: manifest.initialWaitMs || 1500,
     captureInitialWaitMs: manifest.captureInitialWaitMs || 1500,
     generatedBy: 'bin/motion-decompile plan',
@@ -964,6 +1471,7 @@ function renderCapturePlanMarkdown(manifest, plan) {
   lines.push(`URL: ${reportText(manifest.url)}`);
   lines.push(`Viewport: ${manifest.viewport.join('x')}`);
   lines.push(`Manifest: ${reportText(plan.manifest)}`);
+  lines.push(`Capture strategy: ${reportText(manifest.captureStrategy || 'fresh')}`);
   lines.push('');
   lines.push('## Summary');
   lines.push('');
@@ -975,12 +1483,13 @@ function renderCapturePlanMarkdown(manifest, plan) {
   lines.push('');
   lines.push('## Proposed Captures');
   lines.push('');
-  lines.push(tableRow(['ID', 'Type', 'Root', 'Wait', 'Reason']));
-  lines.push(tableRow(['--', '--', '--', '--', '--']));
+  lines.push(tableRow(['ID', 'Type', 'Page', 'Root', 'Wait', 'Reason']));
+  lines.push(tableRow(['--', '--', '--', '--', '--', '--']));
   for (const capture of manifest.captures || []) {
     lines.push(tableRow([
       capture.id,
       capture.type,
+      capture.fresh ? 'fresh' : (capture.group || ''),
       capture.root || (capture.boot ? `boot:${(capture.boot.selectors || []).length} selectors` : ''),
       capture.waitMs || '',
       capture.reason || '',
@@ -1470,9 +1979,21 @@ function captureStatus(result, timeline) {
   return 'ok';
 }
 
+function pageStrategyLabel(page) {
+  if (!page) return '';
+  const bits = [page.strategy || 'fresh'];
+  if (page.group) bits.push(page.group);
+  if (page.opened === true) bits.push('opened');
+  if (page.opened === false) bits.push('reused');
+  if (page.seededBy) bits.push(`seeded by ${page.seededBy}`);
+  if (page.seededReusablePage && page.seedGroup) bits.push(`seeds ${page.seedGroup}`);
+  return bits.join(' / ');
+}
+
 function buildReport(runDir) {
   const manifest = optionalJson(path.join(runDir, 'manifest.json'), {});
   const map = optionalJson(path.join(runDir, 'map.json'), null);
+  const pageState = optionalJson(path.join(runDir, 'page-state.json'), { records: [] });
   const captureResults = captureResultsForReport(runDir);
   const assembled = optionalJson(path.join(runDir, 'animations.json'), null);
   const rows = captureResults.results.map(result => {
@@ -1481,6 +2002,7 @@ function buildReport(runDir) {
     return tableRow([
       result.id,
       result.type,
+      pageStrategyLabel(result.page),
       captureStatus(result, timeline),
       moved,
       result.stop || timeline.meta?.terminationReason || '',
@@ -1510,6 +2032,7 @@ function buildReport(runDir) {
   lines.push('');
   lines.push('- `manifest.json`');
   if (map) lines.push('- `map.json`');
+  if (pageState.records?.length) lines.push('- `page-state.json`');
   if (captureResults.primaryCount) lines.push('- `capture-results.json`');
   if (captureResults.hasFull) lines.push('- `capture-results.full.json`');
   if (fs.existsSync(path.join(runDir, 'capture-plan.md'))) {
@@ -1537,11 +2060,23 @@ function buildReport(runDir) {
     lines.push('');
   }
 
+  const pageStateIssues = (pageState.records || [])
+    .filter(record => record.outcome && record.outcome !== 'ready')
+    .map(record => `- **${reportText(record.phase)}**: ${reportText(record.outcome)}${record.state?.blockers?.length ? ` - ${reportText(pageBlockerSummary(record.state))}` : ''}`);
+  if (pageState.records?.length) {
+    lines.push('## Page State');
+    lines.push('');
+    lines.push(`- Readiness samples: ${pageState.records.length}`);
+    if (pageStateIssues.length) lines.push(...pageStateIssues);
+    else lines.push('- No loader, challenge, or rate-limit blockers detected by the readiness probe.');
+    lines.push('');
+  }
+
   lines.push('## Captures');
   lines.push('');
   if (rows.length) {
-    lines.push(tableRow(['ID', 'Type', 'Status', 'Moved', 'Stop', 'Summary', 'Timeline']));
-    lines.push(tableRow(['--', '--', '--', '--', '--', '--', '--']));
+    lines.push(tableRow(['ID', 'Type', 'Page', 'Status', 'Moved', 'Stop', 'Summary', 'Timeline']));
+    lines.push(tableRow(['--', '--', '--', '--', '--', '--', '--', '--']));
     lines.push(...rows);
   } else {
     lines.push('No timelines have been saved yet.');
@@ -1625,7 +2160,7 @@ function captureCommand(argv) {
   const runDir = path.resolve(positionals[0]);
   ensureRunDir(runDir);
   const { file, manifest } = loadManifest(runDir, positionals[1]);
-  const results = runCapture(runDir, manifest, file);
+  const results = runCapture(runDir, manifest, file, flags);
   console.log(`Saved ${timelineCount(results)} timeline(s) under ${path.join(runDir, 'timelines')}`);
   console.log(`Capture results: ${results.length}`);
 }

@@ -283,6 +283,18 @@ cat >"$TMP_ASSEMBLE/map.json" <<'JSON'
       "prop": "transform",
       "dur": "0.45s",
       "ease": "cubic-bezier(0.2, 0.8, 0.2, 1)"
+    },
+    {
+      "sel": "a",
+      "prop": "opacity",
+      "dur": "0.2s",
+      "ease": "ease"
+    },
+    {
+      "sel": "div.accordion-css__item-panel",
+      "prop": "height",
+      "dur": "0.3s",
+      "ease": "ease"
     }
   ],
   "loops": [
@@ -301,7 +313,26 @@ cat >"$TMP_ASSEMBLE/map.json" <<'JSON'
       "kinds": ["lines-split"]
     }
   ],
-  "hoverCandidates": ["a.button", ".button__label"]
+  "hoverCandidates": ["a", "a.button", ".button__label", "div.accordion-css__item", "button.accordion-css__item-trigger"]
+}
+JSON
+cat >"$TMP_ASSEMBLE/page-state.json" <<'JSON'
+{
+  "updatedAt": "2026-06-15T00:00:00.000Z",
+  "records": [
+    {
+      "phase": "map",
+      "outcome": "ready",
+      "waitedMs": 700,
+      "state": { "readyState": "complete", "textLength": 120, "elementCount": 20, "blockers": [] }
+    },
+    {
+      "phase": "capture:fixture-click:open",
+      "outcome": "timeout-loading",
+      "waitedMs": 8000,
+      "state": { "readyState": "complete", "textLength": 12, "elementCount": 4, "blockers": [{ "type": "loading", "evidence": "Loading..." }] }
+    }
+  ]
 }
 JSON
 cat >"$TMP_ASSEMBLE/capture-results.json" <<'JSON'
@@ -393,9 +424,14 @@ JSON
 "$ROOT/bin/motion-decompile" plan "$TMP_ASSEMBLE" >/dev/null
 jq -e '
   .url == "http://example.test/" and
+  .captureStrategy == "reuse-page" and
+  .captureGroups["main-page-after-intro"].resetScroll == true and
   any(.captures[]; .id == "boot-load-reveals" and .type == "boot") and
   any(.captures[]; .type == "scroll-reveal" and .root == "#cta") and
-  any(.captures[]; .type == "hover")
+  any(.captures[]; .type == "hover") and
+  any(.captures[]; .id == "accordion-click" and .root == "div.accordion-css__item" and .action == "click button.accordion-css__item-trigger" and .fresh == true) and
+  any(.captures[]; .type == "hover" and .group == "main-page-after-intro") and
+  all(.captures[]; .root != "a" and .action != "hover a")
 ' "$TMP_ASSEMBLE/manifest.proposed.json" >/dev/null
 test -s "$TMP_ASSEMBLE/capture-plan.md"
 "$ROOT/bin/motion-decompile" assemble "$TMP_ASSEMBLE" >/dev/null
@@ -408,7 +444,77 @@ jq -e '
 ' "$TMP_ASSEMBLE/animations.json" >/dev/null
 test -s "$TMP_ASSEMBLE/animations.md"
 "$ROOT/bin/motion-decompile" report "$TMP_ASSEMBLE" >/dev/null
+grep -q 'Page State' "$TMP_ASSEMBLE/report.md"
+grep -q 'timeout-loading' "$TMP_ASSEMBLE/report.md"
 grep -q 'Empty Captures' "$TMP_ASSEMBLE/report.md"
 grep -q 'empty-scroll' "$TMP_ASSEMBLE/report.md"
 grep -q 'Failed Captures' "$TMP_ASSEMBLE/report.md"
 grep -q 'failed-hover' "$TMP_ASSEMBLE/report.md"
+
+REUSE_MANIFEST="$TMP_ASSEMBLE/reuse-manifest.json"
+cat >"$REUSE_MANIFEST" <<JSON
+{
+  "url": "$URL",
+  "viewport": [800, 600],
+  "captureStrategy": "reuse-page",
+  "readyTimeoutMs": 1500,
+  "readyStableMs": 100,
+  "openDelayMs": 0,
+  "captureInitialWaitMs": 200,
+  "captureGroups": {
+    "reuse-smoke": {
+      "resetScroll": true
+    }
+  },
+  "captures": [
+    {
+      "id": "reuse-boot",
+      "type": "boot",
+      "fresh": true,
+      "seedReuse": true,
+      "seedGroup": "reuse-smoke",
+      "boot": { "selectors": ["#gsap-box"], "ms": 120 },
+      "waitMs": 220
+    },
+    {
+      "id": "reuse-one",
+      "type": "manual",
+      "root": "#multi",
+      "group": "reuse-smoke",
+      "waitMs": 650,
+      "action": { "eval": "document.querySelector('#multi').classList.add('active')" }
+    },
+    {
+      "id": "reuse-two",
+      "type": "manual",
+      "root": "#stagger",
+      "group": "reuse-smoke",
+      "waitMs": 900,
+      "action": { "eval": "document.querySelector('#stagger').classList.add('active')" }
+    }
+  ]
+}
+JSON
+REUSE_OUT="$(
+  AGENT_BROWSER_SESSION="motion-smoke-reuse-$$" \
+    "$ROOT/bin/motion-decompile" run "$REUSE_MANIFEST" \
+      --runs-dir "$TMP_ASSEMBLE/reuse-runs" \
+      --slug reuse \
+      --ready-timeout-ms 1500 \
+      --ready-stable-ms 100 \
+      --open-delay-ms 0
+)"
+REUSE_RUN="$(printf '%s\n' "$REUSE_OUT" | awk '/^Run:/ {print $2}')"
+jq -e '
+  .count == 3 and
+  .results[0].page.strategy == "fresh" and
+  .results[0].page.seededReusablePage == true and
+  .results[0].page.seedGroup == "reuse-smoke" and
+  .results[1].page.strategy == "reuse-page" and
+  .results[1].page.opened == false
+  and .results[1].page.seededBy == "reuse-boot" and
+  .results[2].page.strategy == "reuse-page" and
+  .results[2].page.opened == false
+' "$REUSE_RUN/capture-results.json" >/dev/null
+jq -e '[.records[] | select(.phase | startswith("capture:"))] | length == 1' "$REUSE_RUN/page-state.json" >/dev/null
+grep -q 'reuse-page / reuse-smoke / reused' "$REUSE_RUN/report.md"
