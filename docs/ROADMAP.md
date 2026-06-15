@@ -80,6 +80,41 @@ Each behavior part ends by re-running the Part 0 harness and reporting the diff.
 
 ---
 
+## Status (progress log)
+
+- **Part 0 — done** (f07456f, 6b24eab, da12268). Standing harness + extractor +
+  2026-06-15 baseline: 28.6% hit (8/28), 35.7% usable.
+- **Part 1 — done** (00691fa iframe detect/flag/re-target, bffe631 `cause`
+  classifier, 199ece9 extractor reads `cause`).
+  - Histogram is now honest: the 3 generic `inert_representative` split into +2
+    `pseudo_element`, +1 `wrong_trigger_boot_vs_scroll`.
+  - **Prizes sized:** `pseudo_element` = 2 (flowfest underline-link, enerblock
+    link--underline) -> Part 2. `wrong_trigger_boot_vs_scroll` = 1 (flowfest
+    boot-load-reveals) -> Part 4 (on top of Part 4's accordion + boot-reflow
+    fixes). Projected stable-site lift from Parts 2 + 4: ~35% -> ~52%.
+  - iframe threshold: visible iframe >= 60% of viewport AND larger than the top
+    doc's biggest real-content block; secondary thin-doc signal.
+  - **vwlab drifted:** it is no longer a cross-origin shell, so the iframe case
+    cannot reproduce live. The cross-origin pipeline is now guaranteed by a
+    permanent two-port smoke fixture instead, which is better than a drifting
+    live URL.
+  - **Decision (open item resolved): keep-and-label, do not fully suppress shell
+    captures.** We need the labels for honest cause counts; the "don't mislead a
+    rebuild agent with chrome" concern is handled by the report leading with the
+    re-target finding plus Part 3's vendor de-rank, without special-casing.
+    Revisit with full planner suppression only if embed-shells prove common.
+- **Methodology rule (from the vwlab drift):** the standing set is live
+  third-party URLs and will change. Correctness guarantees live in fixtures (done
+  for iframe). The live set is for breadth; re-baseline a site when it changes
+  and never compare across the change. Open: re-baseline vwlab as whatever it now
+  is, and decide keep-or-swap once we see it.
+- **Next:** Part 2 (pseudo, prize = 2), then Part 4 (recipes, ~2), then Part 3
+  (sweep, no hit movement, do anytime). Part 5 (repair loop) handles the genuine
+  residual: modal-only elements, real occlusion (carousel arrow, stack-card),
+  hidden inner affordances.
+
+---
+
 ## Part 0 — Calibration harness (baseline + comparable metrics)
 
 One reusable prompt. It builds a metrics extractor on first run, reuses it after,
@@ -317,11 +352,11 @@ flagged shell.
 
 ## Part 2 — Pseudo-element sampling (character-changer B)
 
-PM note: Part 1's `cause` labels size this before you build it. On the 4
-calibration sites the recoverable set looks modest (flowfest underline-link,
-enerblock link--underline, maybe flowfest marquee), but underline-on-hover is
-ubiquitous web-wide, so the fix is justified regardless of the small-sample
-count. Read the `pseudo_element` bucket from the post-Part-1 scoreboard first.
+PM note: Part 1 sized the prize at exactly `pseudo_element` = 2 on the live set
+(flowfest div.underline-link, enerblock a.link--underline). Small on these
+sites, but underline-on-hover is ubiquitous web-wide, so the fix is justified
+regardless of the small-sample count. Those two captures should flip from empty
+to ok; that is the headline number to report.
 
 ```
 Work on motion-decompiler at /home/martin/src/perso/motion-decompiler. Read
@@ -415,6 +450,12 @@ Part 0 metric if convenient so we see any bucketing improvement.
 ---
 
 ## Part 4 — Planner reveal/trigger recipes (needs browser)
+
+PM note: Part 1 sized fix (a) at `wrong_trigger_boot_vs_scroll` = 1 (flowfest
+boot-load-reveals). Fix (c) additionally recovers the accordion (flowfest
+accordion-click, an `occlusion` failure from clicking the body not the header),
+and fix (b) improves the ashley boot-reveal signal. Expect ~2 captures to flip
+to ok plus one quality fix.
 
 ```
 Work on motion-decompiler at /home/martin/src/perso/motion-decompiler. Read
