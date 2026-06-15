@@ -20,6 +20,8 @@ PY
 URL="http://127.0.0.1:${PORT}/tests/fixtures/basic-motion.html"
 
 node --check "$ROOT/bin/motion-decompile" >/dev/null
+"$ROOT/bin/motion-decompile" --help | grep -q 'scout <url>'
+"$ROOT/bin/motion-decompile" --help | grep -q 'decompile <run-dir>'
 
 cleanup() {
   "${AB[@]}" --session "$SESSION" close --all >/dev/null 2>&1 || true

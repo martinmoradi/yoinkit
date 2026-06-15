@@ -44,16 +44,37 @@ injected, saves `__cap.map()`, runs manifest-defined captures, stores timeline
 JSON, assembles `animations.json`, renders `animations.md`, and writes a compact
 `report.md`.
 
+The recommended flow is two commands:
+
+```bash
+RUN="$(./bin/motion-decompile scout https://mammothmurals.com/ | awk '/^Run:/ {print $2}')"
+./bin/motion-decompile decompile "$RUN"
+```
+
+`scout` creates the run folder, maps the page, and proposes a capture manifest.
+Review `capture-plan.md` / `manifest.proposed.json`, edit selectors if needed,
+then `decompile <run-dir>` runs those captures, assembles the animation spec,
+and writes the report.
+
+For a fully automatic pass, accepting the proposed plan without review:
+
+```bash
+./bin/motion-decompile decompile https://mammothmurals.com/
+```
+
+The lower-level commands remain available when you want to step through or rerun
+one phase:
+
 ```bash
 ./bin/motion-decompile init https://mammothmurals.com/
 ./bin/motion-decompile map runs/mammothmurals.com/2026-06-15-run
 ./bin/motion-decompile plan runs/mammothmurals.com/2026-06-15-run
-./bin/motion-decompile capture runs/mammothmurals.com/2026-06-15-run manifest.json
+./bin/motion-decompile capture runs/mammothmurals.com/2026-06-15-run manifest.proposed.json
 ./bin/motion-decompile assemble runs/mammothmurals.com/2026-06-15-run
 ./bin/motion-decompile report runs/mammothmurals.com/2026-06-15-run
 ```
 
-You can also run all phases from one manifest:
+You can also run all phases from a hand-authored manifest:
 
 ```bash
 ./bin/motion-decompile run manifest.json

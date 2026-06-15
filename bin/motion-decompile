@@ -16,13 +16,16 @@ function usage() {
   console.log(`motion-decompile
 
 Usage:
+  bin/motion-decompile scout <url> [--viewport 1280x800] [--slug name] [--runs-dir runs] [--max-hover-captures 10] [--keep-open]
+  bin/motion-decompile decompile <url> [--viewport 1280x800] [--slug name] [--runs-dir runs] [--max-hover-captures 10] [--keep-open]
+  bin/motion-decompile decompile <run-dir> [manifest.json] [--keep-open]
   bin/motion-decompile init <url> [--viewport 1280x800] [--slug name] [--runs-dir runs] [--no-open]
   bin/motion-decompile map <run-dir>
   bin/motion-decompile plan <run-dir> [--out manifest.proposed.json] [--max-hover-captures 10]
   bin/motion-decompile capture <run-dir> [manifest.json]
   bin/motion-decompile assemble <run-dir>
   bin/motion-decompile report <run-dir>
-  bin/motion-decompile run <manifest.json> [--slug name] [--runs-dir runs]
+  bin/motion-decompile run <manifest.json> [--slug name] [--runs-dir runs] [--keep-open]
 
 Manifest capture examples:
   { "id": "work-card-hover", "type": "hover", "root": "a.work_home_item_link", "waitMs": 1200 }
@@ -48,6 +51,8 @@ function parseFlags(argv) {
       flags.maxHoverCaptures = Number(argv[++i]);
     } else if (arg === '--no-open') {
       flags.noOpen = true;
+    } else if (arg === '--keep-open') {
+      flags.keepOpen = true;
     } else if (arg === '--help' || arg === '-h') {
       flags.help = true;
     } else if (arg.startsWith('--')) {
@@ -198,6 +203,21 @@ function openPage(runDir, url, viewport, initScripts = [ENGINE]) {
   for (const script of initScripts) args.push('--init-script', script);
   runBrowser(args, { runDir });
   runBrowser(['set', 'viewport', String(viewport[0]), String(viewport[1])], { runDir });
+}
+
+function closeBrowser(runDir) {
+  try {
+    runBrowser(['close', '--all'], { runDir });
+  } catch (error) {
+    appendLog(runDir, `\nClose warning: ${error.message}\n`);
+  }
+}
+
+function writeInitialManifest(runDir, manifest) {
+  const existing = path.join(runDir, 'manifest.json');
+  if (fs.existsSync(existing)) return readJson(existing);
+  writeJson(existing, manifest);
+  return manifest;
 }
 
 function splitAction(action) {
@@ -376,6 +396,83 @@ function runCapture(runDir, manifest, manifestFile) {
   });
   appendLog(runDir, `\nSaved ${results.length} timeline(s).\n`);
   return results;
+}
+
+function manifestPathForDecompile(runDir, manifestArg) {
+  if (manifestArg) {
+    let file = path.resolve(manifestArg);
+    if (!fs.existsSync(file) && !path.isAbsolute(manifestArg)) file = path.join(runDir, manifestArg);
+    if (!fs.existsSync(file)) throw new Error(`Manifest not found: ${file}`);
+    return file;
+  }
+  const proposed = path.join(runDir, 'manifest.proposed.json');
+  if (fs.existsSync(proposed)) return proposed;
+  return path.join(runDir, 'manifest.json');
+}
+
+function runFromManifestFile(manifestFile, flags = {}) {
+  const manifest = readJson(manifestFile);
+  if (!manifest.url) throw new Error('Manifest needs a url.');
+  const runDir = runDirFor(manifest.url, flags);
+  ensureRunDir(runDir);
+  try {
+    writeJson(path.join(runDir, 'manifest.json'), manifest);
+    appendLog(runDir, `Running full pipeline from ${manifestFile}`);
+    const map = runMap(runDir, manifest, flags);
+    const results = runCapture(runDir, manifest, manifestFile);
+    const spec = assembleSpec(runDir);
+    buildReport(runDir);
+    return { runDir, map, results, spec };
+  } finally {
+    if (!flags.keepOpen) closeBrowser(runDir);
+  }
+}
+
+function scoutUrl(url, flags = {}) {
+  const viewport = flags.viewport || DEFAULT_VIEWPORT;
+  const runDir = runDirFor(url, flags);
+  ensureRunDir(runDir);
+  try {
+    const manifest = writeInitialManifest(runDir, { url, viewport, captures: [] });
+    appendLog(runDir, `Scouting ${url}`);
+    const map = runMap(runDir, manifest, flags);
+    const plan = planFromMap(runDir, flags);
+    buildReport(runDir);
+    return { runDir, map, plan };
+  } finally {
+    if (!flags.keepOpen) closeBrowser(runDir);
+  }
+}
+
+function decompileRunDir(runDir, manifestArg, flags = {}) {
+  ensureRunDir(runDir);
+  const manifestFile = manifestPathForDecompile(runDir, manifestArg);
+  const manifest = readJson(manifestFile);
+  if (!manifest.url) throw new Error(`Manifest needs a url: ${manifestFile}`);
+  try {
+    writeJson(path.join(runDir, 'manifest.json'), manifest);
+    appendLog(runDir, `Decompiling from ${manifestFile}`);
+    const results = runCapture(runDir, manifest, manifestFile);
+    const spec = assembleSpec(runDir);
+    buildReport(runDir);
+    return { runDir, manifestFile, results, spec };
+  } finally {
+    if (!flags.keepOpen) closeBrowser(runDir);
+  }
+}
+
+function decompileUrl(url, flags = {}) {
+  const scout = scoutUrl(url, flags);
+  const manifestFile = path.join(scout.runDir, 'manifest.proposed.json');
+  const manifest = readJson(manifestFile);
+  try {
+    const results = runCapture(scout.runDir, manifest, manifestFile);
+    const spec = assembleSpec(scout.runDir);
+    buildReport(scout.runDir);
+    return { runDir: scout.runDir, map: scout.map, plan: scout.plan, manifestFile, results, spec };
+  } finally {
+    if (!flags.keepOpen) closeBrowser(scout.runDir);
+  }
 }
 
 function optionalJson(file, fallback) {
@@ -1350,22 +1447,58 @@ function runCommand(argv) {
     usage();
     process.exit(flags.help ? 0 : 1);
   }
-  const { manifest, file } = loadManifest(process.cwd(), positionals[0]);
-  if (!manifest.url) throw new Error('Manifest needs a url.');
-  const runDir = runDirFor(manifest.url, flags);
-  ensureRunDir(runDir);
-  writeJson(path.join(runDir, 'manifest.json'), manifest);
-  appendLog(runDir, `Running full pipeline from ${file}`);
-  const map = runMap(runDir, manifest, flags);
-  const results = runCapture(runDir, manifest, file);
-  const spec = assembleSpec(runDir);
-  buildReport(runDir);
+  const { file } = loadManifest(process.cwd(), positionals[0]);
+  const { runDir, map, results, spec } = runFromManifestFile(file, flags);
   console.log(`Run: ${runDir}`);
   console.log(`Map: ${(map.libs || []).join(', ') || 'no libraries'}; ${(map.hoverCandidates || []).length} hover candidates`);
   console.log(`Timelines: ${results.length}`);
   console.log(`Animations: ${spec.animations.length}`);
   console.log(`Spec: ${path.join(runDir, 'animations.json')}`);
   console.log(`Report: ${path.join(runDir, 'report.md')}`);
+}
+
+function scoutCommand(argv) {
+  const { flags, positionals } = parseFlags(argv);
+  if (flags.help || positionals.length !== 1) {
+    usage();
+    process.exit(flags.help ? 0 : 1);
+  }
+  const { runDir, map, plan } = scoutUrl(positionals[0], flags);
+  console.log(`Run: ${runDir}`);
+  console.log(`Map: ${(map.libs || []).join(', ') || 'no libraries'}; ${(map.hoverCandidates || []).length} hover candidates`);
+  console.log(`Proposed captures: ${plan.manifest.captures.length}`);
+  console.log(`Plan: ${path.join(runDir, 'capture-plan.md')}`);
+  console.log(`Next: ./bin/motion-decompile decompile ${quote(runDir)}`);
+}
+
+function isLikelyUrl(value) {
+  return /^https?:\/\//i.test(String(value || ''));
+}
+
+function decompileCommand(argv) {
+  const { flags, positionals } = parseFlags(argv);
+  if (flags.help || positionals.length < 1 || positionals.length > 2) {
+    usage();
+    process.exit(flags.help ? 0 : 1);
+  }
+  let result;
+  if (positionals.length === 1 && isLikelyUrl(positionals[0])) {
+    result = decompileUrl(positionals[0], flags);
+    console.log(`Run: ${result.runDir}`);
+    console.log(`Proposed captures: ${result.plan.manifest.captures.length}`);
+  } else if (positionals.length === 1 && fs.existsSync(path.resolve(positionals[0])) && fs.statSync(path.resolve(positionals[0])).isFile()) {
+    result = runFromManifestFile(path.resolve(positionals[0]), flags);
+    console.log(`Run: ${result.runDir}`);
+  } else {
+    const runDir = path.resolve(positionals[0]);
+    result = decompileRunDir(runDir, positionals[1], flags);
+    console.log(`Run: ${result.runDir}`);
+    console.log(`Manifest: ${result.manifestFile}`);
+  }
+  console.log(`Timelines: ${result.results.length}`);
+  console.log(`Animations: ${result.spec.animations.length}`);
+  console.log(`Spec: ${path.join(result.runDir, 'animations.json')}`);
+  console.log(`Report: ${path.join(result.runDir, 'report.md')}`);
 }
 
 function main() {
@@ -1375,7 +1508,9 @@ function main() {
     process.exit(command ? 0 : 1);
   }
 
-  if (command === 'init') initCommand(rest);
+  if (command === 'scout') scoutCommand(rest);
+  else if (command === 'decompile') decompileCommand(rest);
+  else if (command === 'init') initCommand(rest);
   else if (command === 'map') mapCommand(rest);
   else if (command === 'plan') planCommand(rest);
   else if (command === 'capture') captureCommand(rest);

@@ -313,18 +313,36 @@ Claude-in-Chrome Chrome. DPR 1.
 `extension/capture-animation.js`, writes inspectable run artifacts, and
 assembles the section 4 spec contract from `map.json` plus saved timelines.
 
-Commands:
+Recommended flow:
+
+```bash
+RUN="$(./bin/motion-decompile scout https://mammothmurals.com/ | awk '/^Run:/ {print $2}')"
+./bin/motion-decompile decompile "$RUN"
+```
+
+`scout` creates a run directory, saves `map.json`, writes
+`manifest.proposed.json`, renders `capture-plan.md`, and writes an initial
+report. `decompile <run-dir>` defaults to `manifest.proposed.json` when it
+exists, then runs capture, assemble, and report.
+
+Fully automatic flow, useful after the planner is trusted for a target:
+
+```bash
+./bin/motion-decompile decompile https://mammothmurals.com/
+```
+
+Low-level commands:
 
 ```bash
 ./bin/motion-decompile init https://mammothmurals.com/
 ./bin/motion-decompile map runs/mammothmurals.com/2026-06-15-run
 ./bin/motion-decompile plan runs/mammothmurals.com/2026-06-15-run
-./bin/motion-decompile capture runs/mammothmurals.com/2026-06-15-run manifest.json
+./bin/motion-decompile capture runs/mammothmurals.com/2026-06-15-run manifest.proposed.json
 ./bin/motion-decompile assemble runs/mammothmurals.com/2026-06-15-run
 ./bin/motion-decompile report runs/mammothmurals.com/2026-06-15-run
 ```
 
-Single-command run:
+Single-command run from a hand-authored manifest:
 
 ```bash
 ./bin/motion-decompile run manifest.json
