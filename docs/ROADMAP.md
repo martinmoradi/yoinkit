@@ -193,14 +193,52 @@ Each behavior part ends by re-running the Part 0 harness and reporting the diff.
        `item-top`/`-header` exist from the body selector). Pinned by the smoke
        fixture; watch it on the next real Webflow accordion before trusting it
        broadly.
-- **Next:** Part 3 (browser-free sweep: vendor de-rank + drawSVG grouping +
-  the hover/click label-bug fix; low risk, no browser, clears the last
-  deterministic items). Then a clean Part 0 re-baseline that also re-baselines
-  vwlab as whatever it now is (and decides keep-or-swap / add
-  report-vwlab.netlify.app), establishing the 41-denominator scoreboard. Then
-  Part 5 (repair-loop DESIGN checkpoint) for the genuine residual: modal-only
-  elements, real occlusion (carousel arrow, stack-card), hidden inner
-  affordances.
+- **Part 3 — done** (154b0b4 vendor de-rank, 8be764f drawSVG grouping, ca6e1f3
+  preflight label fix, 1d98f29 tests). All three are ranking/labeling/grouping
+  only, zero change to what gets captured. Smoke green (21/21 + 2 node unit
+  suites). Tree clean.
+  - **(a) Vendor de-rank:** a maintainable `VENDOR_ANIMATION_DENYLIST` in
+    `bin/motion-decompile` (one `{ source, re }` row per vendor) matched against
+    each animation's id/label/selector/keyframe-state. Seeded with Shop Pay /
+    accelerated checkout, Intercom, Drift, Zendesk/Zopim, Tawk, Crisp, HubSpot,
+    OneTrust, Cookiebot, Osano, CookieYes, reCAPTCHA, Stripe, Klaviyo, Calendly.
+    Matches **stay in the spec** but move out of the signature/polish tiers into
+    a new `## Third-party / vendor (de-ranked)` section labeled with the source.
+    vwlab: the #1 signature was Shop Pay's `acceleratedCheckoutLoadingSkeleton`
+    shimmer; now the signature is the real social-link hover and Shop Pay sits in
+    the vendor section. This is a generic cross-site vendor list, not per-site
+    overfitting (sanctioned by the Part 3 prompt).
+  - **(b) drawSVG grouping:** near-identical tweens within one ScrollTrigger
+    (keyed on target + mechanism + duration + ease) collapse to one entry with a
+    `×N` label, summed `layers`, and a note recording the grouping. flowfest:
+    scroll-motion rows 29 -> 7; the 4 drawSVG triggers went 26 rows -> 4 grouped
+    entries (×9 / ×9 / ×4 / ×4). Single-tween triggers stay byte-identical.
+  - **(c) label fix:** `bin/motion-decompile:1064` now passes the real action
+    label, so a hover/click preflight failure reads "Preflight failed for
+    hover/click ..." instead of the hardcoded "scroll target." Only enriches
+    reason strings on FUTURE failed runs (bucketing already reads the structured
+    `cause`), so no histogram movement now -- the report was honest about this.
+  - **IMPORTANT for the re-baseline -- flowfest's honest spec count is now 26
+    (10 measured), down from 48 (32 measured). This is LOSSLESS dedup, NOT a
+    regression.** The 22 vanished rows were duplicate drawSVG paths; the 4
+    grouped entries each carry their `count` and total `layers` in the notes, so
+    a rebuild agent recreates the same motion from a cleaner spec. Grounded in
+    the grouping code (8be764f): the dedup key is conservative (distinct targets
+    never merge) and count/layers are preserved. When the clean Part 0 run logs
+    flowfest at 26, do not read it as lost spec. The "map is the product" thesis
+    is unchanged (arguably sharper -- the map output is now readable instead of
+    flooded). The roadmap "read"/"success metric" prose still cites the original
+    48; that was true at baseline and is left as the historical observation.
+- **Next:** a clean Part 0 re-baseline (real headed run, all 4 sites). It must:
+  (1) record the new 41-attempted denominator and flowfest-26 spec count as the
+  new scoreboard, never comparing hit% across the Part 4 denominator change;
+  (2) re-baseline vwlab as whatever it now is and decide keep-or-swap / whether
+  to add report-vwlab.netlify.app; (3) read a couple of the new split-host
+  scroll captures to confirm they enrich the spec rather than fragment one
+  staggered reveal. After that, Part 5 (repair-loop DESIGN checkpoint) for the
+  genuine residual: modal-only elements, real occlusion (carousel arrow,
+  stack-card), hidden inner affordances. All deterministic floor-raisers
+  (Parts 1-4) are now landed.
 
 ---
 
