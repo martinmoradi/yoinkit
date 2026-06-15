@@ -575,6 +575,7 @@ function relativeTimelineRef(runDir, result) {
 }
 
 function findingProperty(finding) {
+  if (!finding) return { name: 'motion', value: null };
   const props = finding?.properties || {};
   const preferred = finding.leadProperty && props[finding.leadProperty]
     ? finding.leadProperty
@@ -655,6 +656,7 @@ function hoverPlanGroup(selector) {
   const s = String(selector || '').toLowerCase();
   if (/work.*(item|card|cover|link)|work_home/.test(s)) return { id: 'work-card-hover', priority: 10 };
   if (/wordmark|navbar_home_link/.test(s)) return { id: 'wordmark-hover', priority: 20 };
+  if (/services_home_cta|services_home_arrows|services_home_cta_arrow/.test(s)) return { id: 'services-cta-hover', priority: 40 };
   if (/g_btn|btn|button|cta/.test(s)) return { id: 'primary-button-hover', priority: 30 };
   if (/arrow/.test(s)) return { id: 'arrow-row-hover', priority: 40 };
   if (/navbar|nav.*link/.test(s)) return { id: 'nav-link-hover', priority: 50 };
@@ -666,13 +668,38 @@ function hoverPlanGroup(selector) {
 function hoverSelectorScore(selector) {
   const s = String(selector || '').toLowerCase();
   let score = 0;
+  if (/^#w-node-/.test(s)) score += 100;
   if (/^a[.#]|^button[.#]|^\[role="button"\]/.test(s)) score -= 20;
-  if (/w-inline-block|g_btn_main|services_home_cta/.test(s)) score -= 8;
-  if (/^ul[.#]|^li[.#]|^span[.#]|^svg[.#]|^img[.#]/.test(s)) score += 18;
+  if (/w-inline-block|g_btn_main|services_home_cta|work_home_item_link|navbar_btn_default/.test(s)) score -= 10;
+  if (/^ul[.#]/.test(s)) score += 40;
+  if (/^li[.#]/.test(s)) score += 12;
+  if (/^span[.#]|^svg[.#]|^img[.#]/.test(s)) score += 18;
   if (/menu/.test(s)) score += 25;
   if (/lightbox|vimeo/.test(s)) score += 12;
   if (/container|contain|content|heading|text$/.test(s)) score += 8;
   return score;
+}
+
+function generatedSelector(selector) {
+  return /^#w-node-/i.test(String(selector || ''));
+}
+
+function cssHoverCoveredByParent(hover, map) {
+  const selector = String(hover?.sel || '');
+  const candidates = map.hoverCandidates || [];
+  if (/work_home_(cover_deco|link_overlay|link_clip|aside_arrow|link_cover)/.test(selector) &&
+      candidates.some(item => /work_home_item_link/.test(item))) {
+    return 'covered by parent work-card-hover';
+  }
+  if (/navbar_btn_container|navbar_btn_text/.test(selector) &&
+      candidates.some(item => /navbar_btn_default/.test(item))) {
+    return 'covered by parent navbar button hover';
+  }
+  if (/^div\.g_btn_container/.test(selector) &&
+      candidates.some(item => /a\.g_btn_main|services_home_cta/.test(item))) {
+    return 'covered by parent button/CTA hover';
+  }
+  return null;
 }
 
 function inferAccordionRoot(map) {
@@ -683,6 +710,50 @@ function inferAccordionRoot(map) {
   if (!selectors.some(selector => /accordion|faq/i.test(selector))) return null;
   if ((map.libs || []).includes('Webflow')) return 'div.g_faq_item.w-dyn-item';
   return '[class*="accordion"], [class*="faq"]';
+}
+
+function inferAccordionAction(map, root) {
+  const candidates = map.hoverCandidates || [];
+  if (candidates.includes('button.accordion_css_item_top')) return 'click button.accordion_css_item_top';
+  return `click ${root}`;
+}
+
+function splitBootSelectors(map) {
+  const hosts = [...new Set((map.splitReveals || [])
+    .map(reveal => reveal.host)
+    .filter(Boolean))];
+  if (!hosts.length) return [];
+  return [
+    ...hosts.slice(0, 12),
+    '.lines-split',
+    '.words-split',
+    '.chars-split',
+    '[class*="lines-split"]',
+    '[class*="words-split"]',
+    '[class*="chars-split"]',
+  ];
+}
+
+function scrollTriggerCapture(st) {
+  if (/partners|marquee|logo/i.test(st.trigger || '')) {
+    return {
+      id: slugify(`loop-${st.i}-${st.trigger}`),
+      type: 'manual',
+      label: `${selectorLabel(st.trigger)} in-view loop`,
+      root: st.trigger,
+      waitMs: 1600,
+      reason: `ScrollTrigger ${st.i} gates an in-view loop/marquee. Scroll into view first, then capture with a manual scan.`,
+    };
+  }
+  return {
+    id: slugify(`scroll-${st.i}-${st.trigger}`),
+    type: 'scroll-reveal',
+    label: `${selectorLabel(st.trigger)} scroll callback reveal`,
+    root: st.trigger,
+    action: `scrollintoview ${st.trigger}`,
+    waitMs: 1600,
+    reason: `ScrollTrigger ${st.i} has callbacks (${st.callbacks.join(', ')}) but no bound tween in the registry.`,
+  };
 }
 
 function planFromMap(runDir, flags = {}) {
@@ -701,17 +772,15 @@ function planFromMap(runDir, flags = {}) {
     addPlannedCapture(state, capture);
   }
 
-  const splitSelectors = [...new Set((map.splitReveals || [])
-    .map(reveal => reveal.host)
-    .filter(Boolean))];
+  const splitSelectors = splitBootSelectors(map);
   if (splitSelectors.length) {
     addPlannedCapture(state, {
       id: 'boot-load-reveals',
       type: 'boot',
       label: 'Boot/load split reveal capture',
-      boot: { selectors: splitSelectors.slice(0, 12), ms: 4000 },
+      boot: { selectors: splitSelectors, ms: 4000 },
       waitMs: 4300,
-      reason: `Map found ${splitSelectors.length} split reveal host(s); load captures require __capAutoBoot before page JS runs.`,
+      reason: `Map found ${(map.splitReveals || []).length} split reveal host(s); load captures require __capAutoBoot before page JS runs.`,
     });
   }
 
@@ -726,15 +795,7 @@ function planFromMap(runDir, flags = {}) {
       });
       continue;
     }
-    addPlannedCapture(state, {
-      id: slugify(`scroll-${st.i}-${st.trigger}`),
-      type: 'scroll-reveal',
-      label: `${selectorLabel(st.trigger)} scroll callback reveal`,
-      root: st.trigger,
-      action: `scrollintoview ${st.trigger}`,
-      waitMs: 1600,
-      reason: `ScrollTrigger ${st.i} has callbacks (${st.callbacks.join(', ')}) but no bound tween in the registry.`,
-    });
+    addPlannedCapture(state, scrollTriggerCapture(st));
   }
 
   const accordionRoot = inferAccordionRoot(map);
@@ -744,7 +805,7 @@ function planFromMap(runDir, flags = {}) {
       type: 'click',
       label: 'Accordion open/close',
       root: accordionRoot,
-      action: `click ${accordionRoot}`,
+      action: inferAccordionAction(map, accordionRoot),
       waitMs: 900,
       reason: 'Accordion or FAQ selectors were present in the map. Scan a tight item root to catch height motion.',
     });
@@ -753,6 +814,11 @@ function planFromMap(runDir, flags = {}) {
   const groupedCssHovers = new Map();
   for (const hover of map.cssHovers || []) {
     if (!hover.sel || /accordion|faq/i.test(hover.sel)) continue;
+    const coveredReason = cssHoverCoveredByParent(hover, map);
+    if (coveredReason) {
+      state.skipped.push({ id: slugify(`css-hover-${hover.sel}`), reason: `${coveredReason}.` });
+      continue;
+    }
     const key = `${hover.prop}|${hover.dur}|${hover.ease}`;
     if (!groupedCssHovers.has(key)) groupedCssHovers.set(key, hover);
   }
@@ -774,6 +840,14 @@ function planFromMap(runDir, flags = {}) {
   for (const selector of map.hoverCandidates || []) {
     if (!selector || coveredSelectors.has(selector)) continue;
     if (/accordion|faq/i.test(selector)) continue;
+    if (/u-sprite|sprite/i.test(selector)) {
+      state.skipped.push({ id: slugify(`hover-${selector}`), reason: 'Sprite/keyframe elements are represented by loop entries, not hover captures.' });
+      continue;
+    }
+    if (generatedSelector(selector)) {
+      state.skipped.push({ id: slugify(`hover-${selector}`), reason: 'Generated Webflow node id is too brittle for a default capture plan.' });
+      continue;
+    }
     const group = hoverPlanGroup(selector);
     const current = hoverGroups.get(group.id);
     const score = hoverSelectorScore(selector);
@@ -880,6 +954,30 @@ function timelineAnimation(runDir, result, capture) {
   const id = slugify(result.id || timeline.meta?.captureSource || path.basename(ref, '.json'));
   const trigger = capture?.type || result.type || timeline.meta?.trigger || 'manual';
   const leadFinding = chooseLeadFinding(timeline, trigger);
+  if (!leadFinding) {
+    return {
+      id,
+      label: capture?.label || labelFromId(id),
+      selector: capture?.root || capture?.selector || timeline.meta?.rootSelector || '',
+      trigger: trigger === 'manual' && capture?.type ? capture.type : trigger,
+      mechanism: 'no measured motion',
+      patternId: capture?.patternId || null,
+      layers: 0,
+      stagger: null,
+      lead: {
+        selector: capture?.root || capture?.selector || timeline.meta?.rootSelector || '',
+        from: {},
+        to: {},
+        duration: 'none measured',
+        ease: 'none measured',
+        easeBezier: null,
+      },
+      confidence: 'unknown - verify',
+      timelineRef: ref,
+      empty: true,
+      notes: capture?.notes || result.summary || timeline.summary || 'No animation was captured. Check selector visibility and trigger recipe.',
+    };
+  }
   const prop = findingProperty(leadFinding);
   const timing = findingTiming(leadFinding, prop.value);
   const selector = capture?.root || capture?.selector || timeline.meta?.rootSelector || leadFinding?.selector || '';
@@ -991,7 +1089,14 @@ function scrollTriggerAnimations(map, patterns) {
 }
 
 function loopAnimations(map, patterns) {
-  const loops = Array.isArray(map?.loops) ? map.loops : [];
+  const loops = [];
+  const seen = new Set();
+  for (const loop of Array.isArray(map?.loops) ? map.loops : []) {
+    const key = `${loop.sel}|${loop.name}|${loop.dur}|${loop.timing}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    loops.push(loop);
+  }
   const groups = new Map();
   for (const loop of loops) {
     const key = `${loop.name}|${loop.dur}|${loop.timing}`;
@@ -1208,12 +1313,24 @@ function confidenceCounts(animations) {
   return [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 }
 
+function signatureScore(animation) {
+  let score = 0;
+  if (animation.timelineRef && /^timelines\//.test(animation.timelineRef)) score += 100;
+  if (['hover', 'click'].includes(animation.trigger)) score += 35;
+  if (['load', 'scroll'].includes(animation.trigger)) score += 20;
+  if (animation.confidence === 'measured') score += 15;
+  if (animation.empty) score -= 80;
+  score += Math.min(60, Number(animation.layers || 0) * 6);
+  return score;
+}
+
 function renderAnimationsMarkdown(spec) {
   const lines = [];
   const animations = spec.animations || [];
-  const signature = animations.filter(animation =>
-    ['load', 'scroll'].includes(animation.trigger) || Number(animation.layers || 0) >= 5
-  ).slice(0, 12);
+  const signature = animations
+    .filter(animation => !animation.empty && (animation.timelineRef || ['load', 'scroll'].includes(animation.trigger) || Number(animation.layers || 0) >= 5))
+    .sort((a, b) => signatureScore(b) - signatureScore(a))
+    .slice(0, 12);
   const signatureSet = new Set((signature.length ? signature : animations.slice(0, 8)).map(animation => animation.id));
   const signatureItems = signature.length ? signature : animations.slice(0, 8);
   const polish = animations.filter(animation => !signatureSet.has(animation.id) && animation.confidence === 'measured');
@@ -1267,10 +1384,38 @@ function renderAnimationsMarkdown(spec) {
   return `${lines.join('\n')}`;
 }
 
+function captureResultsForReport(runDir) {
+  const primary = optionalJson(path.join(runDir, 'capture-results.json'), { results: [] });
+  const full = optionalJson(path.join(runDir, 'capture-results.full.json'), null);
+  const merged = [];
+  const seen = new Set();
+  for (const source of [full, primary]) {
+    for (const result of source?.results || []) {
+      if (!result?.id || seen.has(result.id)) continue;
+      seen.add(result.id);
+      merged.push(result);
+    }
+  }
+  return {
+    results: merged,
+    hasFull: Boolean(full?.results?.length),
+    primaryCount: primary.results?.length || 0,
+    fullCount: full?.results?.length || 0,
+  };
+}
+
+function captureStatus(result, timeline) {
+  const moved = timeline.meta?.elementsMoved ?? result.findings ?? 0;
+  if (!Number(moved)) return 'empty';
+  const stop = timeline.meta?.terminationReason || '';
+  if (/maxDuration|manualDump/.test(stop)) return 'check';
+  return 'ok';
+}
+
 function buildReport(runDir) {
   const manifest = optionalJson(path.join(runDir, 'manifest.json'), {});
   const map = optionalJson(path.join(runDir, 'map.json'), null);
-  const captureResults = optionalJson(path.join(runDir, 'capture-results.json'), { results: [] });
+  const captureResults = captureResultsForReport(runDir);
   const assembled = optionalJson(path.join(runDir, 'animations.json'), null);
   const rows = captureResults.results.map(result => {
     const timeline = optionalJson(path.join(runDir, result.timelineRef), {});
@@ -1278,12 +1423,19 @@ function buildReport(runDir) {
     return tableRow([
       result.id,
       result.type,
+      captureStatus(result, timeline),
       moved,
       timeline.meta?.terminationReason || '',
       result.summary || timeline.summary || '',
       result.timelineRef,
     ]);
   });
+  const emptyRows = captureResults.results
+    .filter(result => {
+      const timeline = optionalJson(path.join(runDir, result.timelineRef), {});
+      return captureStatus(result, timeline) === 'empty';
+    })
+    .map(result => `- **${reportText(result.id)}**: ${reportText(result.summary || 'No animation captured')}. Try a tighter selector, a visible starting state, or a manual/in-view recipe.`);
 
   const lines = [];
   lines.push('# Motion Decompile Report');
@@ -1297,7 +1449,8 @@ function buildReport(runDir) {
   lines.push('');
   lines.push('- `manifest.json`');
   if (map) lines.push('- `map.json`');
-  if (captureResults.results.length) lines.push('- `capture-results.json`');
+  if (captureResults.primaryCount) lines.push('- `capture-results.json`');
+  if (captureResults.hasFull) lines.push('- `capture-results.full.json`');
   if (fs.existsSync(path.join(runDir, 'capture-plan.md'))) {
     lines.push('- `manifest.proposed.json`');
     lines.push('- `capture-plan.json`');
@@ -1326,13 +1479,20 @@ function buildReport(runDir) {
   lines.push('## Captures');
   lines.push('');
   if (rows.length) {
-    lines.push(tableRow(['ID', 'Type', 'Moved', 'Stop', 'Summary', 'Timeline']));
-    lines.push(tableRow(['--', '--', '--', '--', '--', '--']));
+    lines.push(tableRow(['ID', 'Type', 'Status', 'Moved', 'Stop', 'Summary', 'Timeline']));
+    lines.push(tableRow(['--', '--', '--', '--', '--', '--', '--']));
     lines.push(...rows);
   } else {
     lines.push('No timelines have been saved yet.');
   }
   lines.push('');
+
+  if (emptyRows.length) {
+    lines.push('## Empty Captures');
+    lines.push('');
+    lines.push(...emptyRows);
+    lines.push('');
+  }
 
   const skipped = (manifest.captures || []).filter(capture => capture.skip || capture.enabled === false);
   if (skipped.length) {

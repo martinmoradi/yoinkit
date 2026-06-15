@@ -132,12 +132,22 @@ a live timeline capture proves their deltas. Manifest captures can override
 labels, mechanisms, notes, confidence, and pattern IDs when a human has better
 context.
 
+Empty captures are preserved as `unknown - verify` entries instead of crashing
+assembly. `report.md` calls them out under **Empty Captures** so selector misses,
+hidden elements, and bad trigger recipes stay visible during calibration.
+
 `plan` reads `map.json` and writes `manifest.proposed.json` plus
 `capture-plan.md`. It proposes boot captures for split reveals, scroll captures
 for callback-only ScrollTriggers, representative CSS hovers by timing group,
 one tight accordion click when FAQ/accordion selectors are present, and a
 deduped set of representative hover candidates. Review the generated selectors
 before passing the proposed manifest to `capture`.
+
+The planner applies a few conservative selector preferences learned from the
+Mammoth calibration: prefer interaction owners over child decoration layers,
+avoid generated Webflow node IDs, click the accordion button while scanning the
+item root, and treat obvious in-view marquees as manual loop captures rather
+than scroll reveals.
 
 ## Two ways to load it
 

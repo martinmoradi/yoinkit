@@ -418,6 +418,18 @@ without live deltas, split reveal hosts, and timeline captures with unreadable
 easing are `unknown - verify`. Manifest entries may override label, mechanism,
 patternId, notes, confidence, and tokens when a run has hand-authored context.
 
+Empty timelines are valid calibration results. `assemble` emits them as
+`unknown - verify` animations with `empty: true`, and `report` lists them under
+**Empty Captures**. A wrong selector or trigger recipe should not prevent the
+rest of the spec from being generated.
+
+Planner heuristics remain intentionally small but now include the first
+Mammoth-derived quality rules: skip generated Webflow node IDs, prefer parent
+interaction selectors over child hover decoration layers, use the accordion
+button as the click action while scanning the item root, include split child
+selectors in boot plans, and classify obvious in-view marquee/partner triggers
+as manual loop captures instead of scroll reveals.
+
 ---
 
 ## 9. Open questions for the cross-checking agent  [CHECK]

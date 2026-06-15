@@ -225,6 +225,12 @@ cat >"$TMP_ASSEMBLE/manifest.json" <<'JSON'
       "type": "click",
       "root": "#accordion",
       "label": "Fixture accordion"
+    },
+    {
+      "id": "empty-scroll",
+      "type": "scroll-reveal",
+      "root": "#missing-motion",
+      "label": "Empty scroll"
     }
   ]
 }
@@ -295,7 +301,7 @@ JSON
 cat >"$TMP_ASSEMBLE/capture-results.json" <<'JSON'
 {
   "capturedAt": "2026-06-15T00:00:00.000Z",
-  "count": 1,
+  "count": 2,
   "results": [
     {
       "id": "fixture-click",
@@ -303,6 +309,13 @@ cat >"$TMP_ASSEMBLE/capture-results.json" <<'JSON'
       "timelineRef": "timelines/fixture-click.json",
       "summary": "Fixture accordion opens.",
       "findings": 1
+    },
+    {
+      "id": "empty-scroll",
+      "type": "scroll-reveal",
+      "timelineRef": "timelines/empty-scroll.json",
+      "summary": "no animation captured",
+      "findings": 0
     }
   ]
 }
@@ -344,6 +357,23 @@ cat >"$TMP_ASSEMBLE/timelines/fixture-click.json" <<'JSON'
   ]
 }
 JSON
+cat >"$TMP_ASSEMBLE/timelines/empty-scroll.json" <<'JSON'
+{
+  "meta": {
+    "source": "http://example.test/",
+    "libraries": ["GSAP"],
+    "mode": "scan",
+    "trigger": "scroll",
+    "terminationReason": "manualDump",
+    "rootSelector": "#missing-motion",
+    "durationMs": 800,
+    "elementsMoved": 0
+  },
+  "summary": "no animation captured",
+  "stagger": null,
+  "findings": []
+}
+JSON
 "$ROOT/bin/motion-decompile" plan "$TMP_ASSEMBLE" >/dev/null
 jq -e '
   .url == "http://example.test/" and
@@ -357,6 +387,10 @@ jq -e '
   .meta.url == "http://example.test/" and
   (.animations | length) >= 5 and
   any(.patterns[]; .id == "p-scroll-scrub") and
-  any(.animations[]; .id == "fixture-click" and .trigger == "click" and .lead.from.height == "0px" and .timelineRef == "timelines/fixture-click.json")
+  any(.animations[]; .id == "fixture-click" and .trigger == "click" and .lead.from.height == "0px" and .timelineRef == "timelines/fixture-click.json") and
+  any(.animations[]; .id == "empty-scroll" and .empty == true and .confidence == "unknown - verify")
 ' "$TMP_ASSEMBLE/animations.json" >/dev/null
 test -s "$TMP_ASSEMBLE/animations.md"
+"$ROOT/bin/motion-decompile" report "$TMP_ASSEMBLE" >/dev/null
+grep -q 'Empty Captures' "$TMP_ASSEMBLE/report.md"
+grep -q 'empty-scroll' "$TMP_ASSEMBLE/report.md"
