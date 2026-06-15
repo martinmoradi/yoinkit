@@ -2856,9 +2856,21 @@ function main() {
   else throw new Error(`Unknown command: ${command}`);
 }
 
-try {
-  main();
-} catch (error) {
-  console.error(`motion-decompile: ${error.message}`);
-  process.exit(1);
+if (require.main === module) {
+  try {
+    main();
+  } catch (error) {
+    console.error(`motion-decompile: ${error.message}`);
+    process.exit(1);
+  }
+} else {
+  // Requiring this file (e.g. from tests) exposes the spec-shaping internals
+  // without running the CLI. Keep this surface small and intentional.
+  module.exports = {
+    actionLabel,
+    scrollTriggerAnimations,
+    vendorAnimationMatch,
+    tagVendorAnimations,
+    renderAnimationsMarkdown,
+  };
 }

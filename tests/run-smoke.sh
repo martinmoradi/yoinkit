@@ -22,6 +22,7 @@ URL="http://127.0.0.1:${PORT}/tests/fixtures/basic-motion.html"
 node --check "$ROOT/bin/motion-decompile" >/dev/null
 node --check "$ROOT/extension/capture-animation.js" >/dev/null
 node "$ROOT/tests/decode-transform.test.js" >/dev/null
+node "$ROOT/tests/spec-shaping.test.js" >/dev/null
 "$ROOT/bin/motion-decompile" --help | grep -q 'scout <url>'
 "$ROOT/bin/motion-decompile" --help | grep -q 'decompile <run-dir>'
 
@@ -330,6 +331,21 @@ cat >"$TMP_ASSEMBLE/map.json" <<'JSON'
       "toggleActions": "play",
       "callbacks": ["onEnter"],
       "anims": []
+    },
+    {
+      "i": 3,
+      "trigger": "div.stacked-cards__collection",
+      "start": "top center",
+      "end": "bottom center",
+      "scrub": false,
+      "pin": false,
+      "toggleActions": "play",
+      "callbacks": [],
+      "anims": [
+        { "targets": ["path", "path"], "targetCount": 2, "duration": 0.75, "ease": "Power1.easeOut", "stagger": null, "props": { "drawSVG": "0% 100%" } },
+        { "targets": ["path", "path"], "targetCount": 2, "duration": 0.75, "ease": "Power1.easeOut", "stagger": null, "props": { "drawSVG": "0% 100%" } },
+        { "targets": ["path", "path"], "targetCount": 2, "duration": 0.75, "ease": "Power1.easeOut", "stagger": null, "props": { "drawSVG": "0% 100%" } }
+      ]
     }
   ],
   "cssHovers": [
@@ -358,6 +374,12 @@ cat >"$TMP_ASSEMBLE/map.json" <<'JSON'
       "name": "spriteFrames",
       "dur": "0.5s",
       "timing": "steps(4)"
+    },
+    {
+      "sel": "div.wallet-cart-button__skeleton",
+      "name": "acceleratedCheckoutLoadingSkeleton",
+      "dur": "4s",
+      "timing": "ease"
     }
   ],
   "splitReveals": [
@@ -555,9 +577,20 @@ jq -e '
   (.animations | length) >= 5 and
   any(.patterns[]; .id == "p-scroll-scrub") and
   any(.animations[]; .id == "fixture-click" and .trigger == "click" and .lead.from.height == "0px" and .timelineRef == "timelines/fixture-click.json") and
-  any(.animations[]; .id == "empty-scroll" and .empty == true and .confidence == "unknown - verify")
+  any(.animations[]; .id == "empty-scroll" and .empty == true and .confidence == "unknown - verify") and
+  # (b) near-identical drawSVG tweens on one ScrollTrigger collapse to one
+  # counted entry (3 tweens x 2 paths = 6 layers), not three separate rows.
+  any(.animations[]; .id == "scrolltrigger-3-0-path" and .count == 3 and .layers == 6 and (.label | test("×3"))) and
+  ([.animations[] | select(.timelineRef == "map.json#scrollTriggers[3]")] | length) == 1 and
+  # (a) the injected Shop Pay shimmer is tagged vendor and kept in the spec.
+  any(.animations[]; (.id | test("acceleratedcheckout")) and .vendor == "Shopify Shop Pay / accelerated checkout")
 ' "$TMP_ASSEMBLE/animations.json" >/dev/null
 test -s "$TMP_ASSEMBLE/animations.md"
+# (a) the vendor shimmer must NOT be promoted into the signature tier, and must
+# appear in the de-ranked third-party section.
+SIG_BLOCK="$(sed -n '/## Signature moments/,/## Patterns/p' "$TMP_ASSEMBLE/animations.md")"
+! grep -qi 'acceleratedcheckout' <<<"$SIG_BLOCK"
+sed -n '/## Third-party \/ vendor/,/## Needs verify/p' "$TMP_ASSEMBLE/animations.md" | grep -qi 'Shop Pay'
 
 LEAD_DIR="$TMP_ASSEMBLE/reflow-lead"
 mkdir -p "$LEAD_DIR/timelines"
