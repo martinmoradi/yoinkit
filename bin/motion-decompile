@@ -500,6 +500,176 @@ function preflightAction(runDir, action, capture = {}) {
   return result;
 }
 
+// Fixed failure-cause vocabulary. The `cause` field on a failed capture is the
+// machine-readable truth (the reason string stays for humans). Shared with
+// bin/calib-metrics, which validates against the same list.
+const FAILURE_CAUSES = [
+  'occlusion', 'hidden_not_visible', 'inert_representative', 'pseudo_element',
+  'wrong_trigger_boot_vs_scroll', 'wrong_document_iframe', 'vendor_animation', 'other',
+];
+
+// Cheap live probe on a failed element: is it there/visible/occluded, does it
+// (or its ::before/::after) carry hover/transition rules on an animatable
+// property, and — for boot reveals — are the reveal hosts below the fold? Pure
+// reading; never mutates the page. Returns a flat object of signals.
+function failureProbe(selector, bootSelectors) {
+  return `(() => {
+    const selector = ${JSON.stringify(selector || null)};
+    const bootSelectors = ${JSON.stringify(Array.isArray(bootSelectors) ? bootSelectors : [])};
+    const ANIM = /transform|opacity|filter|clip-path|clip|width|height|color|background|left|right|top|bottom|inset|translate|scale|rotate|margin|padding|\\ball\\b/;
+    const esc = v => (window.CSS && CSS.escape) ? CSS.escape(String(v)) : String(v);
+    const cssPath = el => {
+      if (!el || el.nodeType !== 1) return '';
+      if (el.id) return '#' + esc(el.id);
+      const tag = el.tagName.toLowerCase();
+      const cls = Array.from(el.classList || []).slice(0, 3).map(c => '.' + esc(c)).join('');
+      return tag + cls;
+    };
+    const visibleOf = el => {
+      const cs = getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      return cs.display !== 'none' && cs.visibility !== 'hidden' && Number(cs.opacity || 1) > 0 && r.width > 1 && r.height > 1;
+    };
+    const out = {
+      selector,
+      found: false, visible: false, zeroBox: false, occludedBy: null,
+      hoverSelfAnimatable: false, hoverPseudoAnimatable: false, pseudoHasTransition: false,
+      bootHosts: { total: 0, below: 0 },
+    };
+
+    for (const sel of bootSelectors) {
+      let els = [];
+      try { els = Array.from(document.querySelectorAll(sel)); } catch (e) { continue; }
+      for (const el of els) {
+        const r = el.getBoundingClientRect();
+        if (r.width < 1 && r.height < 1) continue;
+        out.bootHosts.total++;
+        if (r.top >= innerHeight) out.bootHosts.below++;
+      }
+    }
+
+    if (!selector) return out;
+    let matches = [];
+    try { matches = Array.from(document.querySelectorAll(selector)); } catch (e) { return out; }
+    out.found = matches.length > 0;
+    const el = matches.find(visibleOf) || matches[0];
+    if (!el) return out;
+    out.visible = visibleOf(el);
+    const r = el.getBoundingClientRect();
+    out.zeroBox = r.width <= 1 || r.height <= 1;
+
+    if (out.visible) {
+      const x = Math.max(1, Math.min(innerWidth - 1, r.left + r.width / 2));
+      const y = Math.max(1, Math.min(innerHeight - 1, r.top + r.height / 2));
+      const top = document.elementFromPoint(x, y);
+      if (top && top !== el && !el.contains(top) && !top.contains(el)) out.occludedBy = cssPath(top);
+    }
+
+    for (const pseudo of ['::before', '::after']) {
+      let cs;
+      try { cs = getComputedStyle(el, pseudo); } catch (e) { continue; }
+      if (!cs) continue;
+      const content = cs.content;
+      const dur = parseFloat(cs.transitionDuration) || 0;
+      if (content && content !== 'none' && content !== 'normal' && dur > 0 && ANIM.test(cs.transitionProperty || '')) {
+        out.pseudoHasTransition = true;
+      }
+    }
+
+    const selfOrAncestor = base => base.split(',').map(s => s.trim()).filter(Boolean).some(b => {
+      try { return el.matches(b) || !!el.closest(b); } catch (e) { return false; }
+    });
+    for (const sheet of Array.from(document.styleSheets)) {
+      let rules;
+      try { rules = sheet.cssRules; } catch (e) { continue; } // cross-origin sheet, unreadable
+      if (!rules) continue;
+      for (const rule of Array.from(rules)) {
+        const sel = rule.selectorText;
+        if (!sel || sel.indexOf(':hover') === -1) continue;
+        const decl = rule.style;
+        if (!decl) continue;
+        if (!(decl.transition || decl.transitionProperty || ANIM.test(decl.cssText || ''))) continue;
+        const isPseudo = /::?(before|after)\\b/.test(sel);
+        const base = sel.replace(/::?(before|after)\\b/g, '').replace(/:hover/g, '');
+        if (!selfOrAncestor(base)) continue;
+        if (isPseudo) out.hoverPseudoAnimatable = true; else out.hoverSelfAnimatable = true;
+      }
+    }
+    return out;
+  })()`;
+}
+
+function runFailureProbe(runDir, selector, bootSelectors) {
+  try {
+    return evalJson(failureProbe(selector, bootSelectors), runDir, 600_000);
+  } catch (error) {
+    appendLog(runDir, `\nFailure probe error: ${error.message || error}\n`);
+    return null;
+  }
+}
+
+function preflightCovered(preflight) {
+  if (!preflight) return false;
+  const arr = Array.isArray(preflight) ? preflight : [preflight];
+  return arr.some(p => p && (p.status === 'covered' || p.coveredBy || /covered|occlud/i.test(p.message || '')));
+}
+
+// Assign one fixed-vocabulary cause to a failed capture, preferring live probe
+// signals and falling back to the reason string when the probe is unavailable.
+// Order matters: most-specific structural causes first.
+function classifyFailure({ result, type, probe, map, isBoot, scrollTriggerPresent }) {
+  const reason = String(result.error || result.summary || '').toLowerCase();
+  const dom = map && map.dominantIframe;
+
+  // Dominant cross-origin (or unreadable) iframe: every selector resolves into
+  // shell chrome, so any miss here is really the wrong document.
+  if (dom && dom.present !== false && dom.src && !(dom.sameOrigin && dom.accessible)) {
+    return 'wrong_document_iframe';
+  }
+
+  // Occlusion: the target's click point is covered.
+  if (preflightCovered(result.preflight)) return 'occlusion';
+  if (/covered by|center is covered|is covered|occlud/.test(reason)) return 'occlusion';
+  if (probe && probe.occludedBy) return 'occlusion';
+
+  // Boot reveals carry no single root, so the probe only yields bootHosts — the
+  // selector-based found/visible checks below don't apply. Classify from the
+  // hosts: ScrollTrigger present + hosts below the fold means the motion is
+  // scroll-gated, not boot-gated (Part 4 is the recipe fix).
+  if (isBoot) {
+    if (scrollTriggerPresent && probe && probe.bootHosts && probe.bootHosts.below > 0) {
+      return 'wrong_trigger_boot_vs_scroll';
+    }
+    if (probe && probe.bootHosts && probe.bootHosts.total === 0) return 'hidden_not_visible';
+    return 'inert_representative';
+  }
+
+  // Absent / zero-box / not visible (and no iframe in play).
+  if (probe && (probe.found === false || probe.visible === false || probe.zeroBox === true)) {
+    return 'hidden_not_visible';
+  }
+  if (!probe && /no visible elements|matched no|not found|0x0|zero size|not visible|display:\s*none|hidden/.test(reason)) {
+    return 'hidden_not_visible';
+  }
+
+  // Hover moved no element layers but the element or its ::before/::after has a
+  // hover/transition rule on an animatable property — the motion is in a pseudo
+  // element the per-element sampler can't read (suspected; Part 2 is the fix).
+  if (probe && (probe.pseudoHasTransition || probe.hoverPseudoAnimatable)) {
+    return 'pseudo_element';
+  }
+
+  // Hittable but produced no motion and no pseudo styling: genuinely inert.
+  if (result.status === 'empty') return 'inert_representative';
+  if (probe && probe.found && probe.visible) return 'inert_representative';
+
+  return 'other';
+}
+
+function validCause(cause) {
+  return FAILURE_CAUSES.includes(cause) ? cause : 'other';
+}
+
 function loadManifest(runDir, manifestPath) {
   let file = manifestPath ? path.resolve(manifestPath) : path.join(runDir, 'manifest.json');
   if (manifestPath && !fs.existsSync(file) && !path.isAbsolute(manifestPath)) {
@@ -624,6 +794,12 @@ function defaultArm(capture, type, id) {
   if (!target) throw new Error(`Capture "${id}" needs root, selector, action, or arm`);
   const trigger = type === 'click' ? 'manual' : (type === 'scroll-reveal' ? 'scroll' : type);
   return `window.__cap.scan(${JSON.stringify(target)}, { trigger: ${JSON.stringify(trigger)}, captureSource: ${JSON.stringify(id)} })`;
+}
+
+function bootSelectorsFor(capture) {
+  const boot = capture.boot || {};
+  const sels = boot.selectors || capture.selectors || [];
+  return Array.isArray(sels) ? sels.filter(Boolean) : [];
 }
 
 function bootInitFile(capture, id) {
@@ -762,6 +938,44 @@ function runCapture(runDir, manifest, manifestFile, flags = {}) {
   appendLog(runDir, `\nUsing manifest: \`${manifestFile || path.join(runDir, 'manifest.json')}\`\n`);
   appendLog(runDir, `Capture strategy: \`${strategy}\`\n`);
 
+  // Map context for the failure classifier (dominant-iframe + ScrollTrigger).
+  const map = optionalJson(path.join(runDir, 'map.json'), {});
+  const scrollTriggerPresent = Array.isArray(map.libs)
+    && map.libs.some(l => /scrolltrigger/i.test(String(l)));
+
+  // Probe a failed capture and attach a fixed-vocabulary `cause`. Live-probe
+  // signals are preferred; on any probe failure we still classify from the
+  // reason string + map context. Never throws into the capture loop.
+  const attachCause = (result, capture, captureType, opts = {}) => {
+    if (result.status === 'ok' || result.status === 'check' || result.status === 'skipped') return result;
+    const isBoot = captureType === 'boot' || captureType === 'load';
+    const selector = opts.selector !== undefined
+      ? opts.selector
+      : (capture.root || capture.selector || selectorFromAction(defaultAction(capture, captureType)) || null);
+    const bootSelectors = isBoot ? bootSelectorsFor(capture) : [];
+    let probe = null;
+    if (opts.probe !== false && (selector || bootSelectors.length)) {
+      probe = runFailureProbe(runDir, selector, bootSelectors);
+    }
+    result.cause = validCause(classifyFailure({
+      result, type: captureType, probe, map, isBoot, scrollTriggerPresent,
+    }));
+    if (probe) {
+      result.causeSignals = {
+        found: probe.found, visible: probe.visible, zeroBox: probe.zeroBox,
+        occludedBy: probe.occludedBy || undefined,
+        hoverSelfAnimatable: probe.hoverSelfAnimatable,
+        hoverPseudoAnimatable: probe.hoverPseudoAnimatable,
+        pseudoHasTransition: probe.pseudoHasTransition,
+        bootHostsTotal: isBoot ? probe.bootHosts.total : undefined,
+        bootHostsBelowFold: isBoot ? probe.bootHosts.below : undefined,
+        scrollTriggerPresent: isBoot ? scrollTriggerPresent : undefined,
+      };
+    }
+    appendLog(runDir, `Cause for ${result.id}: \`${result.cause}\`\n`);
+    return result;
+  };
+
   const results = [];
   let currentPage = null;
 
@@ -801,6 +1015,7 @@ function runCapture(runDir, manifest, manifestFile, flags = {}) {
           const file = saveTimeline(runDir, id, timeline);
           const result = timelineResult(runDir, id, type, file, timeline);
           result.page = { strategy: 'fresh', opened: true, group: null, seededReusablePage: false };
+          attachCause(result, capture, type);
           results.push(result);
           if (strategy === 'reuse-page' && capture.seedReuse !== false && url === manifest.url) {
             const seededGroup = capture.seedGroup || 'main-page-after-intro';
@@ -872,6 +1087,7 @@ function runCapture(runDir, manifest, manifestFile, flags = {}) {
         group,
         seededBy: currentPage && currentPage.group === group ? currentPage.seededBy : null,
       };
+      attachCause(result, capture, type, { selector: capture.root || actionSelector || scrollTarget || null });
       results.push(result);
       if (capture.resetAction) {
         try {
@@ -884,7 +1100,7 @@ function runCapture(runDir, manifest, manifestFile, flags = {}) {
     } catch (error) {
       const message = error.message || String(error);
       appendLog(runDir, `\nCapture failed: ${message}\n`);
-      results.push({
+      const errorResult = {
         id,
         type,
         status: 'error',
@@ -897,7 +1113,11 @@ function runCapture(runDir, manifest, manifestFile, flags = {}) {
           strategy: captureCanReuse(manifest, flags, capture, type) ? 'reuse-page' : 'fresh',
           group: captureCanReuse(manifest, flags, capture, type) ? reusableCaptureGroup(capture, type) : null,
         },
-      });
+      };
+      // Classify the failure. A blocked page can't be probed safely, so for a
+      // fatal page-state error we classify from the reason string + map context.
+      attachCause(errorResult, capture, type, { probe: !error.fatalPageState });
+      results.push(errorResult);
       if (type === 'click' || type === 'dblclick' || capture.invalidatePageOnError === true) currentPage = null;
       if (error.fatalPageState) {
         for (const [offset, remaining] of captures.slice(index + 1).entries()) {
@@ -928,6 +1148,8 @@ function runCapture(runDir, manifest, manifestFile, flags = {}) {
       findings: result.findings,
       stop: result.stop || null,
       error: result.error,
+      cause: result.cause,
+      causeSignals: result.causeSignals,
       preflight: result.preflight,
       pageState: result.pageState,
       page: result.page,
@@ -2065,10 +2287,10 @@ function buildReport(runDir) {
       const timeline = result.timelineRef ? optionalJson(path.join(runDir, result.timelineRef), {}) : {};
       return captureStatus(result, timeline) === 'empty';
     })
-    .map(result => `- **${reportText(result.id)}**: ${reportText(result.summary || 'No animation captured')}. Try a tighter selector, a visible starting state, or a manual/in-view recipe.`);
+    .map(result => `- **${reportText(result.id)}**${result.cause ? ` [cause: ${reportText(result.cause)}]` : ''}: ${reportText(result.summary || 'No animation captured')}. Try a tighter selector, a visible starting state, or a manual/in-view recipe.`);
   const failedRows = captureResults.results
     .filter(result => result.status === 'error')
-    .map(result => `- **${reportText(result.id)}**: ${reportText(result.error || result.summary || 'Capture failed')}`);
+    .map(result => `- **${reportText(result.id)}**${result.cause ? ` [cause: ${reportText(result.cause)}]` : ''}: ${reportText(result.error || result.summary || 'Capture failed')}`);
 
   const lines = [];
   lines.push('# Motion Decompile Report');
