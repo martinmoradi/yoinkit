@@ -123,13 +123,16 @@ Each behavior part ends by re-running the Part 0 harness and reporting the diff.
     time existence probe ~4ms on a 1.2k-element page (210 pseudo-bearing),
     per-frame pseudo pass proportional to that subset. No element-capture
     regression; smoke green (20/20).
-  - Known cosmetic artifact (pre-existing, not pseudo-specific): a `scaleX(0)`
+  - Spec-correctness artifact (pre-existing, not pseudo-specific): a `scaleX(0)`
     rest matrix decodes to `rotate 90->0deg` alongside `scale 0->1` (flowfest);
-    degenerate-matrix decode in `decodeTransform`, candidate for a later cleanup.
-- **Next:** Part 4 (recipes, ~2), then Part 3 (sweep, no hit movement, do
-  anytime). Part 5 (repair loop) handles the genuine residual: modal-only
-  elements, real occlusion (carousel arrow, stack-card), hidden inner
-  affordances.
+    degenerate-matrix decode in `decodeTransform`. Promoted to Part 2.5 because
+    Part 2 made scale-from-zero a common captured case, so it now corrupts those
+    specs (a rebuild agent would add a rotation that isn't there).
+- **Next:** Part 2.5 (suppress the degenerate-matrix spurious rotation; small
+  correctness fix that protects the Part 2 output), then Part 4 (recipes, ~2),
+  then Part 3 (sweep, no hit movement, do anytime). Part 5 (repair loop) handles
+  the genuine residual: modal-only elements, real occlusion (carousel arrow,
+  stack-card), hidden inner affordances.
 
 ---
 
@@ -413,6 +416,60 @@ node --check.
 Report back to your PM: which sites/selectors you verified, the before/after
 (empty -> captured), the pseudo track shape you got, any perf impact on frame
 sampling, and the Part 0 metric delta.
+
+Commit semantically.
+```
+
+---
+
+## Part 2.5 — Degenerate transform decode (suppress spurious rotation when scale ~ 0)
+
+Promoted from the Part 2 follow-up. Not cosmetic: it corrupts the spec for the
+scale-from-zero reveals Part 2 just unlocked (underlines, pop-ins), so a rebuild
+agent would add a rotation that is not there. Small, contained engine fix.
+
+```
+Work on motion-decompiler at /home/martin/src/perso/motion-decompiler. Read
+CLAUDE.md first. Single-file engine change: extension/capture-animation.js,
+function decodeTransform.
+
+PROBLEM: a scaleX(0) rest matrix (matrix(0,0,0,1,0,0)) decodes to a spurious
+rotation alongside the correct scaleX. In the 2D branch, rotate = atan2(b, a):
+when scaleX = hypot(a,b) ~ 0, the (a,b) column is rank-deficient and the angle is
+indeterminate, so floating-point residuals in the browser's computed matrix get
+amplified into a bogus angle (observed ~90deg on flowfest's underline). The 3D
+branch has the same degeneracy: R divides by sx/sy/sz, and the `|| 1` fallback
+when an axis scale ~ 0 yields a garbage rotation. Part 2 made scaleX/scaleY-from-
+zero a common captured case (underline reveals), so this now fires often and
+misleads recreation.
+
+TASK: when a decomposed scale axis magnitude is below a small epsilon, the
+rotation about the collapsed axis is unrecoverable; do NOT attribute a rotation
+there. In the 2D branch, if scaleX (or scaleY) < eps, report rotate 0 instead of
+the atan2 result. Guard the 3D branch equivalently (suppress rotation components
+that depend on a near-zero axis scale). Leave the non-degenerate path
+byte-for-byte unchanged; this is a guarded special-case only. Pick eps
+conservatively (e.g. ~1e-3 on the decomposed scale) so a genuine
+small-scale-with-real-rotation is not swallowed; a truly collapsed axis is the
+only thing being guarded.
+
+CONSTRAINTS: dependency-free, framework-agnostic, single source of truth. No
+behavior change to capture or timing; only the matrix decode.
+
+VERIFY:
+- Add a small assertion (smoke or inline) that
+  decodeTransform('matrix(0,0,0,1,0,0)') yields scaleX ~ 0, scaleY ~ 1, rotate 0
+  (no spurious angle), AND that a genuine rotation (e.g. matrix(0,1,-1,0,0,0) =
+  90deg at unit scale) STILL decodes to rotate 90 — the guard only fires on
+  collapsed scale.
+- Re-capture flowfest div.underline-link (headed, repo wrapper per CLAUDE.md):
+  the ::before track should now read scaleX 0->1 with NO rotate component.
+- Run tests/run-smoke.sh and node --check.
+
+REPORT BACK TO YOUR PM: the before/after on the flowfest underline track (the
+rotate row gone), the epsilon you chose, and confirmation a real rotation still
+decodes correctly. No Part 0 metric change is expected (hit% unaffected); this is
+a spec-correctness fix, verified by inspection.
 
 Commit semantically.
 ```
