@@ -108,10 +108,28 @@ Each behavior part ends by re-running the Part 0 harness and reporting the diff.
   for iframe). The live set is for breadth; re-baseline a site when it changes
   and never compare across the change. Open: re-baseline vwlab as whatever it now
   is, and decide keep-or-swap once we see it.
-- **Next:** Part 2 (pseudo, prize = 2), then Part 4 (recipes, ~2), then Part 3
-  (sweep, no hit movement, do anytime). Part 5 (repair loop) handles the genuine
-  residual: modal-only elements, real occlusion (carousel arrow, stack-card),
-  hidden inner affordances.
+- **Part 2 — done** (4c34a67 pseudo-element sampling). The engine now samples
+  `::before`/`::after` as their own tracks (`<sel>::after`), gated on a content
+  existence probe; scan mode diffs a bounded pseudo set (cap 1500) so per-frame
+  getComputedStyle volume never grows with the tree. Also added `background-size`
+  to the sampled props and kebab transition-property matching in `cssTiming` so
+  multi-word props get authoritative timing.
+  - **Prize claimed (headed verify):** both `pseudo_element` captures flip empty
+    -> captured. flowfest `div.underline-link::before` = scaleX 0->1 @0.5s
+    cubic-bezier(.625,.05,0,1) (31 frames); enerblock
+    `a.link--underline::before` = scaleX 0->1 @0.3s ease (19 frames). Both read
+    the authoritative CSS transition off the pseudo, not "measured".
+  - Perf: single mode adds +2 reads per tracked node/frame (sub-ms); scan one-
+    time existence probe ~4ms on a 1.2k-element page (210 pseudo-bearing),
+    per-frame pseudo pass proportional to that subset. No element-capture
+    regression; smoke green (20/20).
+  - Known cosmetic artifact (pre-existing, not pseudo-specific): a `scaleX(0)`
+    rest matrix decodes to `rotate 90->0deg` alongside `scale 0->1` (flowfest);
+    degenerate-matrix decode in `decodeTransform`, candidate for a later cleanup.
+- **Next:** Part 4 (recipes, ~2), then Part 3 (sweep, no hit movement, do
+  anytime). Part 5 (repair loop) handles the genuine residual: modal-only
+  elements, real occlusion (carousel arrow, stack-card), hidden inner
+  affordances.
 
 ---
 
