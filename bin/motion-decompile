@@ -2062,17 +2062,36 @@ function scrollTriggerAnimations(map, patterns) {
   for (const st of triggers) {
     const anims = Array.isArray(st.anims) ? st.anims : [];
     if (anims.length) {
+      // Group near-identical tweens within one ScrollTrigger (same target,
+      // mechanism, duration, ease) into a single entry. A drawSVG ScrollTrigger
+      // can bind 20+ identical "path" tweens; emitting one row per path floods
+      // the spec with duplicates that all say the same thing.
+      const groups = new Map();
       anims.forEach((anim, animIndex) => {
         const target = anim.targets?.[0] || st.trigger;
         const props = Object.fromEntries(Object.entries(anim.props || {}).filter(([key]) => key !== 'lazy'));
+        const mechanism = mechanismFromProps(props);
+        const key = JSON.stringify([target || st.trigger, mechanism, anim.duration ?? null, anim.ease || 'unknown']);
+        let group = groups.get(key);
+        if (!group) {
+          group = { animIndex, target, props, mechanism, anim, count: 0, layers: 0 };
+          groups.set(key, group);
+        }
+        group.count += 1;
+        group.layers += anim.targetCount || anim.targets?.length || 1;
+      });
+      for (const { animIndex, target, props, mechanism, anim, count, layers } of groups.values()) {
+        const grouped = count > 1;
+        const base = `start: ${st.start || 'unknown'}; end: ${st.end || 'unknown'}; scrub: ${Boolean(st.scrub)}.`;
         animations.push({
           id: slugify(`scrolltrigger-${st.i}-${animIndex}-${target || st.trigger}`),
-          label: `${selectorLabel(target || st.trigger)} scroll motion`,
+          label: `${selectorLabel(target || st.trigger)} scroll motion${grouped ? ` (×${count})` : ''}`,
           selector: target || st.trigger,
           trigger: 'scroll',
-          mechanism: mechanismFromProps(props),
+          mechanism,
           patternId: st.scrub ? 'p-scroll-scrub' : null,
-          layers: anim.targetCount || anim.targets?.length || 1,
+          count,
+          layers,
           stagger: anim.stagger ? { items: anim.targetCount || null, ms: anim.stagger } : null,
           lead: {
             selector: target || st.trigger,
@@ -2084,9 +2103,11 @@ function scrollTriggerAnimations(map, patterns) {
           },
           confidence: 'measured',
           timelineRef: `map.json#scrollTriggers[${st.i}]`,
-          notes: `start: ${st.start || 'unknown'}; end: ${st.end || 'unknown'}; scrub: ${Boolean(st.scrub)}.`,
+          notes: grouped
+            ? `${count} near-identical registry tweens grouped (${layers} targets total). ${base}`
+            : base,
         });
-      });
+      }
     } else if (st.callbacks && st.callbacks.length) {
       animations.push({
         id: slugify(`scrolltrigger-${st.i}-${st.trigger || 'callback'}`),
