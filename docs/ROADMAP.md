@@ -128,8 +128,24 @@ Each behavior part ends by re-running the Part 0 harness and reporting the diff.
     degenerate-matrix decode in `decodeTransform`. Promoted to Part 2.5 because
     Part 2 made scale-from-zero a common captured case, so it now corrupts those
     specs (a rebuild agent would add a rotation that isn't there).
-- **Next:** Part 2.5 (suppress the degenerate-matrix spurious rotation; small
-  correctness fix that protects the Part 2 output), then Part 4 (recipes, ~2),
+- **Part 2.5 — done** (`decodeTransform` degenerate-axis guard). When a
+  decomposed scale axis falls below `COLLAPSED_AXIS_EPS = 1e-3` the column is
+  rank-deficient, so the rotation read off it is float noise: the 2D branch now
+  reports `rotate 0` instead of the `atan2` result, and the 3D branch suppresses
+  only the Euler components read off the collapsed column (rotateY/rotateZ from
+  the X column, rotateX from the Y/Z columns). Non-degenerate decode is
+  unchanged.
+  - **Headed verify (flowfest `div.underline-link::before`):** rest matrix is
+    `matrix(0, 1.74533e-05, 0, 1, 0, 0)` (scaleX ~ 1.7e-5). Before: decoded to
+    `{scaleX:0, scaleY:1, rotate:90}`, so the track read `rotate 90->0` next to
+    `scale 0->1`. After: `{scaleX:0, scaleY:1, rotate:0}` at both ends. The
+    rotate row is gone; the track is a clean `scale 0->1` @0.5s.
+  - Guard only fires on a truly collapsed axis: `matrix(0,1,-1,0,0,0)` still
+    decodes to `rotate 90`, and a 0.01-scale 45deg rotation still decodes to 45.
+    New unit test `tests/decode-transform.test.js` (browser-free, wired into the
+    smoke suite) covers both directions; smoke green. No Part 0 metric change
+    expected (spec-correctness fix; hit% unaffected).
+- **Next:** Part 4 (recipes, ~2),
   then Part 3 (sweep, no hit movement, do anytime). Part 5 (repair loop) handles
   the genuine residual: modal-only elements, real occlusion (carousel arrow,
   stack-card), hidden inner affordances.
