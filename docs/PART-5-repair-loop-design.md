@@ -617,3 +617,24 @@ deliverables — precondition repairs the deterministic planner structurally
 cannot author, and converting the inert/absent long tail into honest recorded
 terminal verdicts — are accepted as the goal. Part 6 is greenlit to build to
 this doc once M1 is folded in.
+
+### Post-build amendment (after Part 6, PR #1)
+
+Two things the build surfaced that refine this doc:
+
+- **§3 successCriterion default.** The criterion should default to
+  `expect: moved`, not pin `onSelector` to the armed root. Motion frequently
+  lives in child layers (the enerblock carousel icons move under the armed
+  wrapper), so a root-pinned criterion false-negatives a real repair. Fixed in
+  the build (commit `30aa982`); the real provider prompt (Part 7) must default to
+  `expect: moved`.
+- **§7 is structural for *termination*, not for the *label*.** §7 implies "no
+  occluder AND nothing animatable → terminal `genuinely_absent`" is a structural
+  guarantee. In reality the flowfest grid-lines drift case *has* a cursor-wrap
+  occluder yet nothing animatable, so the structural rule alone would not fire;
+  the loop's repeated-identical fallback still bounds it (it always terminates),
+  but it would label it `needs_human`. The honest `genuinely_absent` label came
+  from the provider weighing `animatableHere`. So: **termination is structural;
+  the precise terminal label is provider judgment.** That is acceptable (both are
+  honest terminals, neither burns budget), and Part 7's provider prompt is
+  instructed to weight `animatableHere` for the label.

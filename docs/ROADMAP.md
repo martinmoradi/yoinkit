@@ -297,15 +297,46 @@ Each behavior part ends by re-running the Part 0 harness and reporting the diff.
     is an honest STOP), ~2-3 still need a human. The loop is not a hit% leap; its
     deliverables are precondition repairs the planner structurally cannot author
     and an auditable terminal-verdict tail.
-- **Next: Part 6 (repair-loop BUILD).** Build to `docs/PART-5-repair-loop-design.md`
-  with M1 folded in (state isolation for stateful repairs). Browser work is only
-  needed to verify against the residual captures; the engine/planner changes and
-  the stub-provider smoke tests are browser-free. Write the Part 6 prompt from the
-  design doc's contracts (§2/§3) + the §11 rulings before handing it to a clean
-  context. Side task whenever the headed browser is up: capture
-  report-vwlab.netlify.app's baseline row to complete the standing scoreboard.
-  All deterministic floor-raisers (Parts 1-4) are landed; Part 5 design is
-  approved.
+- **Part 6 — done, merged to main** (PR #1, rebased: `561cb7a` probe +
+  diagnosis-input writer, `73cb965` the loop in runCapture, `1d237e1` accounting,
+  `5c4e261` stub provider + smoke, `30aa982`/`bff3442`/`f20db73` review fixes +
+  coverage). Built to the design with M1 folded in. **Off by default** (no
+  `--repair-cmd` -> byte-identical soft-fail), so it landed on main dormant.
+  Engine (`extension/capture-animation.js`) untouched -- the loop is orchestration
+  in `bin/motion-decompile` + `bin/calib-metrics` + tests only. 81 browser-free
+  checks (deterministic stub provider, no model). Reviewed by two external models
+  before merge.
+  - **Proven (headed):** enerblock `arrow-row-hover` occlusion-error ->
+    **ok-after-repair** via `precondition_action` [click `.carousel__arrow--next`,
+    wait] (1 attempt, carousel icon x 0->33.77px @0.6s); flowfest grid-lines drift
+    -> `terminal_give_up(genuinely_absent)` on attempt 1, no recapture. **M1
+    confirmed:** the stateful repair re-opened fresh AND the next same-group
+    capture re-opened fresh instead of inheriting the carousel-advanced page (no
+    leak).
+  - **Build findings that refined the design:** (1) `successCriterion` should
+    default to `expect: moved`, not pin `onSelector` to the armed root -- motion
+    often lives in child layers (the carousel icons), fixed in `30aa982`; (2) the
+    §7 drift->terminal is structural only for *termination* (repeated-identical
+    fallback bounds it), but the precise label `genuinely_absent` vs `needs_human`
+    is **provider judgment** weighing `animatableHere`, not the structural
+    guarantee §7 implied (see the design-doc §11 amendment). Both feed the Part 7
+    provider prompt.
+  - **What is NOT yet proven: the actual value.** Both headed wins used the *agent
+    hand-acting as the provider*. No real LLM has been wired to `--repair-cmd`, so
+    the design's ~5-7 estimate is still a projection and the scoreboard repair
+    sub-table is structural-only (zero real repairs recorded). The mechanics and
+    safety are proven; the yield is unmeasured.
+- **Next: Part 7 (real repair provider + measure the loop).** Build the
+  LLM-backed `--repair-cmd` provider at the adapter boundary (NOT the tool core),
+  then run the calibration with repair OFF then ON on the same set so the
+  within-run delta is the clean, denominator-controlled repair measurement. This
+  is where the ~5-7 estimate becomes a real number and the design's value is
+  confirmed or corrected. The provider's model prompt is the real intelligence
+  artifact (it must default `expect: moved` and weight `animatableHere` for
+  terminal calls). Needs the headed browser + a real model; folds in capturing
+  `report-vwlab.netlify.app`'s baseline to complete the swap. Prompt in the Part 7
+  section below. All deterministic floor-raisers (Parts 1-4) and the repair-loop
+  mechanics (Part 6) are landed.
 
 ---
 
@@ -806,8 +837,122 @@ task (Part 6).
 
 ## Part 6 — Capture-repair loop: BUILD
 
-To be written once the Part 5 design lands, because how it is built depends on
-the contracts that design settles on.
+**Done, merged to main (PR #1).** Built to `docs/PART-5-repair-loop-design.md`
+with M1 (state isolation) folded in; off by default; engine untouched; 81
+browser-free checks + two headed proofs (precondition repair ok-after-repair,
+drift terminal). Mechanics and safety proven; value unmeasured pending a real
+provider. See the Status log for the SHAs, the build findings that refined the
+design, and the honest "what is not yet proven" note.
+
+---
+
+## Part 7 — Real repair provider + measure the loop (needs browser + a model)
+
+Part 6 proved the loop is correct and safe. Part 7 proves whether it is *useful*:
+it wires a real LLM provider to `--repair-cmd` and runs the calibration with
+repair off then on, so the within-run delta is the clean repair measurement. The
+provider lives at the adapter boundary so the tool core stays a dependency-free
+measurement instrument. The provider's model prompt is the real intelligence
+artifact, and two Part 6 build findings (`expect: moved` default,
+`animatableHere` terminal weighting) are baked in as hard requirements.
+
+```
+Work on motion-decompiler at /home/martin/src/perso/motion-decompiler. Read
+CLAUDE.md first, then docs/PART-5-repair-loop-design.md IN FULL (the loop's
+contracts: §2 input, §3 output/action enum, §5 provider command contract, §6
+accounting, §11 PM decisions), then the Status log in docs/ROADMAP.md (Part 6
+done + its build findings). Part 6 built the repair loop (merged, off by
+default). This part builds the REAL provider and MEASURES what the loop buys.
+
+ARCHITECTURE GUARDRAIL (do not violate):
+- The provider is an EXTERNAL COMMAND at the adapter boundary (design §5). Put it
+  in scripts/ (e.g. scripts/repair-provider.*) or the skill, NOT inside
+  bin/motion-decompile, bin/calib-metrics, or extension/capture-animation.js. The
+  tool core and engine stay dependency-free and unchanged. If you find yourself
+  editing the engine or the loop in bin/motion-decompile, stop and report why.
+- Off by default stays off by default: a plain run with no --repair-cmd is
+  byte-identical to today, and tests/run-smoke.sh keeps using the deterministic
+  stub provider (do not point smoke at the real model).
+
+THE INVARIANT (design §0): the provider decides WHAT/HOW/REPAIR; it NEVER
+measures motion. It emits only the §3 schema (selectors, action sequences, a
+terminal verdict, a machine-checkable successCriterion) — there is no field for a
+duration/easing/from-to, and the engine re-measures every repair. The screenshot
+is for TARGETING only. If anything would route a measured number through the
+model, it is wrong.
+
+BUILD — the provider command (contract from design §5: `<cmd> <input.json>` ->
+writes <output.json>, prints its path on stdout):
+1. It reads the diagnosis input (§2): cause + causeSignals (consume, do NOT
+   re-diagnose), failedRecipe, the screenshot PNG, mapSubtree, repairContext
+   (matches/ancestors/siblings/candidateTriggers/animatableHere), attemptHistory.
+2. It calls a vision-capable Claude model with the screenshot + the structured
+   context and returns STRICTLY the §3 output schema. Consult the `claude-api`
+   skill for the current model id, the vision message format, and pricing. Use a
+   capable vision model; default to Sonnet 4.6 (claude-sonnet-4-6) for the
+   cost/quality balance of a loop run many times, with Opus 4.8 (claude-opus-4-8)
+   selectable for a quality pass. The API key comes from the environment, never
+   committed.
+3. The provider's MODEL PROMPT is the deliverable's core. It MUST:
+   - Default successCriterion to `expect: moved` (NOT pin onSelector to the armed
+     root) — motion frequently lives in child layers (e.g. carousel icons under
+     the armed wrapper). This is the Part 6 build finding (commit 30aa982).
+   - Weight repairContext.animatableHere heavily for terminal calls: when nothing
+     near the target is animatable, prefer terminal_give_up(genuinely_absent)
+     even if an occluder is present (the flowfest grid-lines drift case). This is
+     how the precise terminal label is reached — the loop only guarantees
+     termination, not the label (design §11 amendment).
+   - Use the closed action enum exactly (retarget_selector, use_other_instance,
+     scroll_into_view, precondition_action, retarget_iframe, terminal_give_up);
+     rootCause constrained to the eight Part 1 buckets or "ambiguous"; emit a
+     confidence. For precondition openers, prefer candidateTriggers with
+     aria-controls/aria-expanded/aria-haspopup before proximity heuristics.
+   - Never emit a measurement. Diagnose targeting and state, not motion.
+   Invalid/unparseable output is fine to leave to the tool (it fails safe to
+   terminal_give_up(provider_error)), but aim for schema-valid output.
+
+MEASURE — the calibration with repair on:
+4. Run the standing 4-site set (the set now lists report-vwlab.netlify.app per
+   the swap; capturing it this run also completes that swap). For the THREE
+   repair-bearing sites (ashleybrookecs, enerblock, flowfest) run the calibration
+   TWICE on the identical manifest: once with --repair-cmd OFF, once ON. The
+   repair delta is the within-run off->on diff, so the denominator is identical by
+   construction and the measurement is clean (do NOT compare absolute hit% to the
+   34-baseline — the vwlab->netlify swap confounds that; lead with the off->on
+   delta).
+5. Use the loop's safety rails as shipped: maxRetries=2, confidenceFloor=0.4,
+   budget=min(2*repairableCount, 24), repairableCauses = occlusion +
+   hidden_not_visible + inert_representative. Log the run's total model cost.
+
+VERIFY (the honesty gate — this is the whole point):
+- For every ok_after_repair, spot-check the engine timeline: the win must be REAL
+  measured motion the engine sampled after the repair, never the model asserting
+  success. Confirm status is engine-truth and no measured number originated in the
+  provider output.
+- Confirm the drift case still terminates without burning budget, now via the
+  real model's animatableHere judgment.
+- Re-confirm M1 under the real provider: a precondition repair must not leak its
+  mutated state into the next capture.
+- node --check the provider if it is JS; tests/run-smoke.sh stays green on the
+  stub (unchanged).
+
+RECORD:
+- Populate the SCOREBOARD repair sub-table with the REAL numbers: ok_first_try
+  vs ok_after_repair (keep ok_first_try as the primary headline), by_action,
+  by_bucket, and the terminal-verdict tally. Add per-site notes for the repair
+  run.
+- Go row by row against design §9: which residual rows actually converted, which
+  hit honest terminals, which still need a human.
+
+REPORT BACK TO YOUR PM: the real ok_after_repair count per bucket and which
+§9 rows converted vs terminated vs need-human; the design's ~5-7 estimate
+confirmed or corrected with the actual number; the run's model cost; any
+provider-prompt iterations you needed; and explicit confirmation of the honesty
+gate (every repaired win is engine-measured, no measurement came from the model)
+and M1 under the real provider. Commit semantically: the provider script and any
+config as one commit; the SCOREBOARD repair numbers + per-site notes as the
+measurement-data commit.
+```
 
 ---
 
