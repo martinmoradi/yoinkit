@@ -1,0 +1,526 @@
+# motion-decompiler — execution roadmap
+
+This is a PM/CTO roadmap, not a spec. Each **Part** below is a self-contained
+prompt you drop into a **clean context** (a fresh agent). You run one part, the
+agent reports back, and the roadmap gets adjusted before the next part. The
+parts are ordered by leverage and dependency, but Parts 1 and 2 are independent
+and can be done in either order.
+
+The working model:
+- The engine and planner are edited by clean-context agents, one part at a time.
+- Every behavior change is justified by one number: **live-capture hit rate**,
+  measured by the Part 0 harness. If a part does not move a bucket, that is a
+  finding, not a polish item.
+- Capture needs a real, visible browser (see `CLAUDE.md`). Map/scout is fine
+  headless.
+
+---
+
+## Why this roadmap exists (the read)
+
+The tool is really two tools, and only one is the product:
+
+- **The map** (static analysis: GSAP/ScrollTrigger registry, CSS `@keyframes`,
+  CSS transitions, structural split-reveal detection) carries everything. On
+  flowfest, 46 of 48 animations came from the map. On ashleybrookecs, 79
+  ScrollTriggers came straight from the registry. This half is precise, honest
+  (measured vs verify), and generalizes. It is the moat.
+- **Live capture** (drive real events, sample per frame) succeeds about **a
+  third of the time**: roughly 8 clean `ok` out of ~28 attempted captures across
+  the four calibration sites. Its failures are **not random**. They collapse
+  into a small set of named, repeating causes.
+
+So the work splits cleanly: a finite batch of **deterministic engine/planner
+fixes** (Parts 1 through 4) raises the floor, and then **one specific LLM layer**
+(Part 5, a diagnose-and-retry repair loop) handles the genuinely hard residual.
+The LLM must never measure motion. The engine's per-frame sampling and its
+measured-vs-verify honesty stay the source of truth. The intelligence goes into
+**targeting and repair**, not measurement.
+
+### Failure taxonomy (the backlog, distilled from the 4 calibration runs)
+
+| # | Failure mode | Hit on | Kind | Owner | Part |
+|---|---|---|---|---|---|
+| A | Decompiled the wrong document (cross-origin iframe / embed shell) | vwlab (5/5 fail) | Deterministic | Engine/map | 1 |
+| B | Pseudo-element hovers invisible (`::after` underline = scaleX / bg-size) | flowfest, enerblock, ashley | Deterministic | Engine | 2 |
+| C | Split-reveal routed to boot, fires on scroll | flowfest (boot empty), ashley (boot latched onto reflow) | Deterministic | Planner | 4 |
+| D | Occluded / hidden-until-interaction / inert representative | all 4 | Partly det., partly LLM | Planner + repair | 4 + 5 |
+| E | Accordion clicks the body, not the header/icon | flowfest, residual Mammoth | Deterministic | Planner | 4 |
+| F | Vendor keyframes ranked as #1 signature (Shop Pay skeleton) | vwlab | Deterministic | Ranking | 3 |
+| — | Cosmetic: "scroll target" mislabel (`bin/motion-decompile:816`), drawSVG one-row-per-path, readiness false-positives | flowfest, vwlab | Deterministic | Trivial | 3 |
+
+Confirmed in code: iframe has **zero** mentions in engine or planner;
+pseudo-elements are **never** sampled (engine reads 9 properties off the element
+only, `capture-animation.js:478`, PROPS at lines 34-35); vendor filtering is
+**zero**. The planner (`bin/motion-decompile`, ~2294 lines) is larger than the
+engine (~1306 lines), so most of today's "intelligence" is hand-coded heuristics.
+
+The **Mammoth overfit** is deliberately not on this roadmap. It is confirmed
+inert across all four sites (additive dead weight, not distorting). Touch it only
+if it actually mis-fires on a sibling Webflow site.
+
+### Success metric
+
+Two numbers, not one. The lever is **live-capture hit rate** (baseline 28.6%, 8
+ok of 28 attempted; usable 35.7% counting checks). But the true north is the
+**rebuild verdict**: flowfest is only 11% hit yet ships 48 animations (32
+measured) from the ScrollTrigger registry and is a usable rebuild. The
+map-derived spec is the product. Do not sacrifice spec richness to chase hit%.
+
+Caveat the baseline exposed (2026-06-15): the failure-cause histogram was partly
+fiction, because distinct root causes shared one vague reason string.
+`wrong_document_iframe` read 0 but was 5; `pseudo_element` and
+`wrong_trigger_boot_vs_scroll` read 0 but were hiding inside `hidden_not_visible`
+(9, of which 5 are really vwlab's iframe) and `inert_representative` (6). Part 1
+makes it honest. Note also that the scoreboard measures failures and spec counts,
+not spec QUALITY, so a few fixes (vendor de-rank, drawSVG grouping) are verified
+by inspection, not by a moving number.
+
+Each behavior part ends by re-running the Part 0 harness and reporting the diff.
+
+---
+
+## Part 0 — Calibration harness (baseline + comparable metrics)
+
+One reusable prompt. It builds a metrics extractor on first run, reuses it after,
+archives the old prose reports once, and is the single thing you re-paste after
+every fix to regenerate the scoreboard. Script measures, agent judges.
+
+```
+You are building and running the standing calibration harness for
+motion-decompiler at /home/martin/src/perso/motion-decompiler. Read CLAUDE.md
+first. This task MEASURES the tool; it must NOT tune or modify engine/planner
+source (extension/capture-animation.js, bin/motion-decompile). If you change any
+source file the run is invalid.
+
+GOAL: produce one comparable scoreboard across 4 sites so that, as fixes land,
+we can see the live-capture hit rate and the failure-cause histogram move.
+
+ONE-TIME SETUP (idempotent, skip the part that is already done):
+1. If ./calibration-reports/*.md exist, move them to
+   docs/calibration/archive/2026-06-15-prose-baseline/ and add a one-line README
+   noting these are the pre-improvement prose reports, superseded by the
+   harness.
+2. Ensure a metrics extractor exists at bin/calib-metrics (build it if missing,
+   spec below). It is mechanical: it parses a run dir and emits metrics.json. No
+   model judgment in the numbers.
+
+THE STANDING SITE SET (do not change without telling the PM):
+  - ashleybrookecs   https://ashleybrookecs.com/
+  - enerblock        https://enerblock.net/en/
+  - flowfest         https://www.flowfest.co.uk/
+  - vwlab            https://vwlab.io/pages/report   (kept on purpose: this is
+        the cross-origin-iframe regression case; expected to flip from
+        wrong-document to flagged-iframe once the iframe fix lands)
+
+PER-SITE PROCEDURE (identical for all 4, real headed browser per CLAUDE.md, use
+the repo wrapper bin/capture-browser, a unique AGENT_BROWSER_SESSION per site):
+  a. scout -> decompile, full planner-proposed manifest, no curation, soft-fail
+     expected (capture failures record status and the run continues).
+  b. Run bin/calib-metrics on the run dir to produce <run_dir>/metrics.json in
+     the fixed schema.
+  c. For failure-cause buckets the script marks "other", read the recorded
+     reason and re-bucket if it clearly fits a known cause; leave genuinely
+     ambiguous ones as "other".
+  d. Write a SHORT fixed-format note per site (docs/calibration/<date>/<site>.md)
+     using the PER-SITE NOTE TEMPLATE below. No paragraphs, honor the caps. Then
+     drop the heavy artifacts from your working memory before the next site
+     (keep only metrics.json).
+  e. If a site HARD-fails (pipeline aborts, not a soft capture failure), record
+     "hard_fail": true with where it died and CONTINUE to the next site. Never
+     abort the whole batch for one site.
+
+AGGREGATION (after all 4):
+  - Write docs/calibration/SCOREBOARD.md: one row per site + a totals row, with
+    columns: site | stack | proposed | ok | check | empty | error | hit% |
+    usable% | animations (measured/verify) | dominant failure cause.
+    hit% = ok / attempted; usable% = (ok+check) / attempted; attempted excludes
+    skipped. Below the table, a failure-cause histogram summed across all sites,
+    using the buckets: occlusion, hidden_not_visible, inert_representative,
+    pseudo_element, wrong_trigger_boot_vs_scroll, wrong_document_iframe,
+    vendor_animation, other.
+  - If a previous SCOREBOARD.md exists, show a diff row (delta on hit% and on
+    each failure bucket) so reruns make movement obvious.
+  - Stamp the run date (use the shell `date`, do not invent one).
+
+CONSTRAINTS: identical methodology across sites; no source tuning; heavy run
+artifacts stay under runs/ (gitignored); only metrics.json, the per-site notes,
+and SCOREBOARD.md are kept. Close all browser sessions at the end. Confirm
+git status shows no engine/planner/test source changes.
+
+REPORT BACK TO YOUR PM: paste SCOREBOARD.md, the overall hit% and usable%, the
+failure-cause histogram, and call out anything that surprised you or any reason
+string too vague to bucket (that is itself a finding: it means we need richer
+failure reasons, which feeds the Part 5 repair loop).
+
+Commit as: the harness + extractor + archive move as coherent semantic commits;
+SCOREBOARD.md and per-site notes as the baseline data commit.
+
+---- bin/calib-metrics spec (dependency-free node or bash) ----
+Input: a run directory. Output: <run_dir>/metrics.json with:
+  site, url, run_dir, date, stack[], hard_fail,
+  captures: { proposed, results, ok, check, empty, error, skipped, attempted,
+              hit_rate, usable_rate },
+  spec: { animations, measured, verify, timelines_written },
+  map: { scroll_triggers, hover_candidates, css_hovers, loops, split_reveals },
+  failure_causes: { occlusion, hidden_not_visible, inert_representative,
+              pseudo_element, wrong_trigger_boot_vs_scroll,
+              wrong_document_iframe, vendor_animation, other },
+  wrong_document: null | "<iframe src if the tool flagged one>",
+  notable_wins: [], top_failures: [{ id, cause, note }]
+Source the numbers from capture-results.json (statuses + reasons),
+animations.md / animations.json (counts, measured vs verify, timelines), and
+map.json (stack + map counts). Bucket failure_causes by matching the recorded
+reason strings to the buckets with a documented keyword map (e.g.
+"covered by"/"center is covered" -> occlusion; "no visible elements"/"0x0" ->
+hidden_not_visible; "0 moved layers"/"no motion" -> inert_representative or
+pseudo_element if an underline/::after is implicated; cross-origin iframe ->
+wrong_document_iframe; vendor keyframe names -> vendor_animation); anything
+unmatched -> other.
+
+---- PER-SITE NOTE TEMPLATE (docs/calibration/<date>/<site>.md) ----
+Fill every field. No paragraphs. Keep to the caps. Use the fixed bucket
+vocabulary for causes (occlusion | hidden_not_visible | inert_representative |
+pseudo_element | wrong_trigger_boot_vs_scroll | wrong_document_iframe |
+vendor_animation | other). If a field is empty, write "none", never omit it.
+The cause column uses ONLY those eight buckets. Wins and failures reference
+capture ids, not prose, so the same id can be tracked across runs.
+
+# <site> — calibration <date>
+
+URL: <url>
+Run: <run_dir>
+Stack: <comma list, or "(none detected)">
+Hard fail: <yes: where | no>
+
+## Numbers
+| proposed | ok | check | empty | error | skipped | hit% | usable% |
+|----------|----|-------|-------|-------|---------|------|---------|
+|   <n>    |<n> | <n>   | <n>   | <n>   |  <n>    | <n%> |  <n%>   |
+
+Spec: <animations> animations (<measured> measured / <verify> verify),
+      <timelines> timelines.
+Map: ST <n> · hover <n> · cssHover <n> · loop <n> · split <n>.
+
+## Notable wins (max 3, the cleanest measured results)
+- <id> — <type> — <one-line what was captured, with the measured number>
+
+## Top failures (max 5, worst first)
+| id | type | status | cause | one-line reason |
+|----|------|--------|-------|-----------------|
+| <id> | <hover/scroll/boot/click/loop> | <empty/error> | <bucket> | <reason> |
+
+## Flags (cross-cutting issues, not per-capture; "none" if clean)
+- <e.g. wrong_document_iframe: report-vwlab.netlify.app | readiness
+  false-positive on loading-container | none>
+
+## Rebuild verdict (one line)
+<useful / partial / not useful> — <half-sentence why>
+```
+
+---
+
+## Part 1 — The diagnosis layer: honest failure causes (incl. cross-origin iframe)
+
+The Part 0 baseline proved the instrument is blind to three of the buckets we are
+about to fix. `wrong_document_iframe` read 0 but is really 5 (all of vwlab).
+`wrong_trigger_boot_vs_scroll` read 0 but is at least 1 (flowfest boot).
+`pseudo_element` read 0, yet some of the 6 `inert_representative` are really
+pseudo-element misses. The tool emits the same vague string for distinct root
+causes, so the histogram collapses them and we cannot size any prize before
+building it.
+
+So Part 1 is no longer "iframe only." It is the deterministic diagnosis layer:
+make every failure self-describe its cause, with iframe detection as its first
+and most valuable rule. This is also the deterministic skeleton of the Part 5
+repair loop, so building it now shrinks Part 5 to the residual the classifier
+cannot resolve. The part is mostly labeling (low risk, no capture-behavior
+change) with one behavior action: same-origin iframe re-target and cross-origin
+flag. Ship it as three commits in order if it is large: (1) iframe
+detect/flag/re-target, (2) the `cause` classifier, (3) the extractor reading
+`cause`.
+
+```
+Work on motion-decompiler at /home/martin/src/perso/motion-decompiler. Read
+CLAUDE.md first. This part makes failures self-describe their cause. With one
+exception (same-origin iframe re-target), it does NOT change capture behavior:
+pseudo-element sampling and trigger recipes are Parts 2 and 4. Here we only
+detect and LABEL, so the scoreboard becomes honest and the prizes are sized.
+
+PROBLEM (evidence: Part 0 baseline SCOREBOARD.md): distinct root causes are
+emitted with the same generic failure string, so the failure-cause histogram is
+partly fiction. vwlab's 5 errors are a cross-origin iframe but read as
+hidden_not_visible. A flowfest boot reveal that should fire on scroll reads as
+inert_representative. Underline-on-hover empties read as inert_representative
+when they are really pseudo-element.
+
+TASK:
+1. Cross-origin / dominant iframe detection (map/scout stage, where map.json is
+   built). When a single iframe covers a large fraction of the viewport (sane
+   structural threshold, e.g. >= ~60% of viewport area and larger than the top
+   doc's own real content):
+     - SAME-origin: re-target the map/capture at that iframe's document (or at
+       minimum surface it as the recommended target).
+     - CROSS-origin (contentDocument inaccessible): do not silently proceed.
+       Record a top-level finding in report.md ("primary content is a
+       cross-origin iframe: <src>; re-run against that URL") and stop the planner
+       promoting zero-size shell chrome as captures.
+   Also add a "suspiciously thin document" secondary signal (docHeight ~=
+   innerHeight with near-zero real content).
+2. A structured failure classifier. At capture-fail time, emit a structured
+   `cause` field on each failed capture in capture-results.json, using the fixed
+   bucket vocabulary: occlusion, hidden_not_visible, inert_representative,
+   pseudo_element, wrong_trigger_boot_vs_scroll, wrong_document_iframe,
+   vendor_animation, other. Use cheap live probes on the failed element, at least:
+     - dominant cross-origin iframe present -> wrong_document_iframe
+     - preflight reports covered/occluded -> occlusion
+     - selector 0x0 / not visible (and no iframe) -> hidden_not_visible
+     - hover candidate moved 0 element-layers, but the element or its
+       ::before/::after has a hover/transition rule on an animatable prop ->
+       pseudo_element (suspected; the actual capture fix is Part 2)
+     - hover candidate moved 0 layers AND no hover styling found anywhere ->
+       inert_representative (genuinely inert)
+     - boot reveal returned 0 layers AND ScrollTrigger is present AND the host is
+       below the fold at load -> wrong_trigger_boot_vs_scroll (recipe fix is Part 4)
+   Keep the reason STRING for humans, but the `cause` field is the machine truth.
+3. Update bin/calib-metrics to read the structured `cause` field directly when
+   present, falling back to its keyword map for legacy runs.
+
+CONSTRAINTS: framework-agnostic, dependency-free engine. Structural rules only,
+no hardcoded hosts or Mammoth literals. Apart from same-origin iframe re-target,
+do NOT change what gets captured or how; only detection and labeling. Preserve
+measured-vs-verify honesty and soft-fail.
+
+VERIFY: rerun the Part 0 harness on all 4 sites. Expected movement vs baseline:
+vwlab's 5 errors leave hidden_not_visible and become wrong_document_iframe, with
+report-vwlab.netlify.app surfaced and wrong_document populated; flowfest's
+boot-load-reveals is labeled wrong_trigger_boot_vs_scroll; the underline empties
+(flowfest underline-link, enerblock link--underline) are labeled pseudo_element.
+hit% on the shell will NOT rise (vwlab's real content is cross-origin), so the
+win here is correctness and honest attribution, not a hit% jump. Run
+tests/run-smoke.sh and node --check.
+
+REPORT BACK TO YOUR PM: the new honest histogram with the diff row vs baseline,
+the exact sizes of the pseudo_element and wrong_trigger_boot_vs_scroll buckets
+(these size Parts 2 and 4 before we build them), the iframe threshold you chose,
+and the vwlab report.md iframe finding (paste it).
+
+Commit semantically (suggested: iframe detect/flag/re-target; then the cause
+classifier; then the extractor change).
+```
+
+After Part 1 lands, propose to the PM adding https://report-vwlab.netlify.app to
+the standing site set, so we measure the real report's motion, not just the
+flagged shell.
+
+---
+
+## Part 2 — Pseudo-element sampling (character-changer B)
+
+PM note: Part 1's `cause` labels size this before you build it. On the 4
+calibration sites the recoverable set looks modest (flowfest underline-link,
+enerblock link--underline, maybe flowfest marquee), but underline-on-hover is
+ubiquitous web-wide, so the fix is justified regardless of the small-sample
+count. Read the `pseudo_element` bucket from the post-Part-1 scoreboard first.
+
+```
+Work on motion-decompiler at /home/martin/src/perso/motion-decompiler. Read
+CLAUDE.md and the header of extension/capture-animation.js first.
+
+Problem (evidence: flowfest link-hover, enerblock link--underline, ashley
+link-hover/misc-hover empties): underline-on-hover and similar effects are
+implemented on ::after / ::before pseudo-elements (scaleX, background-size,
+width). The engine samples computed style on the element ONLY
+(capture-animation.js:478, PROPS at lines 34-35) and never reads
+getComputedStyle(el, '::after'). So a whole class of extremely common hover
+interactions comes back "empty" even though the motion is real. This is the
+single most common cause of false-empty hover captures across the calibration
+set.
+
+Task: extend the per-frame sampler to also sample ::before and ::after pseudo-
+elements for the relevant properties (transform, opacity, width, the
+background-size / background-position used for underline grows, and clipPath).
+Emit pseudo-element motion as its own track/layer, clearly labeled (e.g.
+"<selector>::after"), so the spec distinguishes element motion from pseudo
+motion. Keep the measured/verify confidence labeling consistent with element
+tracks.
+
+Constraints: dependency-free, framework-agnostic, single source of truth (the
+extension and snippet both load this file). Watch performance: pseudo sampling
+multiplies getComputedStyle calls per tracked node per frame; only sample pseudos
+for tracked elements, not the whole tree. Do not regress existing element-level
+capture.
+
+Verify: re-run a headed capture (repo wrapper, per CLAUDE.md) on flowfest's nav
+"About" underline (div.underline-link) and/or enerblock's link--underline. The
+previously-empty capture should now record a non-empty pseudo-element track
+(e.g. ::after scaleX 0->1 or background-size growth). Run tests/run-smoke.sh and
+node --check.
+
+Report back to your PM: which sites/selectors you verified, the before/after
+(empty -> captured), the pseudo track shape you got, any perf impact on frame
+sampling, and the Part 0 metric delta.
+
+Commit semantically.
+```
+
+---
+
+## Part 3 — Ranking + presentation sweep (low-risk, no browser)
+
+PM note: (a) vendor de-rank and (b) drawSVG grouping do NOT show up in the
+failure histogram (they are spec-quality, not failures). Verify them by
+inspection: Shop Pay is no longer the #1 signature, drawSVG rows are grouped.
+Only the label-bug fix (c) feeds the Part 0 buckets.
+
+```
+Work on motion-decompiler at /home/martin/src/perso/motion-decompiler. Read
+CLAUDE.md first. These are independent low-risk fixes; do them as separate
+semantic commits.
+
+Three issues, all from the calibration set:
+
+(a) Vendor/third-party animations ranked as signatures (vwlab): the #1
+    "signature" was Shopify's acceleratedCheckoutLoadingSkeleton (Shop Pay
+    shimmer). Injected third-party motion (Shop Pay, Intercom, cookie banners,
+    chat widgets) should be de-ranked or filtered out of the signature tier, not
+    promoted. Add a maintainable denylist of known vendor @keyframes names /
+    injected-animation sources and de-rank matches. Keep the animation in the
+    spec but out of the "signature" top tier, and label why.
+
+(b) drawSVG path spam (flowfest): one ScrollTrigger emits ~20+ near-identical
+    "Path scroll motion" rows (0.75s Power1.easeOut). Group path entries by their
+    owning ScrollTrigger into a single entry with a count, instead of one row per
+    path.
+
+(c) "scroll target" mislabel (vwlab, bin/motion-decompile:816): hover/click
+    preflight failures are reported as "Preflight failed for scroll target ..."
+    because the label is hardcoded. Pass the real action label (hover/click/
+    scroll) so failure reasons are accurate. This also improves the Part 0
+    failure-cause bucketing.
+
+Constraints: no behavior change to actual capture; these are ranking/labeling/
+grouping only. Dependency-free.
+
+Verify: re-derive the spec for vwlab and flowfest from their existing run dirs if
+possible (no new browser run needed); confirm Shop Pay is no longer a signature,
+drawSVG rows are grouped, and a hover preflight error now says "hover" not
+"scroll target." Run tests/run-smoke.sh.
+
+Report back to your PM: the vendor denylist you started, before/after on the
+flowfest drawSVG grouping, confirmation the label bug is fixed, and rerun the
+Part 0 metric if convenient so we see any bucketing improvement.
+```
+
+---
+
+## Part 4 — Planner reveal/trigger recipes (needs browser)
+
+```
+Work on motion-decompiler at /home/martin/src/perso/motion-decompiler. Read
+CLAUDE.md first, especially the "timed-capture recipe" section.
+
+Three planner heuristic fixes from the calibration set:
+
+(a) Split reveals routed to boot but fire on scroll (flowfest boot empty; ashley
+    boot latched onto text reflow). When ScrollTrigger is present in the detected
+    stack, split-reveal hosts should be captured with a scroll-into-view recipe
+    (settle -> arm -> realScroll the host into view -> wait -> dump), NOT a
+    boot/load recipe. Keep boot for genuine load reveals.
+
+(b) Boot reveal latches onto layout reflow (ashley): the boot capture described
+    width/height deltas of split-text fragments (145.5->134.7px) rather than the
+    headline's reveal transform. Prefer transform/opacity as the reveal signal
+    and treat pure width/height reflow of text fragments as noise (or at least
+    flag it), so reveal captures report the intended motion.
+
+(c) Accordion/toggle clicks the wrong element (flowfest accordion-click error;
+    also the residual generic flaw in memory): the planner set the action to
+    click the collapsible body (item-bottom-content), which sits behind the
+    header, so preflight refused it. The click target should be the visible
+    toggle affordance (header/icon), not the collapsible content.
+
+Constraints: structural heuristics only, no per-site hardcoding. Do not
+reintroduce Mammoth-specific literals. Preserve soft-fail behavior.
+
+Verify (headed, repo wrapper per CLAUDE.md): flowfest split reveals
+(speakers__grid-lines / community__grid-lines) should now capture on scroll
+instead of coming back empty at boot; flowfest accordion-click should now hit the
+header and capture instead of erroring on occlusion; the ashleybrookecs boot
+reveal should report transform/opacity rather than text width/height. Run
+tests/run-smoke.sh and node --check.
+
+Report back to your PM: before/after on those three captures, and the Part 0
+metric delta vs baseline.
+```
+
+---
+
+## Part 5 — Capture-repair loop: DESIGN ONLY (the intelligence layer)
+
+This is the one checkpoint where the PM reviews a design before a clean context
+builds it. Part 6 (the build) is written after this design lands.
+
+PM note: Part 1 already ships the deterministic diagnosis layer (the structured
+`cause` classifier), so this loop is now smaller. The LLM only handles the
+residual the classifier marks ambiguous or that needs an open-ended repair
+(sibling element, tighter selector, re-target). Do not re-derive diagnosis the
+classifier already does.
+
+```
+Work on motion-decompiler at /home/martin/src/perso/motion-decompiler. Read
+CLAUDE.md and the driver-model section. This task produces a DESIGN, not an
+implementation. Do not change capture behavior yet.
+
+Context: after the deterministic fixes (Parts 1-4), a residual set of captures
+will still come back empty/error for reasons no fixed rule can fully resolve
+(inert representative selector, occlusion that needs a sibling, ambiguous
+trigger, re-target decisions). Today soft-fail records the reason and gives up.
+We want an agentic diagnose-and-retry loop: on empty/error, an LLM gets the
+failure reason + a screenshot + the relevant map subtree, diagnoses the cause,
+proposes a corrected recipe (tighter selector, different trigger,
+scroll-into-view, sibling element, iframe re-target), and we retry once or twice.
+
+Hard principle to preserve: the LLM decides WHAT and HOW to capture and how to
+REPAIR a failure. It must NEVER measure motion (durations, easings, from/to). The
+engine's per-frame sampling and its measured-vs-verify honesty stay the source of
+truth. Do not let the design route measurement through the model.
+
+Produce a short design doc (docs/ or plans/) covering:
+- Where the loop hooks into bin/motion-decompile (the capture stage, after a
+  capture returns empty/error).
+- The diagnosis input contract (failure reason, screenshot, map subtree, the
+  recipe that failed) and the structured output contract (diagnosis bucket +
+  proposed corrected recipe + confidence). Reuse the Part 0 failure-cause
+  buckets.
+- Retry policy (max retries, when to give up, how to avoid infinite loops and
+  cost blowups).
+- How a repaired capture is recorded so the scoreboard can distinguish
+  "ok-first-try" from "ok-after-repair" (we want to measure how much the loop
+  actually buys).
+- Driver-agnosticism: it must work across the agent-browser / claude-in-chrome /
+  minimal driver model, not assume one.
+
+Report back to your PM: the design doc, the input/output contracts, and your
+honest estimate of which failure buckets the loop can realistically fix vs which
+still need a human. The PM will review and greenlight the build as a separate
+task (Part 6).
+```
+
+---
+
+## Part 6 — Capture-repair loop: BUILD
+
+To be written once the Part 5 design lands, because how it is built depends on
+the contracts that design settles on.
+
+---
+
+## How to run the loop
+
+1. Run Part 0 once. Commit the baseline `SCOREBOARD.md`.
+2. Pick a part (1 and 2 are the highest leverage). Drop its prompt into a clean
+   context. The agent reports back, including the Part 0 metric delta.
+3. PM (this thread) reviews the report, adjusts the next prompt if needed.
+4. Repeat. The scoreboard is the single source of truth for whether the tool is
+   getting better.
