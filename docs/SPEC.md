@@ -420,7 +420,9 @@ patternId, notes, confidence, and tokens when a run has hand-authored context.
 
 Empty timelines are valid calibration results. `assemble` emits them as
 `unknown - verify` animations with `empty: true`, and `report` lists them under
-**Empty Captures**. A wrong selector or trigger recipe should not prevent the
+**Empty Captures**. Capture action failures are recorded with `status: "error"`
+and surfaced under **Failed Captures** while later manifest items continue. A
+wrong selector, covered hover point, or trigger recipe should not prevent the
 rest of the spec from being generated.
 
 Planner heuristics remain intentionally small but now include the first

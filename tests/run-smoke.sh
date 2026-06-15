@@ -231,6 +231,12 @@ cat >"$TMP_ASSEMBLE/manifest.json" <<'JSON'
       "type": "scroll-reveal",
       "root": "#missing-motion",
       "label": "Empty scroll"
+    },
+    {
+      "id": "failed-hover",
+      "type": "hover",
+      "root": "#covered",
+      "label": "Failed hover"
     }
   ]
 }
@@ -301,7 +307,7 @@ JSON
 cat >"$TMP_ASSEMBLE/capture-results.json" <<'JSON'
 {
   "capturedAt": "2026-06-15T00:00:00.000Z",
-  "count": 2,
+  "count": 3,
   "results": [
     {
       "id": "fixture-click",
@@ -316,6 +322,16 @@ cat >"$TMP_ASSEMBLE/capture-results.json" <<'JSON'
       "timelineRef": "timelines/empty-scroll.json",
       "summary": "no animation captured",
       "findings": 0
+    },
+    {
+      "id": "failed-hover",
+      "type": "hover",
+      "status": "error",
+      "timelineRef": null,
+      "summary": "capture failed before a timeline could be saved",
+      "findings": 0,
+      "stop": "error",
+      "error": "element is covered by another element"
     }
   ]
 }
@@ -394,3 +410,5 @@ test -s "$TMP_ASSEMBLE/animations.md"
 "$ROOT/bin/motion-decompile" report "$TMP_ASSEMBLE" >/dev/null
 grep -q 'Empty Captures' "$TMP_ASSEMBLE/report.md"
 grep -q 'empty-scroll' "$TMP_ASSEMBLE/report.md"
+grep -q 'Failed Captures' "$TMP_ASSEMBLE/report.md"
+grep -q 'failed-hover' "$TMP_ASSEMBLE/report.md"

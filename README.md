@@ -133,8 +133,10 @@ labels, mechanisms, notes, confidence, and pattern IDs when a human has better
 context.
 
 Empty captures are preserved as `unknown - verify` entries instead of crashing
-assembly. `report.md` calls them out under **Empty Captures** so selector misses,
-hidden elements, and bad trigger recipes stay visible during calibration.
+assembly. Capture action failures are recorded with `status: "error"` and the
+pipeline continues to the next manifest item. `report.md` calls these out under
+**Empty Captures** or **Failed Captures** so selector misses, hidden elements,
+covered hover points, and bad trigger recipes stay visible during calibration.
 
 `plan` reads `map.json` and writes `manifest.proposed.json` plus
 `capture-plan.md`. It proposes boot captures for split reveals, scroll captures

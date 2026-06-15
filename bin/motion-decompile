@@ -316,6 +316,27 @@ function saveTimeline(runDir, id, timeline) {
   return file;
 }
 
+function statusForTimeline(timeline) {
+  const moved = timeline?.meta?.elementsMoved ?? timeline?.findings?.length ?? 0;
+  if (!Number(moved)) return 'empty';
+  const stop = timeline?.meta?.terminationReason || '';
+  if (/maxDuration|manualDump/.test(stop)) return 'check';
+  return 'ok';
+}
+
+function timelineResult(runDir, id, type, file, timeline) {
+  return {
+    id,
+    type,
+    status: statusForTimeline(timeline),
+    file,
+    timelineRef: path.relative(runDir, file),
+    summary: timeline.summary,
+    findings: timeline.findings?.length || 0,
+    stop: timeline.meta?.terminationReason || null,
+  };
+}
+
 function runMap(runDir, manifest, flags = {}) {
   const viewport = normalizeViewport(manifest, flags);
   openPage(runDir, manifest.url, viewport, [ENGINE]);
@@ -334,54 +355,77 @@ function runCapture(runDir, manifest, manifestFile) {
   appendLog(runDir, `\nUsing manifest: \`${manifestFile || path.join(runDir, 'manifest.json')}\`\n`);
 
   const results = [];
-  captures.forEach((capture, index) => {
+  for (const [index, capture] of captures.entries()) {
     const id = captureId(capture, index);
+    const type = captureType(capture);
     if (capture.skip || capture.enabled === false) {
       appendLog(runDir, `\n## Capture ${id}\n\nSkipped: ${capture.reason || 'marked skipped'}\n`);
-      return;
+      results.push({
+        id,
+        type,
+        status: 'skipped',
+        summary: capture.skipReason || capture.reason || 'marked skipped',
+        findings: 0,
+        stop: 'skipped',
+      });
+      continue;
     }
-    const type = captureType(capture);
-    const url = capture.url || manifest.url;
-    const waitMs = capture.waitMs == null ? null : Number(capture.waitMs);
-    appendLog(runDir, `\n## Capture ${id}\n\nType: \`${type}\`\n`);
 
-    if (type === 'boot' || type === 'load') {
-      const init = bootInitFile(capture, id);
-      try {
-        openPage(runDir, url, viewport, [init.file, ENGINE]);
-        runBrowser(['wait', String(waitMs == null ? init.boot.ms + 300 : waitMs)], { runDir });
-        const timeline = evalJson('(() => window.__cap.bootDump({ copy: false }))()', runDir);
-        const file = saveTimeline(runDir, id, timeline);
-        results.push({ id, type, file, summary: timeline.summary, findings: timeline.findings?.length || 0 });
-      } finally {
-        fs.rmSync(init.file, { force: true });
+    try {
+      const url = capture.url || manifest.url;
+      const waitMs = capture.waitMs == null ? null : Number(capture.waitMs);
+      appendLog(runDir, `\n## Capture ${id}\n\nType: \`${type}\`\n`);
+
+      if (type === 'boot' || type === 'load') {
+        const init = bootInitFile(capture, id);
+        try {
+          openPage(runDir, url, viewport, [init.file, ENGINE]);
+          runBrowser(['wait', String(waitMs == null ? init.boot.ms + 300 : waitMs)], { runDir });
+          const timeline = evalJson('(() => window.__cap.bootDump({ copy: false }))()', runDir);
+          const file = saveTimeline(runDir, id, timeline);
+          results.push(timelineResult(runDir, id, type, file, timeline));
+        } finally {
+          fs.rmSync(init.file, { force: true });
+        }
+        continue;
       }
-      return;
+
+      openPage(runDir, url, viewport, [ENGINE]);
+      runBrowser(['wait', String(capture.initialWaitMs || manifest.captureInitialWaitMs || 1000)], { runDir });
+
+      const action = defaultAction(capture, type);
+      const actionSelector = selectorFromAction(action);
+      const scrollTarget = capture.scrollTarget || capture.root || actionSelector;
+      if (scrollTarget && type !== 'scroll' && type !== 'scroll-reveal') {
+        runBrowser(['scrollintoview', scrollTarget], { runDir });
+        runBrowser(['wait', String(capture.settleMs || 250)], { runDir });
+      }
+      if (type === 'hover') {
+        runBrowser(['mouse', 'move', '1', '1'], { runDir });
+      }
+
+      const arm = defaultArm(capture, type, id);
+      if (arm) evalStatement(arm, runDir);
+      if (action) runAction(action, runDir);
+      runBrowser(['wait', String(waitMs == null ? 1200 : waitMs)], { runDir });
+
+      const timeline = evalJson('(() => window.__cap.dump({ copy: false }))()', runDir);
+      const file = saveTimeline(runDir, id, timeline);
+      results.push(timelineResult(runDir, id, type, file, timeline));
+    } catch (error) {
+      const message = error.message || String(error);
+      appendLog(runDir, `\nCapture failed: ${message}\n`);
+      results.push({
+        id,
+        type,
+        status: 'error',
+        summary: 'capture failed before a timeline could be saved',
+        findings: 0,
+        stop: 'error',
+        error: message,
+      });
     }
-
-    openPage(runDir, url, viewport, [ENGINE]);
-    runBrowser(['wait', String(capture.initialWaitMs || manifest.captureInitialWaitMs || 1000)], { runDir });
-
-    const action = defaultAction(capture, type);
-    const actionSelector = selectorFromAction(action);
-    const scrollTarget = capture.scrollTarget || capture.root || actionSelector;
-    if (scrollTarget && type !== 'scroll' && type !== 'scroll-reveal') {
-      runBrowser(['scrollintoview', scrollTarget], { runDir });
-      runBrowser(['wait', String(capture.settleMs || 250)], { runDir });
-    }
-    if (type === 'hover') {
-      runBrowser(['mouse', 'move', '1', '1'], { runDir });
-    }
-
-    const arm = defaultArm(capture, type, id);
-    if (arm) evalStatement(arm, runDir);
-    if (action) runAction(action, runDir);
-    runBrowser(['wait', String(waitMs == null ? 1200 : waitMs)], { runDir });
-
-    const timeline = evalJson('(() => window.__cap.dump({ copy: false }))()', runDir);
-    const file = saveTimeline(runDir, id, timeline);
-    results.push({ id, type, file, summary: timeline.summary, findings: timeline.findings?.length || 0 });
-  });
+  }
 
   writeJson(path.join(runDir, 'capture-results.json'), {
     capturedAt: new Date().toISOString(),
@@ -389,12 +433,15 @@ function runCapture(runDir, manifest, manifestFile) {
     results: results.map(result => ({
       id: result.id,
       type: result.type,
-      timelineRef: path.relative(runDir, result.file),
+      status: result.status,
+      timelineRef: result.timelineRef || (result.file ? path.relative(runDir, result.file) : null),
       summary: result.summary,
       findings: result.findings,
+      stop: result.stop || null,
+      error: result.error,
     })),
   });
-  appendLog(runDir, `\nSaved ${results.length} timeline(s).\n`);
+  appendLog(runDir, `\nSaved ${timelineCount(results)} timeline(s); ${results.length} capture result(s).\n`);
   return results;
 }
 
@@ -484,7 +531,9 @@ function tableRow(cells) {
 }
 
 function reportText(value) {
-  return String(value == null ? '' : value).replace(/\u2014/g, '-');
+  return String(value == null ? '' : value)
+    .replace(/\u2014/g, '-')
+    .replace(/\r?\n/g, '<br>');
 }
 
 function plainStrings(value) {
@@ -568,9 +617,14 @@ function timelineResults(runDir) {
     }));
 }
 
+function timelineCount(results) {
+  return results.filter(result => result.timelineRef || result.file).length;
+}
+
 function relativeTimelineRef(runDir, result) {
   if (result.timelineRef) return result.timelineRef;
   if (result.file) return path.relative(runDir, result.file);
+  if (result.status === 'error' || result.status === 'skipped') return null;
   return path.join('timelines', `${result.id}.json`);
 }
 
@@ -948,6 +1002,7 @@ function renderCapturePlanMarkdown(manifest, plan) {
 
 function timelineAnimation(runDir, result, capture) {
   const ref = relativeTimelineRef(runDir, result);
+  if (!ref) return null;
   const file = path.join(runDir, ref);
   if (!fs.existsSync(file)) return null;
   const timeline = readJson(file);
@@ -1405,6 +1460,9 @@ function captureResultsForReport(runDir) {
 }
 
 function captureStatus(result, timeline) {
+  if (result.status === 'error') return 'error';
+  if (result.status === 'skipped') return 'skipped';
+  if (result.status && result.status !== 'ok') return result.status;
   const moved = timeline.meta?.elementsMoved ?? result.findings ?? 0;
   if (!Number(moved)) return 'empty';
   const stop = timeline.meta?.terminationReason || '';
@@ -1418,24 +1476,27 @@ function buildReport(runDir) {
   const captureResults = captureResultsForReport(runDir);
   const assembled = optionalJson(path.join(runDir, 'animations.json'), null);
   const rows = captureResults.results.map(result => {
-    const timeline = optionalJson(path.join(runDir, result.timelineRef), {});
+    const timeline = result.timelineRef ? optionalJson(path.join(runDir, result.timelineRef), {}) : {};
     const moved = timeline.meta?.elementsMoved ?? result.findings ?? '';
     return tableRow([
       result.id,
       result.type,
       captureStatus(result, timeline),
       moved,
-      timeline.meta?.terminationReason || '',
-      result.summary || timeline.summary || '',
-      result.timelineRef,
+      result.stop || timeline.meta?.terminationReason || '',
+      result.error || result.summary || timeline.summary || '',
+      result.timelineRef || '',
     ]);
   });
   const emptyRows = captureResults.results
     .filter(result => {
-      const timeline = optionalJson(path.join(runDir, result.timelineRef), {});
+      const timeline = result.timelineRef ? optionalJson(path.join(runDir, result.timelineRef), {}) : {};
       return captureStatus(result, timeline) === 'empty';
     })
     .map(result => `- **${reportText(result.id)}**: ${reportText(result.summary || 'No animation captured')}. Try a tighter selector, a visible starting state, or a manual/in-view recipe.`);
+  const failedRows = captureResults.results
+    .filter(result => result.status === 'error')
+    .map(result => `- **${reportText(result.id)}**: ${reportText(result.error || result.summary || 'Capture failed')}`);
 
   const lines = [];
   lines.push('# Motion Decompile Report');
@@ -1491,6 +1552,13 @@ function buildReport(runDir) {
     lines.push('## Empty Captures');
     lines.push('');
     lines.push(...emptyRows);
+    lines.push('');
+  }
+
+  if (failedRows.length) {
+    lines.push('## Failed Captures');
+    lines.push('');
+    lines.push(...failedRows);
     lines.push('');
   }
 
@@ -1558,7 +1626,8 @@ function captureCommand(argv) {
   ensureRunDir(runDir);
   const { file, manifest } = loadManifest(runDir, positionals[1]);
   const results = runCapture(runDir, manifest, file);
-  console.log(`Saved ${results.length} timeline(s) under ${path.join(runDir, 'timelines')}`);
+  console.log(`Saved ${timelineCount(results)} timeline(s) under ${path.join(runDir, 'timelines')}`);
+  console.log(`Capture results: ${results.length}`);
 }
 
 function planCommand(argv) {
@@ -1611,7 +1680,8 @@ function runCommand(argv) {
   const { runDir, map, results, spec } = runFromManifestFile(file, flags);
   console.log(`Run: ${runDir}`);
   console.log(`Map: ${(map.libs || []).join(', ') || 'no libraries'}; ${(map.hoverCandidates || []).length} hover candidates`);
-  console.log(`Timelines: ${results.length}`);
+  console.log(`Timelines: ${timelineCount(results)}`);
+  console.log(`Capture results: ${results.length}`);
   console.log(`Animations: ${spec.animations.length}`);
   console.log(`Spec: ${path.join(runDir, 'animations.json')}`);
   console.log(`Report: ${path.join(runDir, 'report.md')}`);
@@ -1655,7 +1725,8 @@ function decompileCommand(argv) {
     console.log(`Run: ${result.runDir}`);
     console.log(`Manifest: ${result.manifestFile}`);
   }
-  console.log(`Timelines: ${result.results.length}`);
+  console.log(`Timelines: ${timelineCount(result.results)}`);
+  console.log(`Capture results: ${result.results.length}`);
   console.log(`Animations: ${result.spec.animations.length}`);
   console.log(`Spec: ${path.join(result.runDir, 'animations.json')}`);
   console.log(`Report: ${path.join(result.runDir, 'report.md')}`);
