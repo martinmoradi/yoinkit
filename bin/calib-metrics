@@ -191,7 +191,10 @@ for (const r of results) {
   const rep = r.repair;
   if (!rep || !rep.attempted) continue;
   repair.attempted++;
-  const bucket = r.cause || 'other';
+  // Bucket by the ORIGINAL failure cause stored on the repair block, not
+  // r.cause: a successful repair carries the engine-ok result, whose cause is
+  // null, which would otherwise mis-bucket every win into "other".
+  const bucket = rep.failureCause || r.cause || 'other';
   bump(repair.by_bucket, bucket, 'att');
   for (const a of Array.isArray(rep.attempts) ? rep.attempts : []) {
     bump(repair.by_action, a.action, 'att');

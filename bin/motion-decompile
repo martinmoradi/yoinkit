@@ -734,13 +734,12 @@ function repairConfig(manifest = {}, flags = {}) {
   const command = flags.repairCmd || block.command || null;
   if (!command) return null;
   const causes = flags.repairCauses || block.repairableCauses || DEFAULT_REPAIRABLE_CAUSES;
+  const budgetOpt = optionNumber(flags.repairBudget, block.budget);
   return {
     command,
     maxRetries: finiteNumber(optionNumber(flags.repairMaxRetries, block.maxRetries), REPAIR_DEFAULTS.maxRetries),
     confidenceFloor: finiteNumber(optionNumber(flags.repairConfidenceFloor, block.confidenceFloor), REPAIR_DEFAULTS.confidenceFloor),
-    budget: optionNumber(flags.repairBudget, block.budget) === undefined
-      ? null
-      : finiteNumber(optionNumber(flags.repairBudget, block.budget), null),
+    budget: budgetOpt === undefined ? null : finiteNumber(budgetOpt, null),
     repairableCauses: Array.isArray(causes) ? causes.filter(c => REPAIR_ROOT_CAUSES.includes(c)) : DEFAULT_REPAIRABLE_CAUSES,
   };
 }
@@ -765,21 +764,23 @@ function repairContextProbe(selector) {
     };
     const round = n => Math.round(n);
     const rectOf = el => { const r = el.getBoundingClientRect(); return [round(r.left), round(r.top), round(r.width), round(r.height)]; };
-    const visibleOf = el => {
-      const cs = getComputedStyle(el);
-      const r = el.getBoundingClientRect();
-      return cs.display !== 'none' && cs.visibility !== 'hidden' && Number(cs.opacity || 1) > 0 && r.width > 1 && r.height > 1;
-    };
-    const occluderOf = el => {
-      if (!visibleOf(el)) return null;
-      const r = el.getBoundingClientRect();
+    const visibleWith = (cs, r) => cs.display !== 'none' && cs.visibility !== 'hidden' && Number(cs.opacity || 1) > 0 && r.width > 1 && r.height > 1;
+    const visibleOf = el => visibleWith(getComputedStyle(el), el.getBoundingClientRect());
+    const occluderWith = (el, visible, r) => {
+      if (!visible) return null;
       const x = Math.max(1, Math.min(innerWidth - 1, r.left + r.width / 2));
       const y = Math.max(1, Math.min(innerHeight - 1, r.top + r.height / 2));
       const top = document.elementFromPoint(x, y);
       if (top && top !== el && !el.contains(top) && !top.contains(el)) return cssPath(top);
       return null;
     };
-    const matchOf = (el, nth) => ({ nth, visible: visibleOf(el), rect: rectOf(el), display: getComputedStyle(el).display, occludedBy: occluderOf(el) });
+    // One style + one layout read per element, reused across visible/rect/display/occluder.
+    const matchOf = (el, nth) => {
+      const cs = getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      const visible = visibleWith(cs, r);
+      return { nth, visible, rect: [round(r.left), round(r.top), round(r.width), round(r.height)], display: cs.display, occludedBy: occluderWith(el, visible, r) };
+    };
 
     const out = {
       matches: [], ancestors: [], siblings: [], candidateTriggers: [],
@@ -872,8 +873,12 @@ function repairContextProbe(selector) {
           out.animatableHere.pseudoHover = true;
         }
       }
-      const descendants = Array.from(primary.querySelectorAll('*')).slice(0, 200);
-      for (const d of descendants) {
+      // Walk descendants with an early exit instead of materializing the whole
+      // subtree: stop at the first animated child (cap 200 to bound cost).
+      const walker = document.createTreeWalker(primary, NodeFilter.SHOW_ELEMENT);
+      let d, scanned = 0;
+      while ((d = walker.nextNode()) && scanned < 200) {
+        scanned++;
         const cs = getComputedStyle(d);
         if (((parseFloat(cs.transitionDuration) || 0) > 0 && ANIM.test(cs.transitionProperty || '')) || (cs.animationName && cs.animationName !== 'none')) {
           out.animatableHere.childAnimated = true; break;
@@ -1010,14 +1015,25 @@ function writeRepairInput(runDir, id, attempt, input) {
 const REPAIR_ACTION_VERBS = ['click', 'dblclick', 'hover', 'focus', 'scrollintoview', 'wait', 'eval', 'press', 'scroll', 'mouse'];
 
 function validRecipeStep(step) {
-  if (step && typeof step === 'object') return Boolean(step.eval || step.waitMs != null || step.command);
+  if (step && typeof step === 'object') {
+    if (step.eval) return true;
+    if (step.waitMs != null) return Number.isFinite(Number(step.waitMs));
+    if (step.command != null) return REPAIR_ACTION_VERBS.includes(String(step.command));
+    return false;
+  }
   if (typeof step !== 'string' || !step.trim()) return false;
   try { return REPAIR_ACTION_VERBS.includes(splitAction(step).command); } catch (e) { return false; }
 }
 
+function nonEmptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
 // Validate the provider's structured output against the closed contract (§3).
 // An invalid/unparseable response is the caller's signal to fail safe to
-// terminal_give_up(provider_error) — the loop never acts on garbage.
+// terminal_give_up(provider_error) — the loop never acts on garbage. Action
+// variants whose effect is not implemented (an `nth`-only retarget, a
+// `frameSelector`-only iframe re-target) are rejected, not silently no-op'd.
 function validateRepairOutput(raw) {
   if (!raw || typeof raw !== 'object') return { valid: false, error: 'output is not an object' };
   const action = raw.action;
@@ -1025,19 +1041,26 @@ function validateRepairOutput(raw) {
     return { valid: false, error: `invalid action.kind: ${action && action.kind}` };
   }
   const kind = action.kind;
-  if ((kind === 'retarget_selector' || kind === 'use_other_instance') && !action.selector && action.nth == null) {
-    return { valid: false, error: `${kind} needs selector or nth` };
+  if (kind === 'retarget_selector' || kind === 'use_other_instance') {
+    // `nth` alone is not actionable (the engine arms by selector, not index).
+    if (!nonEmptyString(action.selector)) return { valid: false, error: `${kind} needs a concrete selector` };
   }
-  if (kind === 'scroll_into_view' && !action.selector) return { valid: false, error: 'scroll_into_view needs selector' };
+  if (kind === 'scroll_into_view' && !nonEmptyString(action.selector)) return { valid: false, error: 'scroll_into_view needs a selector' };
   if (kind === 'precondition_action') {
     if (!Array.isArray(action.actions) || !action.actions.length) return { valid: false, error: 'precondition_action needs actions[]' };
     if (!action.actions.every(validRecipeStep)) return { valid: false, error: 'precondition_action has an unrecognized step' };
   }
-  if (kind === 'retarget_iframe' && !action.frameSelector && !action.url) return { valid: false, error: 'retarget_iframe needs frameSelector or url' };
+  if (kind === 'retarget_iframe' && !nonEmptyString(action.url)) {
+    // Only same-document re-point by URL is implemented; frameSelector-only is rejected.
+    return { valid: false, error: 'retarget_iframe needs a url (frameSelector-only is unsupported)' };
+  }
 
-  let confidence = Number(raw.confidence);
-  if (!Number.isFinite(confidence)) confidence = 0;
-  confidence = Math.max(0, Math.min(1, confidence));
+  // Confidence must be a real number — missing/non-numeric is malformed, not 0.
+  // (Out-of-range numbers are clamped, not rejected.)
+  if (typeof raw.confidence !== 'number' || !Number.isFinite(raw.confidence)) {
+    return { valid: false, error: 'confidence is missing or non-numeric' };
+  }
+  const confidence = Math.max(0, Math.min(1, raw.confidence));
   const rootCause = REPAIR_ROOT_CAUSES.includes(raw.rootCause) ? raw.rootCause : 'ambiguous';
   const sc = (raw.successCriterion && typeof raw.successCriterion === 'object') ? raw.successCriterion : { expect: 'moved' };
   if (!['moved', 'status_ok_or_check'].includes(sc.expect)) sc.expect = 'moved';
@@ -1070,15 +1093,13 @@ function applyRepair(capture, type, action) {
   const clone = JSON.parse(JSON.stringify(capture));
   const kind = action.kind;
   if (kind === 'retarget_selector' || kind === 'use_other_instance') {
-    if (action.selector) {
-      clone.root = action.selector;
-      clone.selector = action.selector;
-      clone.scrollTarget = action.selector;
-      delete clone.target;
-      delete clone.action;   // let defaultAction/defaultArm rebuild from the new selector
-      delete clone.arm;
-    }
-    if (action.nth != null) clone.repairNth = action.nth;   // advisory; selector is authoritative
+    // validateRepairOutput guarantees a concrete selector for these kinds.
+    clone.root = action.selector;
+    clone.selector = action.selector;
+    clone.scrollTarget = action.selector;
+    delete clone.target;
+    delete clone.action;   // let defaultAction/defaultArm rebuild from the new selector
+    delete clone.arm;
   } else if (kind === 'scroll_into_view') {
     prependBeforeAction(clone, [`scrollintoview ${action.selector}`, 'wait 300']);
     clone.fresh = true;
@@ -1092,22 +1113,57 @@ function applyRepair(capture, type, action) {
   return clone;
 }
 
+// Parse a simple (single-compound) CSS selector into {tag, id, classes}. Reads
+// the rightmost compound when combinators are present, since the engine names
+// one element. Returns nulls/[] for degenerate input (".", ">", "", whitespace).
+function parseSimpleSelector(sel) {
+  const compound = String(sel || '').trim().split(/[\s>+~]+/).filter(Boolean).pop() || '';
+  const tagMatch = compound.match(/^([a-zA-Z][\w-]*)|^\*/);
+  let tag = null, rest = compound;
+  if (tagMatch) {
+    tag = tagMatch[0] === '*' ? null : tagMatch[0].toLowerCase();
+    rest = compound.slice(tagMatch[0].length);
+  }
+  const id = (rest.match(/#([\w-]+)/) || [])[1] || null;
+  const classes = (rest.match(/\.[\w-]+/g) || []).map(c => c.slice(1));
+  return { tag, id, classes };
+}
+
+function isDegenerateSelector(parsed) {
+  return !parsed.tag && !parsed.id && !parsed.classes.length;
+}
+
+// Does a moved finding selector satisfy the criterion's onSelector? Matches on
+// PARSED tag/id/classes, not raw substring (so `.nav` does not spuriously match
+// `.navigation`). The criterion is satisfied when the moved selector carries the
+// same id (if named), a compatible tag, and every class the criterion names —
+// extra (e.g. state) classes on the moved selector are allowed. A degenerate
+// criterion can never be satisfied.
+function selectorSatisfies(movedSel, criterionSel) {
+  const want = parseSimpleSelector(criterionSel);
+  if (isDegenerateSelector(want)) return false;
+  const have = parseSimpleSelector(movedSel);
+  if (want.id && want.id !== have.id) return false;
+  if (want.tag && have.tag && want.tag !== have.tag) return false;
+  return want.classes.every(c => have.classes.includes(c));
+}
+
 // Did the re-measured ENGINE result meet the machine-checked criterion (§3)?
 // Reads status/movedSelectors only — never the model's self-report.
 function meetsSuccess(result, criterion) {
   const okish = result && (result.status === 'ok' || result.status === 'check');
   if (!okish) return false;
-  if (!criterion || criterion.expect === 'status_ok_or_check') return true;
-  if (criterion.onSelector) {
+  // onSelector is enforced whenever present — a *specific* element must have
+  // moved — regardless of `expect`. `expect: status_ok_or_check` only relaxes
+  // the "something moved" bar when NO onSelector is named (and ok/check already
+  // implies elementsMoved >= 1, so the two cases coincide here).
+  // Distinguish ABSENT onSelector (no specific element required -> ok/check is
+  // enough) from a PRESENT one (including a degenerate ""/"."/">" the provider
+  // botched, which can never be satisfied).
+  const hasOnSelector = criterion && criterion.onSelector !== undefined && criterion.onSelector !== null;
+  if (hasOnSelector) {
     const moved = result.movedSelectors || [];
-    // Compare on tag/class/id tokens, not raw CSS-path string equality: the
-    // engine emits a finding selector like `div.carousel__arrow.carousel__arrow--prev`
-    // for a criterion of `div.carousel__arrow--prev`, so a substring test misses.
-    // A moved selector satisfies the criterion when it carries every token the
-    // criterion names.
-    const tokens = String(criterion.onSelector).split(/[.#\s>+~]+/).filter(Boolean);
-    if (!tokens.length) return true;
-    return moved.some(s => s && tokens.every(t => s.includes(t)));
+    return moved.some(s => s && selectorSatisfies(s, criterion.onSelector));
   }
   return true;
 }
@@ -1137,8 +1193,10 @@ function runRepairLoop(env, ctx) {
   const { config, budget } = ctx;
   const attempts = [];          // accounting + attemptHistory fed back to provider
   const seenTriples = [resultTriple(ctx.result)];
+  const failureCause = ctx.result.cause || null;   // the ORIGINAL bucket, for metrics
   let current = ctx.result;     // latest failed engine result
   let final = ctx.result;       // pushed result (engine-measured)
+  let currentSelector = ctx.failSelector || primaryCaptureSelector(ctx.capture, ctx.type);
   let origin = 'first-try';
   let outcome = 'unrepaired';
   let winningAction = null;
@@ -1146,9 +1204,12 @@ function runRepairLoop(env, ctx) {
 
   for (let attempt = 1; attempt <= config.maxRetries; attempt++) {
     if (budget.remaining() <= 0) { env.log(`repair budget exhausted; stopping ${ctx.id}`); break; }
+    // One budget unit per ATTEMPT (diagnosis screenshot + repairContext probe +
+    // provider call), whether or not it ends in a recapture. Terminal and
+    // low-confidence attempts still cost a diagnosis, so they count too.
     budget.spend();
 
-    const sel = current.root || ctx.failSelector || (current.causeSignals && current.causeSignals.selector) || null;
+    const sel = currentSelector;
     const relShot = `repair/${ctx.id}.attempt-${attempt}.png`;
     const screenshot = env.screenshot(sel, relShot);
     const repairContext = env.repairContext(sel);
@@ -1186,6 +1247,9 @@ function runRepairLoop(env, ctx) {
 
     const fresh = isStatefulRepairKind(kind);
     const cloned = applyRepair(ctx.capture, ctx.type, repair.action);
+    // A retarget moves the element under inspection, so the NEXT attempt's
+    // diagnosis should probe the new selector, not the original failure's.
+    if (nonEmptyString(repair.action.selector)) currentSelector = repair.action.selector;
     let recaptured;
     try {
       recaptured = env.recapture(cloned, ctx.type, ctx.id, fresh);
@@ -1196,7 +1260,8 @@ function runRepairLoop(env, ctx) {
 
     if (meetsSuccess(recaptured, repair.successCriterion)) {
       outcome = 'ok-after-repair'; winningAction = kind; origin = 'after-repair';
-      recaptured.page = final.page;   // preserve page provenance shape
+      // Keep the recapture's OWN page provenance (the fresh isolated open for a
+      // stateful repair); do not paper over it with the failure's page.
       final = recaptured;
       env.log(`repair ${ctx.id} attempt ${attempt}: ${kind} succeeded -> ${recaptured.status}`);
       break;
@@ -1221,6 +1286,7 @@ function runRepairLoop(env, ctx) {
 
   const repairBlock = {
     attempted: true,
+    failureCause,                 // the original Part 1 bucket, preserved for metrics
     attempts,
     winningAction,
     outcome,
@@ -1235,7 +1301,7 @@ function runRepairLoop(env, ctx) {
 // caller maps null -> terminal_give_up(provider_error)). Never throws.
 function invokeRepairProvider(command, inputPath, runDir) {
   try {
-    const res = spawnSync(`${command} ${shellQuote(inputPath)}`, {
+    const res = spawnSync(`${command} ${quote(inputPath)}`, {
       cwd: process.cwd(),
       shell: true,
       encoding: 'utf8',
@@ -1245,27 +1311,29 @@ function invokeRepairProvider(command, inputPath, runDir) {
       if (runDir) appendLog(runDir, `\nRepair provider exited ${res.status}: ${(res.stderr || '').trim()}\n`);
       return null;
     }
-    const printed = String(res.stdout || '').trim().split('\n').filter(Boolean).pop();
-    if (!printed) return null;
-    const candidates = [
-      path.isAbsolute(printed) ? printed : null,
-      path.resolve(process.cwd(), printed),
-      path.resolve(path.dirname(inputPath), printed),
-    ].filter(Boolean);
-    const outPath = candidates.find(p => fs.existsSync(p));
-    if (!outPath) {
-      if (runDir) appendLog(runDir, `\nRepair provider output not found at: ${printed}\n`);
-      return null;
+    // Do NOT assume the last stdout line is the path — a provider may print
+    // diagnostics after it. Scan lines (latest first) for one that resolves to
+    // an existing JSON file and parses.
+    const lines = String(res.stdout || '').split('\n').map(s => s.trim()).filter(Boolean).reverse();
+    for (const line of lines) {
+      const candidates = [
+        path.isAbsolute(line) ? line : null,
+        path.resolve(process.cwd(), line),
+        path.resolve(path.dirname(inputPath), line),
+      ].filter(Boolean);
+      for (const candidate of candidates) {
+        let stat;
+        try { stat = fs.statSync(candidate); } catch (e) { continue; }
+        if (!stat.isFile()) continue;
+        try { return JSON.parse(fs.readFileSync(candidate, 'utf8')); } catch (e) { /* not the path; keep scanning */ }
+      }
     }
-    return JSON.parse(fs.readFileSync(outPath, 'utf8'));
+    if (runDir) appendLog(runDir, `\nRepair provider printed no resolvable output-JSON path\n`);
+    return null;
   } catch (error) {
     if (runDir) appendLog(runDir, `\nRepair provider error: ${error.message || error}\n`);
     return null;
   }
-}
-
-function shellQuote(value) {
-  return `'${String(value).replace(/'/g, `'\\''`)}'`;
 }
 
 function loadManifest(runDir, manifestPath) {
@@ -1412,6 +1480,13 @@ function defaultArm(capture, type, id) {
   if (!target) throw new Error(`Capture "${id}" needs root, selector, action, or arm`);
   const trigger = type === 'click' ? 'manual' : (type === 'scroll-reveal' ? 'scroll' : type);
   return `window.__cap.scan(${JSON.stringify(target)}, { trigger: ${JSON.stringify(trigger)}, captureSource: ${JSON.stringify(id)} })`;
+}
+
+// The single element a capture targets, derived consistently everywhere it is
+// needed (failure probe, repair diagnosis, recapture re-arm). Prefers an
+// explicit root/selector, then the action's selector.
+function primaryCaptureSelector(capture, type) {
+  return capture.root || capture.selector || selectorFromAction(defaultAction(capture, type)) || null;
 }
 
 function bootSelectorsFor(capture) {
@@ -1637,9 +1712,11 @@ function runCapture(runDir, manifest, manifestFile, flags = {}) {
   // configured: repairCfg === null means the loop never runs and soft-fail
   // behavior is byte-identical. ──
   const repairCfg = repairConfig(manifest, flags);
-  const repairableCount = captures.filter(c => !(c.skip || c.enabled === false)).length;
+  // Upper bound on captures that COULD fail repairably (causes aren't known
+  // until each runs); the absolute ceiling is the real protection.
+  const repairCandidateCount = captures.filter(c => !(c.skip || c.enabled === false)).length;
   const repairBudgetTotal = repairCfg
-    ? Math.min(repairCfg.budget != null ? repairCfg.budget : REPAIR_DEFAULTS.budgetMultiplier * repairableCount, REPAIR_DEFAULTS.budgetCeiling)
+    ? Math.min(repairCfg.budget != null ? repairCfg.budget : REPAIR_DEFAULTS.budgetMultiplier * repairCandidateCount, REPAIR_DEFAULTS.budgetCeiling)
     : 0;
   let repairSpent = 0;
   const repairBudget = { total: repairBudgetTotal, spend: () => { repairSpent += 1; }, remaining: () => repairBudgetTotal - repairSpent };
@@ -1647,20 +1724,35 @@ function runCapture(runDir, manifest, manifestFile, flags = {}) {
     appendLog(runDir, `\nRepair loop armed: cmd=\`${repairCfg.command}\` maxRetries=${repairCfg.maxRetries} budget=${repairBudgetTotal} causes=[${repairCfg.repairableCauses.join(', ')}]\n`);
   }
 
-  // Re-run the recipe for a repair. M1 (design §11): stateful repairs (fresh)
-  // re-open a clean page so the precondition starts from REST, and clear the
-  // reuse state so the mutation cannot leak into later reuse-page captures.
+  // Re-run the recipe for a repair, mirroring the first-try page prep so the
+  // re-measure starts from the same baseline (not a dirty scroll/UI state).
+  // M1 (design §11): stateful repairs (fresh) re-open a clean page so the
+  // precondition starts from REST, and clear the reuse state so the mutation
+  // cannot leak into later reuse-page captures.
   const recaptureForRepair = (cloned, type, id, fresh) => {
+    const group = reusableCaptureGroup(cloned, type);
+    const groupConfig = captureGroupConfig(manifest, group);
     if (fresh) {
       const rurl = cloned.url || manifest.url;
       openPage(runDir, rurl, viewport, [ENGINE], { openDelayMs: openDelayMs(manifest, flags, cloned) });
       waitForPageReady(runDir, `repair:${id}:open`, manifest, flags, cloned);
-      runBrowser(['wait', String(cloned.initialWaitMs || manifest.captureInitialWaitMs || 1000)], { runDir });
+      runBrowser(['wait', String(cloned.initialWaitMs || groupConfig.initialWaitMs || manifest.captureInitialWaitMs || 1000)], { runDir });
+      // Reach the same baseline a first-try gets (e.g. dismiss intro overlay)
+      // before the precondition runs.
+      runMaybeAction(groupConfig.setupAction || groupConfig.action, runDir);
       currentPage = null;   // M1: a fresh stateful repair must not leak into N+1
+    } else {
+      // Non-fresh retarget: the page is the failed first-try's, so clear any
+      // lingering hover before re-arming.
+      runBrowser(['mouse', 'move', '1', '1'], { runDir });
     }
+    // Rest-scroll baseline, exactly as the reuse-page first-try path does.
+    resetReusablePage(runDir, Object.assign({}, groupConfig, cloned), type);
     const r = executeRecipe(runDir, cloned, type, id);
-    const cloneSel = cloned.root || selectorFromAction(defaultAction(cloned, type)) || cloned.selector || null;
-    attachCause(r, cloned, type, { selector: cloneSel });
+    attachCause(r, cloned, type, { selector: primaryCaptureSelector(cloned, type) });
+    // Real repair provenance (not the failure's page): a fresh stateful repair
+    // ran on its own isolated page; a non-fresh one reused the failed page.
+    r.page = { strategy: fresh ? 'fresh' : 'reuse-page', opened: fresh, group, seededBy: null, repairRecapture: true, isolated: fresh };
     return r;
   };
 
@@ -1813,7 +1905,7 @@ function runCapture(runDir, manifest, manifestFile, flags = {}) {
       attachCause(errorResult, capture, type, { probe: !error.fatalPageState });
       // A non-fatal error (e.g. occlusion preflight) leaves the page usable, so
       // the repair loop can probe + re-run. A fatal page blocker cannot.
-      const errSelector = capture.root || selectorFromAction(defaultAction(capture, type)) || capture.selector || null;
+      const errSelector = primaryCaptureSelector(capture, type);
       const pushResult = error.fatalPageState ? errorResult : maybeRepair(errorResult, capture, type, id, errSelector);
       if (!pushResult.origin) pushResult.origin = 'first-try';
       results.push(pushResult);
@@ -3562,6 +3654,9 @@ if (require.main === module) {
     validateRepairOutput,
     applyRepair,
     meetsSuccess,
+    selectorSatisfies,
+    parseSimpleSelector,
+    primaryCaptureSelector,
     resultTriple,
     isStatefulRepairKind,
     repairConfig,
