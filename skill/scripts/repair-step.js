@@ -104,6 +104,13 @@ function ensureRepairBlock(result) {
 
 function verdict(obj) { process.stdout.write(`${JSON.stringify(obj)}\n`); }
 
+// Coerce a terminal cause to the tool's closed §3 vocabulary (mirrors the
+// in-tool normalizeTerminalCause). Unknown/missing -> needs_human, never written
+// through verbatim.
+function normalizeTerminalCause(cause, m) {
+  return m.TERMINAL_CAUSES.includes(cause) ? cause : 'needs_human';
+}
+
 // ── apply ────────────────────────────────────────────────────────────────────
 function cmdApply(args, tool, m) {
   const runDir = path.resolve(req(args, 'run'));
@@ -133,8 +140,7 @@ function cmdApply(args, tool, m) {
 
   // Provider-chosen terminal: honest STOP, no measure, no budget on a recapture.
   if (kind === 'terminal_give_up') {
-    const cause = (repair.action.terminalCause && ['genuinely_inert', 'genuinely_absent', 'cross_origin_iframe', 'needs_human', 'provider_error'].includes(repair.action.terminalCause))
-      ? repair.action.terminalCause : 'needs_human';
+    const cause = normalizeTerminalCause(repair.action.terminalCause, m);
     return recordTerminal(runDir, id, attempt, cause, repair.diagnosis, confidence, verdict);
   }
 
@@ -153,6 +159,11 @@ function cmdApply(args, tool, m) {
   // any precondition, then let the ENGINE re-measure a FRESH single capture. ──
   const cloned = m.applyRepair(capture, type, repair.action);
   prependGroupSetup(cloned, type, manifest);
+  // Force a stable, slug-safe capture id so the sub-run writes its timeline to a
+  // path we can predict (runCapture slugifies capture.id, and an ID-less capture
+  // would land at timelines/capture-1.json). We still prefer the engine's own
+  // timelineRef below, but this keeps the fallback path correct.
+  cloned.id = id;
 
   const subRun = path.join(runDir, 'repair', `apply-${id}-att${attempt}`);
   fs.mkdirSync(subRun, { recursive: true });
@@ -187,7 +198,11 @@ function cmdApply(args, tool, m) {
   const subResults = readJson(path.join(subRun, 'capture-results.json'));
   const engine = (subResults.results || [])[0] || { status: 'error' };
   const engineStatus = engine.status;
-  const timelineFile = path.join(subRun, 'timelines', `${cloned.id || id}.json`);
+  // runCapture writes timelines/${slugify(capture.id)} (== id, since cloned.id
+  // is now id). Prefer the engine result's own timelineRef when present so the
+  // path stays correct regardless of how the tool named the file.
+  const timelineRel = engine.timelineRef || path.join('timelines', `${id}.json`);
+  const timelineFile = path.join(subRun, timelineRel);
   let movedSelectors = [];
   let timeline = null;
   try {
@@ -203,18 +218,33 @@ function cmdApply(args, tool, m) {
     const rb = ensureRepairBlock(result);
     rb.attempts.push({ action: kind, params: repair.action, confidence, resultStatus: engineStatus, resultCause: engine.cause || null });
     if (converged) {
-      // The engine's measured verdict becomes the capture's status. Provenance
-      // records HOW it was reached; it never overrides the measured status.
+      // Mirror the in-tool loop's `final = recaptured`: the row now reflects the
+      // ENGINE recapture, not the failed first try. Replace the measured fields
+      // and CLEAR the stale failure data (cause/causeSignals/error/stop/preflight/
+      // pageState), so an ok/check after-repair row carries no leftover occlusion
+      // signal. Provenance records HOW it was reached; it never overrides status.
       result.status = engineStatus;
       result.origin = 'after-repair';
       result.findings = (timeline && Array.isArray(timeline.findings)) ? timeline.findings.length : (engine.findings || 0);
-      result.summary = (timeline && timeline.summary) || result.summary;
+      result.summary = (timeline && timeline.summary) || engine.summary || result.summary;
+      result.cause = engine.cause;             // undefined for a clean recapture
+      result.causeSignals = engine.causeSignals;
+      result.error = engine.error;
+      result.stop = engine.stop || null;
+      result.preflight = engine.preflight;
+      result.pageState = engine.pageState;
+      // Page provenance comes from the sub-run recapture, not the failed first try.
+      result.page = engine.page ? Object.assign({}, engine.page, { repairRecapture: true }) : result.page;
+      delete result.lowConfidenceDiagnosis;    // a prior low-confidence note no longer applies
       // Promote the repaired timeline into the main run so assemble/report use it.
-      const destRel = path.join('timelines', `${id}.json`);
-      try {
-        if (timeline) writeJson(path.join(runDir, destRel), timeline);
-        result.timelineRef = destRel;
-      } catch (e) { /* keep prior ref on copy failure */ }
+      // Only set the parent timelineRef when a timeline was actually read+promoted.
+      if (timeline) {
+        const destRel = path.join('timelines', `${id}.json`);
+        try {
+          writeJson(path.join(runDir, destRel), timeline);
+          result.timelineRef = destRel;
+        } catch (e) { /* keep prior ref on copy failure */ }
+      }
       rb.winningAction = kind;
       rb.outcome = 'ok-after-repair';
       rb.terminalCause = null;
@@ -246,11 +276,13 @@ function recordTerminal(runDir, id, attempt, cause, diagnosis, confidence, emit)
   emit({ id, attempt, kind: 'terminal_give_up', measured: false, converged: false, outcome: 'terminal', terminalCause: cause, confidence: confidence == null ? null : confidence });
 }
 
-function cmdTerminal(args) {
+function cmdTerminal(args, m) {
   const runDir = path.resolve(req(args, 'run'));
   const id = String(req(args, 'id'));
   const attempt = Number(args.attempt || 1);
-  const cause = String(req(args, 'cause'));
+  // Validate against the closed terminal-cause vocabulary; an unknown --cause is
+  // coerced to needs_human rather than written through verbatim.
+  const cause = normalizeTerminalCause(String(req(args, 'cause')), m);
   recordTerminal(runDir, id, attempt, cause, args.diagnosis || null, args.confidence == null ? null : Number(args.confidence), verdict);
 }
 
@@ -269,7 +301,15 @@ function prependGroupSetup(cloned, type, manifest) {
   // Only meaningful when the repair re-opens a fresh page; otherwise the live
   // first-try page already ran setup. applyRepair sets fresh for stateful kinds.
   if (cloned.fresh !== true) return;
-  cloned.beforeAction = steps.concat(Array.isArray(cloned.beforeAction) ? cloned.beforeAction : (cloned.beforeAction ? [cloned.beforeAction] : []));
+  // executeRecipe runs `setupAction || beforeAction` (only ONE field), and
+  // applyRepair may have placed a precondition into EITHER (it prepends to
+  // setupAction when the capture had one, else beforeAction). So prepend the
+  // group setup ahead of whichever field is active — mirroring the in-tool
+  // fresh recapture path: group setup runs first, then the repair/capture setup.
+  const active = cloned.setupAction != null ? 'setupAction' : 'beforeAction';
+  const existing = cloned[active];
+  const tail = existing == null ? [] : (Array.isArray(existing) ? existing : [existing]);
+  cloned[active] = steps.concat(tail);
 }
 
 function req(args, name) {
@@ -283,7 +323,7 @@ function main() {
   const tool = findTool();
   const m = require(tool);
   if (sub === 'apply') cmdApply(args, tool, m);
-  else if (sub === 'terminal') cmdTerminal(args);
+  else if (sub === 'terminal') cmdTerminal(args, m);
   else fail(`unknown subcommand "${sub}" (use: apply | terminal)`);
 }
 
