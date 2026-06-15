@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>motion-decompiler smoke fixture</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 32px;
+      font-family: system-ui, sans-serif;
+      color: #1c2330;
+      background: #f6f7f9;
+    }
+    main {
+      display: grid;
+      gap: 28px;
+      max-width: 760px;
+    }
+    section {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      background: #fff;
+      border: 1px solid #d7dce3;
+      border-radius: 8px;
+    }
+    h1, h2 { margin: 0; font-size: 16px; }
+    .box {
+      width: 96px;
+      height: 96px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: #3157a4;
+    }
+    #multi {
+      opacity: .35;
+      filter: blur(4px) grayscale(1);
+      transform: translateX(0) scale(1);
+      transition:
+        transform 220ms cubic-bezier(.2, .8, .2, 1),
+        opacity 220ms linear,
+        filter 220ms ease;
+    }
+    #multi.active {
+      opacity: 1;
+      filter: blur(0) grayscale(0);
+      transform: translateX(26px) scale(1.18);
+    }
+    #stagger {
+      display: flex;
+      gap: 10px;
+    }
+    #stagger .item {
+      width: 44px;
+      height: 44px;
+      background: #007c6c;
+      opacity: .25;
+      transform: translateY(22px);
+      transition: transform 260ms ease, opacity 260ms ease;
+    }
+    #stagger.active .item {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    #stagger.active .item:nth-child(1) { transition-delay: 0ms; }
+    #stagger.active .item:nth-child(2) { transition-delay: 60ms; }
+    #stagger.active .item:nth-child(3) { transition-delay: 120ms; }
+    #stagger.active .item:nth-child(4) { transition-delay: 180ms; }
+    .duplicate {
+      width: 80px;
+      height: 42px;
+      background: #8a3ffc;
+      transform: translateX(0);
+      transition: transform 200ms ease;
+    }
+    .duplicate[hidden] { display: none; }
+    .duplicate.active { transform: translateX(25px); }
+    #accordion {
+      width: 240px;
+      border: 1px solid #8a98ac;
+    }
+    #accordion-panel {
+      height: 0;
+      overflow: hidden;
+      background: #dfe7f2;
+      transition: height 250ms ease;
+    }
+    #accordion.open #accordion-panel { height: 64px; }
+    #accordion-panel > div { padding: 14px; }
+    #sprite {
+      width: 32px;
+      height: 32px;
+      image-rendering: pixelated;
+      background-image: linear-gradient(90deg, #d63535 0 25%, #19a56a 25% 50%, #3157a4 50% 75%, #222 75% 100%);
+      background-size: 128px 32px;
+      animation: spriteStep 400ms steps(4) infinite;
+    }
+    @keyframes spriteStep {
+      from { background-position: 0 0; }
+      to { background-position: -128px 0; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>motion-decompiler smoke fixture</h1>
+
+    <section>
+      <h2>multi-property</h2>
+      <div id="multi" class="box">multi</div>
+    </section>
+
+    <section>
+      <h2>stagger group</h2>
+      <div id="stagger" aria-label="stagger group">
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>duplicate selector</h2>
+      <div class="duplicate" hidden></div>
+      <div class="duplicate"></div>
+    </section>
+
+    <section>
+      <h2>accordion height</h2>
+      <div id="accordion">
+        <div id="accordion-panel"><div>Measured height panel</div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>sprite loop</h2>
+      <div id="sprite" class="sprite-loop"></div>
+    </section>
+  </main>
+</body>
+</html>
