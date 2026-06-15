@@ -544,3 +544,76 @@ terminal verdicts — which is what lets the scoreboard finally distinguish
    buckets.
 4. **Budget default**: `2 × repairableCount` per run — acceptable cost ceiling,
    or set a hard absolute (e.g. ≤ 20 repair attempts/run)?
+
+---
+
+## 11. PM review decisions (greenlight + the one must-fix)
+
+Reviewed 2026-06-15. **Verdict: approved to build (Part 6), conditional on M1
+below.** The design is sound and grounded — the central claim was verified
+against the code (`runMaybeAction(setupAction || beforeAction)` at `:1077` is
+real, so a precondition repair is genuinely a `beforeAction` array through the
+existing path, no new mechanism). The invariant (LLM never measures; success
+machine-checked against engine output), the external-command provider, and the
+first-class terminal/drift handling are all exactly right. One correctness gap.
+
+### M1 (MUST-FIX before/within the build) — state isolation for stateful repairs
+
+A `precondition_action` is, by definition, a page-state mutation (modal opened,
+carousel advanced, stack scrolled). The design re-runs the recipe but does not
+specify isolation. Two failure modes follow under the default reuse-page
+strategy:
+
+1. **Dirty start.** The repaired re-run may execute against the already-mutated
+   (or failed-hover-dirtied) page rather than a clean rest state, so the
+   precondition sequence does not start from where it assumes.
+2. **Leak forward.** A successful precondition repair leaves the page mutated
+   (modal overlay now covering everything, carousel on a different slide), which
+   silently corrupts every subsequent capture that reuses the page.
+
+The codebase already has the discipline for exactly this: stateful clicks are
+isolated by default (see `bin/motion-decompile:1807`, `:890`, and the
+`resetAction` teardown at `:1112`). **Any repair that mutates page state
+(`precondition_action`, and `scroll_into_view`/`use_other_instance` where it
+changes scroll/UI state) must force a fresh/isolated page for its re-run, so it
+starts from rest and cannot leak into later captures.** Make this explicit in
+the action contract (e.g. stateful repair kinds set `fresh: true` on the cloned
+capture). This is the only blocker; everything else is build-ready.
+
+### Open-question rulings (§10)
+
+1. **Provider transport → external command.** Approved as recommended.
+   Dependency-free, driver-agnostic, and stub-testable in smoke without a model.
+2. **Screenshot scope → viewport**, with the failed element scrolled into view
+   first when it has a box. Approved.
+3. **`repairableCauses` default → narrow**: `occlusion + hidden_not_visible +
+   inert_representative` only. Approved. Widen only when a future re-baseline
+   shows a new repairable bucket; do not pre-open it.
+4. **Budget → keep `2 × repairableCount` AND add a hard absolute ceiling**
+   (`min(2 × repairableCount, 24)` attempts/run). The multiplier scales with the
+   residual; the absolute protects the 4-site calibration loop's wall-clock from
+   a pathological site even if the count is high. Belt and suspenders.
+
+### Build notes (non-blocking, for Part 6)
+
+- **`candidateTriggers` discovery is the make-or-break of the precondition
+  class.** Prioritize `aria-controls` / `aria-expanded` / `aria-haspopup` as the
+  highest-signal opener hints, then fall back to proximity + `cursor:pointer` /
+  `role=button`. Most precondition wins or misses will be decided here.
+- **The `confidence < 0.4` floor is a soft heuristic** — it is model
+  self-reported and uncalibrated. Fine to keep as a cost gate, but it must not
+  become load-bearing: the real safety is the machine-checked `successCriterion`
+  + repeated-identical detection, which the design correctly centers. Keep it
+  that way.
+- **Scoreboard:** keep `ok_first_try` as the primary headline (the engine's
+  unaided floor = the honest "tool quality" signal); `ok_after_repair` is the
+  visible increment, never folded silently into a single hit% that hides the
+  floor.
+
+### Accepted framing
+
+The headline is correctly **not** a hit% leap (~5–7 captures here). The two real
+deliverables — precondition repairs the deterministic planner structurally
+cannot author, and converting the inert/absent long tail into honest recorded
+terminal verdicts — are accepted as the goal. Part 6 is greenlit to build to
+this doc once M1 is folded in.

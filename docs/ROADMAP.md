@@ -271,13 +271,41 @@ Each behavior part ends by re-running the Part 0 harness and reporting the diff.
   sized:** post-swap the LLM-repairable failures are occlusion (7, the new #1) +
   inert_representative (5) + hidden_not_visible (3) = ~15. That is precisely Part
   5's target.
-- **Next: Part 5 (repair-loop DESIGN checkpoint).** Design-only, browser-free, so
-  any clean context (Codex fine). It produces the diagnose-and-retry contracts for
-  the genuine residual above (real occlusion, inert reps, hidden inner
-  affordances); the PM reviews and greenlights the build (Part 6) separately. Side
-  task whenever the headed browser is up: capture report-vwlab.netlify.app's
-  baseline row to complete the standing scoreboard. All deterministic
-  floor-raisers (Parts 1-4) are landed.
+- **Part 5 — done (design approved with one must-fix)** (design doc
+  `docs/PART-5-repair-loop-design.md`). The diagnose-and-retry loop is fully
+  specified against the exact re-baseline residual rows. PM-reviewed (§11),
+  verified the central hook claim against the code (`runMaybeAction(setupAction
+  || beforeAction)` at `:1077` is real, so precondition repairs reuse the
+  existing path, no new mechanism). Strengths: the no-measurement invariant is
+  enforced structurally (no measurement fields in the output schema; success
+  machine-checked against engine `elementsMoved`/`status`); the provider is an
+  injected external command (engine stays dependency-free + driver-agnostic +
+  stub-testable); drift/inert terminate as first-class honest verdicts; repair
+  provenance (`ok_first_try` vs `ok_after_repair`, by_action/by_bucket) lands in
+  the scoreboard.
+  - **GREENLIT for Part 6, conditional on M1:** stateful repairs
+    (`precondition_action` et al.) must run page-isolated (force `fresh`) so they
+    start from rest and do not leak the mutated state (open modal / advanced
+    carousel) into subsequent reuse-page captures. The codebase already has this
+    discipline for stateful clicks (`:1807`/`:890`/`:1112`); the repair path must
+    inherit it. This was the only correctness gap.
+  - **Open-question rulings (recorded in §11):** provider = external command;
+    screenshot = viewport; repairableCauses = narrow (occlusion +
+    hidden_not_visible + inert_representative); budget = `min(2×count, 24)`.
+  - **Honest sizing:** ~5-7 of the ~15 residual become ok/check-after-repair
+    (precondition + re-target wins), ~5-6 are correct terminal verdicts (the win
+    is an honest STOP), ~2-3 still need a human. The loop is not a hit% leap; its
+    deliverables are precondition repairs the planner structurally cannot author
+    and an auditable terminal-verdict tail.
+- **Next: Part 6 (repair-loop BUILD).** Build to `docs/PART-5-repair-loop-design.md`
+  with M1 folded in (state isolation for stateful repairs). Browser work is only
+  needed to verify against the residual captures; the engine/planner changes and
+  the stub-provider smoke tests are browser-free. Write the Part 6 prompt from the
+  design doc's contracts (§2/§3) + the §11 rulings before handing it to a clean
+  context. Side task whenever the headed browser is up: capture
+  report-vwlab.netlify.app's baseline row to complete the standing scoreboard.
+  All deterministic floor-raisers (Parts 1-4) are landed; Part 5 design is
+  approved.
 
 ---
 
