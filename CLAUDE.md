@@ -24,7 +24,8 @@ agent then writes the recreation from that spec.
 
 `libs()` (detect animation libraries) · `on(sel)` (track one element) ·
 `scan(root)` (report everything that moves under root — robust default) ·
-`dump()` (finalize: returns the spec object **and** copies the JSON) · `pick()`
+`dump()` (finalize: returns the spec object **and** copies the JSON;
+automation uses `dump({copy:false})`) · `pick()`
 (toolbar element picker). Output is a *spec* (libraries, summary, per-layer
 timing/easing + frame timeline), never code.
 
@@ -48,18 +49,23 @@ Consequences the pipeline is built around:
 
 ## agent-browser defaults for this repo
 
-This is Martin's trusted local machine. For motion-decompiler capture runs,
-disable agent-browser's interactive action confirmations so headed capture does
-not race permission prompts:
+This is Martin's trusted local machine. For motion-decompiler capture runs, use
+the repo wrapper instead of raw `agent-browser`:
 
 ```bash
-export AGENT_BROWSER_CONFIRM_ACTIONS=
-export AGENT_BROWSER_CONFIRM_INTERACTIVE=false
+./bin/capture-browser open <url> --headed --init-script extension/capture-animation.js
+./bin/capture-browser set viewport 1280 800
 ```
 
-Prefer saving capture JSON via `agent-browser eval 'JSON.stringify(...)'` over
-clipboard reads. The engine still copies JSON for humans, but agents should not
-depend on clipboard timing.
+The wrapper defaults `AGENT_BROWSER_SESSION=decompile`, preserves Martin's
+Hyprland floating/pinned placement with `AGENT_BROWSER_ARGS=--class=claude-mcp`,
+and passes `--confirm-actions "" --confirm-interactive false` on every command
+so one-off shell exports cannot be lost between tool calls.
+
+Agents should finalize with `__cap.dump({copy:false})` or
+`__cap.bootDump({copy:false})`, then save via `window.__capLast` /
+`window.__capBootLast`. This avoids browser clipboard permission prompts. Human
+extension/snippet use can still call plain `dump()` to copy JSON.
 
 ## Driver model (why the skill is structured the way it is)
 

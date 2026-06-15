@@ -22,10 +22,12 @@
  *   __cap.bootDump()                     // finalize boot recorder output
  *   // ...now hover / scroll the thing...
  *   __cap.dump()                         // finalize -> copies .animation.json
+ *   __cap.dump({copy:false})             // automation-safe: no clipboard write
  *
  * Triggers: 'hover' (default) | 'scroll' | 'load' | 'manual'
  * Output: a SPEC (not code) — { summary, findings[] } with per-layer measured
- *         timing/easing + frame timeline. Pure JSON to clipboard + window.__capLast.
+ *         timing/easing + frame timeline. Pure JSON to clipboard + window.__capLast
+ *         (or pass {copy:false} when driving from automation).
  *         Hand it to an LLM to write the recreation in your stack.
  * ========================================================================== */
 (() => {
@@ -1065,7 +1067,9 @@
     bootDump(opts = {}) {
       const report = bootReport(opts);
       const json = JSON.stringify(report, null, 2);
-      try { navigator.clipboard.writeText(json); } catch (e) {}
+      if (opts.copy !== false) {
+        try { navigator.clipboard.writeText(json); } catch (e) {}
+      }
       console.log(`%c[capture] ${report.summary}`, 'color:#0c0;font-weight:bold');
       console.log(json);
       return report;
@@ -1114,8 +1118,9 @@
         findings,
       };
       const json = JSON.stringify(report, null, 2);
-      // Pure spec JSON to the clipboard — an LLM (or you) writes the code from it.
-      const copied = (() => {
+      // Pure spec JSON to the clipboard when a human drives the tool. Automation
+      // should pass {copy:false} and read window.__capLast to avoid browser prompts.
+      const copied = opts.copy === false ? 'window.__capLast only' : (() => {
         try { navigator.clipboard.writeText(json); return 'clipboard'; } catch (e) {}
         try { if (typeof copy === 'function') { copy(report); return 'clipboard (copy())'; } } catch (e) {}
         return 'console only';

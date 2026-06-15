@@ -39,15 +39,16 @@ with `--init-script`. Engine path (absolute):
 `/home/martin/src/perso/motion-decompiler/extension/capture-animation.js`
 (reading the engine source for its API is fine; it is method, not answers.)
 
-Launch (the `--class` arg just parks the window nicely on this machine; keep it):
+Launch with the repo wrapper. It keeps the `decompile` session, disables
+agent-browser confirmations on every call, and sets the `claude-mcp` Chromium
+class so Hyprland parks the window on Martin's second monitor. Keep this wrapper.
 
 ```bash
 ENGINE=/home/martin/src/perso/motion-decompiler/extension/capture-animation.js
-export AGENT_BROWSER_SESSION=decompile     # use the env var, NOT --session (it
-                                           # collides with eval's JS argument)
-agent-browser open https://mammothmurals.com/ --headed \
-  --args "--class=claude-mcp" --init-script "$ENGINE"
-agent-browser set viewport 1280 800
+AB=/home/martin/src/perso/motion-decompiler/bin/capture-browser
+"$AB" close --all
+"$AB" open https://mammothmurals.com/ --headed --init-script "$ENGINE"
+"$AB" set viewport 1280 800
 ```
 
 ### `window.__cap` API
@@ -64,6 +65,9 @@ loops[], splitReveals[], sections[] }`. `scrollTriggers[]` includes each
 - `__cap.on(sel, {trigger})` → arm on ONE element (+ auto stagger children).
 - `__cap.dump()` → finalize; returns the spec object, also sets
   `window.__capLast`, also copies pretty JSON to the clipboard.
+- `__cap.dump({copy:false})` / `__cap.bootDump({copy:false})` → same output,
+  but no clipboard write. Use these in automation to avoid browser permission
+  prompts.
 - `trigger` ∈ `hover` | `scroll` | `load` | `manual`. `hover`/`scroll` start on
   the event; `manual` starts recording immediately (use when you trigger it
   yourself, e.g. a click).
@@ -74,12 +78,12 @@ loops[], splitReveals[], sections[] }`. `scrollTriggers[]` includes each
 
 ### agent-browser gotchas (learned the hard way)
 
-- Pass complex JS to `agent-browser eval` as a single IIFE; write it to a temp
+- Pass complex JS to `"$AB" eval` as a single IIFE; write it to a temp
   file and `eval "$(cat file.js)"` to dodge shell quoting.
 - `eval` output is double-wrapped (agent-browser quotes the returned string).
-  To save a result: `agent-browser eval 'JSON.stringify(window.__capLast)'
+  To save a result: `"$AB" eval 'JSON.stringify(window.__capLast)'
 --max-output 200000 > raw.txt` then in python `json.loads(json.loads(raw))`.
-  (On Wayland you can also just `wl-paste > timelines/<id>.json` after a dump.)
+  Do not use clipboard reads in this calibration pass.
 - A `reload` re-runs the OLD `--init-script`; to reload an edited engine you
   must `close` then `open`. (You won't edit the engine here.)
 - If a session desyncs (open navigates one tab, eval hits another), `close --all`
@@ -115,21 +119,22 @@ Log what you chose to skip and why.
 For each plan item that needs capture, use the matching recipe. General shape:
 **position → arm → trigger → wait the duration → dump → save timeline.**
 
-- **hover (CSS or GSAP):** `scrollintoview <sel>`; eval
-  `__cap.scan('<sel>',{trigger:'hover'})`; `agent-browser hover <sel>`; wait
-  ~1.5s; eval `__cap.dump()`; save `window.__capLast`.
+- **hover (CSS or GSAP):** `"$AB" scrollintoview <sel>`; eval
+  `__cap.scan('<sel>',{trigger:'hover'})`; `"$AB" hover <sel>`; wait
+  ~1.5s; eval `__cap.dump({copy:false})`; save `window.__capLast`.
 - **magnetic / cursor-tracking hover:** as above, but after `hover`, also do a
-  few `agent-browser mouse move <x> <y>` across the element's box (these effects
+  few `"$AB" mouse move <x> <y>` across the element's box (these effects
   follow the real cursor; one hover gives a partial result). Get the box with
-  `agent-browser get box <sel>`.
-- **click (e.g. accordion):** `scrollintoview <sel>`; arm
-  `__cap.scan('<tight root>',{trigger:'manual'})`; `agent-browser click <sel>`;
-  wait; dump. Scope the scan root to the item (not the whole section) to limit
-  layout-reflow noise.
+  `"$AB" get box <sel>`.
+- **click (e.g. accordion):** `"$AB" scrollintoview <sel>`; arm
+  `__cap.scan('<tight root>',{trigger:'manual'})`; `"$AB" click <sel>`;
+  wait; eval `__cap.dump({copy:false})`. Scope the scan root to the item (not the
+  whole section) to limit layout-reflow noise.
 - **scroll reveal (onEnter):** arm `__cap.scan('<sel>',{trigger:'scroll'})`
-  while the element is still BELOW the fold; then `scrollintoview <sel>`; wait;
-  dump. (The engine starts recording as it enters.) These fire once and usually
-  don't replay on re-enter — if you miss one, reload and retry.
+  while the element is still BELOW the fold; then `"$AB" scrollintoview <sel>`;
+  wait; eval `__cap.dump({copy:false})`. (The engine starts recording as it
+  enters.) These fire once and usually don't replay on re-enter — if you miss
+  one, reload and retry.
 - **load reveal (hero headline etc.):** these fire during page load before you
   can arm, so they're hard to capture after the fact. Record them structurally
   from `map().splitReveals` with `confidence: "unknown — verify"`, note the
@@ -140,7 +145,7 @@ Save each capture's full `window.__capLast` to `OUTPUT_DIR/timelines/<id>.json`.
 ### Phase 3 — ASSEMBLE (offline)
 
 Write `animations.json` (schema below) from the map + captures, then render
-`animations.md` from it. Close the browser when done (`agent-browser close --all`).
+`animations.md` from it. Close the browser when done (`"$AB" close --all`).
 
 ---
 

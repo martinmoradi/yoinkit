@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Trusted local agent-browser wrapper for motion capture.
+#
+# It keeps Martin's Hyprland placement behavior by defaulting Chromium's class to
+# claude-mcp, and it disables agent-browser's interactive action confirmations on
+# every invocation instead of relying on exported shell state.
+
+set -euo pipefail
+
+export AGENT_BROWSER_SESSION="${AGENT_BROWSER_SESSION:-decompile}"
+export AGENT_BROWSER_ARGS="${AGENT_BROWSER_ARGS:---class=claude-mcp}"
+export AGENT_BROWSER_CONFIRM_ACTIONS="${AGENT_BROWSER_CONFIRM_ACTIONS-}"
+export AGENT_BROWSER_CONFIRM_INTERACTIVE="${AGENT_BROWSER_CONFIRM_INTERACTIVE:-false}"
+
+exec agent-browser --confirm-actions "${AGENT_BROWSER_CONFIRM_ACTIONS}" --confirm-interactive false "$@"

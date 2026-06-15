@@ -40,11 +40,12 @@ One engine, one driver, two phases.
 - **Driver** — `agent-browser` (a Rust/Playwright CLI). It drives a real
   Chromium **by CSS selector** via CDP real input. This is the key choice: no
   screenshot coordinates anywhere.
-- **Phase 1 — MAP (headless):** `agent-browser open --init-script <engine>`,
-  then `__cap.map()`. Reads the GSAP/ScrollTrigger registry + CSS + DOM. Cheap,
-  fast, deterministic. Produces the animation inventory + capture plan.
-- **Phase 2 — CAPTURE (headed):** `agent-browser open --headed --init-script
-  <engine>`. For each item the map says needs capture, run the timed recipe
+- **Phase 1 — MAP (headless):** `./bin/capture-browser open --init-script
+  <engine>`, then `__cap.map()`. Reads the GSAP/ScrollTrigger registry + CSS +
+  DOM. Cheap, fast, deterministic. Produces the animation inventory + capture
+  plan.
+- **Phase 2 — CAPTURE (headed):** `./bin/capture-browser open --headed
+  --init-script <engine>`. For each item the map says needs capture, run the timed recipe
   (§5) by selector. Headed = real compositor advances (headless does not sample
   rAF/transition motion — measured: 0 layers headless vs 6 headed).
 
@@ -81,9 +82,9 @@ hand-driving from DevTools), but is not the primary path.
 | `on(sel, {trigger})` | 2 | this | Arm a recorder on ONE element (+ auto-detected stagger children). |
 | `scan(sel, {trigger})` | 2 | this | Arm a diff-recorder over a whole subtree — the robust default (catches layers you can't target, pointer-events:none, behind text). |
 | `boot({selectors, ms})` | 2 | this | Start a fixed-window boot recorder for load-time reveals. Can be auto-started with `window.__capAutoBoot` from an earlier init script. |
-| `bootDump()` | 2 | spec object (also `window.__capBootLast`) | Finalize a boot capture. |
+| `bootDump()` | 2 | spec object (also `window.__capBootLast`) | Finalize a boot capture. Use `bootDump({copy:false})` for automation. |
 | `gsap()` | 1/2 | object | Return logged GSAP/CustomEase source evidence captured by the injected probe. |
-| `dump()` | 2 | spec object (also `window.__capLast`, + clipboard) | Finalize and return the captured spec. |
+| `dump()` | 2 | spec object (also `window.__capLast`, + clipboard) | Finalize and return the captured spec. Use `dump({copy:false})` for automation. |
 | `stop()` | 2 | — | Reset/disarm. |
 | `pick()` | 2 | — | Toolbar element picker (extension path only). |
 
@@ -196,10 +197,12 @@ report.
 
 ### 4.3 `timelines/<id>.json`
 Raw `dump()` output (per-frame samples) for animations where the frame curve
-matters, referenced by `lead`/`timelineRef`. Page to disk: `dump()` returns the
-object and sets `window.__capLast`; agents should save with
-`agent-browser eval 'JSON.stringify(window.__capLast)' --max-output 1000000`
-rather than relying on clipboard timing.
+matters, referenced by `lead`/`timelineRef`. Page to disk: call
+`__cap.dump({copy:false})`, which returns the object and sets
+`window.__capLast`, then save with
+`./bin/capture-browser eval 'JSON.stringify(window.__capLast)' --max-output 1000000`.
+For boot captures, use `__cap.bootDump({copy:false})` and
+`window.__capBootLast`. Do not rely on clipboard timing or permissions.
 
 A worked example produced by the v1 pass lives at
 `~/mammothmurals.com.animations/` (note: produced before the engine fixes — a
@@ -213,18 +216,21 @@ General shape: **position → arm → trigger → wait → dump**, all by select
 
 - **hover (CSS or GSAP):**
   `scrollintoview <sel>` → `eval __cap.scan(<sel>,{trigger:'hover'})` (or
-  `manual`) → `agent-browser hover <sel>` → wait the duration → `eval dump`.
+  `manual`) → `./bin/capture-browser hover <sel>` → wait the duration →
+  `eval __cap.dump({copy:false})`.
   Use `scan` not `on`: the hovered element often doesn't move; its children do
   (`on` caught 0 on the work card, `scan` caught 6).
 - **magnetic / cursor-tracking hover:** as above but after `hover`, dispatch a
-  few `agent-browser mouse move <x> <y>` across the element's box (these effects
+  few `./bin/capture-browser mouse move <x> <y>` across the element's box (these effects
   follow the real cursor; a single hover gives a partial result). **[CHECK]**
   not yet re-validated end-to-end with the agent-browser driver.
 - **click (e.g. accordion):** `scrollintoview` → `scan(<tight root>,{manual})`
-  → `agent-browser click <sel>` → wait → dump. Scope the scan root to the item,
+  → `./bin/capture-browser click <sel>` → wait →
+  `__cap.dump({copy:false})`. Scope the scan root to the item,
   not the section, to limit height-reflow noise.
 - **scroll reveal (onEnter):** arm `scan(<sel>,{trigger:'scroll'})` while the
-  element is BELOW the fold → `scrollintoview <sel>` → wait → dump. The engine's
+  element is BELOW the fold → `scrollintoview <sel>` → wait →
+  `__cap.dump({copy:false})`. The engine's
   IntersectionObserver starts recording as it enters. Captured the cta reveal
   cleanly (8 layers) where coordinate-MCP got 0.
 - **load reveal:** the engine is injected via `--init-script` BEFORE page JS, so
@@ -234,12 +240,12 @@ General shape: **position → arm → trigger → wait → dump**, all by select
   token. This is the one trigger class without a proven capture.
 
 `--init-script` registers file content at `open` time: to pick up an edited
-engine, `close` then `open` (a `reload` re-runs the old content). Use
-`AGENT_BROWSER_SESSION=<name>` env, not `--session` (it collides with `eval`'s
-JS arg). On Martin's trusted local machine also set
-`AGENT_BROWSER_CONFIRM_ACTIONS=` and `AGENT_BROWSER_CONFIRM_INTERACTIVE=false`
-so headed capture does not race permission prompts. Pass complex JS to `eval`
-as an IIFE via a temp file.
+engine, `close` then `open` (a `reload` re-runs the old content). On Martin's
+trusted local machine, use `./bin/capture-browser` for all capture commands.
+It defaults `AGENT_BROWSER_SESSION=decompile`, keeps the headed Chromium window
+in the Hyprland floating/pinned rule with `AGENT_BROWSER_ARGS=--class=claude-mcp`,
+and passes `--confirm-actions "" --confirm-interactive false` on every call.
+Pass complex JS to `eval` as an IIFE via a temp file.
 
 ---
 
@@ -286,15 +292,14 @@ as an IIFE via a temp file.
 Headed capture window:
 
 ```bash
-export AGENT_BROWSER_SESSION=decompile
-export AGENT_BROWSER_CONFIRM_ACTIONS=
-export AGENT_BROWSER_CONFIRM_INTERACTIVE=false
-agent-browser open <url> --headed --args "--class=claude-mcp" --init-script <engine>
-agent-browser set viewport W H
+./bin/capture-browser close --all
+./bin/capture-browser open <url> --headed --init-script <engine>
+./bin/capture-browser set viewport W H
 ```
 
-The `claude-mcp` Hyprland class floats + pins it at 1280×1080 on the vertical
-second monitor (HDMI-A-1, ws6), shared with the Claude-in-Chrome Chrome. DPR 1.
+The wrapper sets the `claude-mcp` Hyprland class, which floats + pins it at
+1280x1080 on the vertical second monitor (HDMI-A-1, ws6), shared with the
+Claude-in-Chrome Chrome. DPR 1.
 
 ---
 

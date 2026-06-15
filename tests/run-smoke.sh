@@ -6,6 +6,7 @@ SESSION="motion-smoke-$$"
 SERVER_LOG="$(mktemp)"
 export AGENT_BROWSER_CONFIRM_ACTIONS="${AGENT_BROWSER_CONFIRM_ACTIONS:-}"
 export AGENT_BROWSER_CONFIRM_INTERACTIVE="${AGENT_BROWSER_CONFIRM_INTERACTIVE:-false}"
+AB=(agent-browser --confirm-actions "" --confirm-interactive false)
 PORT="$(
   python3 - <<'PY'
 import socket
@@ -18,7 +19,7 @@ PY
 URL="http://127.0.0.1:${PORT}/tests/fixtures/basic-motion.html"
 
 cleanup() {
-  agent-browser --session "$SESSION" close --all >/dev/null 2>&1 || true
+  "${AB[@]}" --session "$SESSION" close --all >/dev/null 2>&1 || true
   if [[ -n "${SERVER_PID:-}" ]]; then
     kill "$SERVER_PID" >/dev/null 2>&1 || true
     wait "$SERVER_PID" >/dev/null 2>&1 || true
@@ -31,7 +32,7 @@ python3 -m http.server "$PORT" --bind 127.0.0.1 --directory "$ROOT" >"$SERVER_LO
 SERVER_PID=$!
 sleep 0.4
 
-agent-browser --session "$SESSION" --init-script "$ROOT/extension/capture-animation.js" open "$URL" >/dev/null
+"${AB[@]}" --session "$SESSION" --init-script "$ROOT/extension/capture-animation.js" open "$URL" >/dev/null
 
 SMOKE_JS='
 (async () => {
@@ -50,7 +51,7 @@ SMOKE_JS='
     await frame();
     mutate();
     await sleep(waitMs);
-    return window.__cap.dump();
+    return window.__cap.dump({ copy: false });
   }
 
   try {
@@ -162,7 +163,7 @@ SMOKE_JS='
     await frame();
     window.gsap.to("#gsap-box", { x: 52, opacity: 0.6, duration: 0.18, ease: "power2.out" });
     await sleep(340);
-    const boot = window.__cap.bootDump();
+    const boot = window.__cap.bootDump({ copy: false });
     samples.boot = {
       mode: boot.meta.mode,
       findings: boot.findings.length,
@@ -185,6 +186,6 @@ SMOKE_JS='
 })()
 '
 
-RESULT="$(agent-browser --session "$SESSION" eval "$SMOKE_JS")"
+RESULT="$("${AB[@]}" --session "$SESSION" eval "$SMOKE_JS")"
 printf '%s\n' "$RESULT" | jq -e '.ok == true and ([.checks[]] | all(. == true))' >/dev/null
 printf '%s\n' "$RESULT" | jq '{ok, checks, samples}'

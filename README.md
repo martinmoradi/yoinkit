@@ -13,23 +13,27 @@ with its measured timing/easing and a frame-by-frame timeline. Capturing is the
 tool's job; **writing the recreation is the LLM's job** - hand the spec to a
 coding agent (paste it, or use it from the console) and it builds a faithful
 version in your stack. `dump()` returns the spec and copies the pure JSON to the
-clipboard.
+clipboard; automation can use `dump({ copy:false })`.
 
 It's designed to feed AI coding agents a two-part workflow: **map** a page
 cheaply (structure, stack, selectors), then **capture** the motion of the pieces
 that matter and recreate them. The capture must run in a real, rendered browser
 (headless synthetic events don't fire most hover/scroll handlers).
 
-For trusted local `agent-browser` runs on Martin's machine, disable interactive
-confirmations before opening the headed capture browser:
+For trusted local `agent-browser` runs on Martin's machine, use the wrapper so
+every command keeps the same session, no-confirm flags, and Hyprland window
+class:
 
 ```bash
-export AGENT_BROWSER_CONFIRM_ACTIONS=
-export AGENT_BROWSER_CONFIRM_INTERACTIVE=false
+./bin/capture-browser open https://example.com/ --headed --init-script extension/capture-animation.js
+./bin/capture-browser set viewport 1280 800
 ```
 
-Agents should save JSON with `agent-browser eval 'JSON.stringify(...)'` rather
-than depending on clipboard reads.
+`bin/capture-browser` defaults `AGENT_BROWSER_SESSION=decompile`, sets the
+Chromium class to `claude-mcp` for the floating second-monitor rule, and passes
+`--confirm-actions "" --confirm-interactive false` every time. Agents should
+save JSON from `window.__capLast` / `window.__capBootLast` after calling
+`dump({ copy:false })` or `bootDump({ copy:false })`.
 
 ## Two ways to load it
 
@@ -94,6 +98,7 @@ __cap.scan('.section')               // diff-scan: find what moves in a region
 __cap.scan($0)                       // capture the element selected in Elements
 __cap.gsap()                         // inspect logged GSAP/CustomEase evidence
 __cap.dump()                         // finalize -> returns + copies the spec JSON
+__cap.dump({ copy:false })           // automation-safe: no clipboard write
 ```
 
 Triggers: `hover` (default) · `scroll` · `load` · `manual`. Tip: `$0` is the
@@ -105,6 +110,7 @@ fixed early window and can be auto-started from an init script:
 ```js
 __cap.boot({ selectors: ['h1', '[class*=split]', '[class*=hero]'], ms: 4000 })
 __cap.bootDump()
+__cap.bootDump({ copy:false }) // automation-safe
 ```
 
 When using `agent-browser --init-script`, a tiny config init script can set
