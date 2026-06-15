@@ -32,12 +32,19 @@ function die(msg) { process.stderr.write(`filter-manifest: ${msg}\n`); process.e
 const args = parseArgs(process.argv.slice(2));
 if (!args.in || !args.out) die('usage: --in <manifest> --out <manifest> (--ids a,b | --grep regex)');
 if (!args.ids && !args.grep) die('need --ids or --grep to select captures');
+// parseArgs sets a value-less flag to `true`; a bare `--grep` would otherwise
+// become the bogus pattern /true/i. Require an explicit pattern.
+if (args.grep === true) die('--grep needs a regex value, e.g. --grep "hero|headline"');
 
 const manifest = JSON.parse(fs.readFileSync(args.in, 'utf8'));
 const captures = Array.isArray(manifest.captures) ? manifest.captures : [];
 
 const idSet = args.ids ? new Set(String(args.ids).split(',').map(s => s.trim()).filter(Boolean)) : null;
-const re = args.grep ? new RegExp(String(args.grep), 'i') : null;
+let re = null;
+if (args.grep) {
+  try { re = new RegExp(String(args.grep), 'i'); }
+  catch (e) { die(`invalid --grep regex: ${e.message}`); }
+}
 
 function haystack(c) {
   return [c.id, c.root, c.selector, c.target, c.group, c.label, c.action]
