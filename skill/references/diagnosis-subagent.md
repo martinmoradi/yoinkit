@@ -54,8 +54,15 @@ must be the JSON** described below; save that verbatim to
 > - `precondition_action` — `{ actions: [...] }`. Open the modal / advance the
 >   carousel / unstack the cards FIRST, then capture unchanged. Steps use only the
 >   recipe verbs `click | dblclick | hover | focus | scrollintoview | wait | scroll |
->   press | mouse | eval` (string form `"click .sel"` or object form). Prefer an
->   opener from `candidateTriggers` with `aria-controls`/`aria-expanded`/
+>   press | mouse | eval`. **Prefer the string form** `"click .sel"` / `"wait 400"`
+>   / `"press Escape"`; use the object form only when you need it. The only valid
+>   object shapes are:
+>     - `{ "command": "click", "selector": ".x" }` (a verb + its selector)
+>     - `{ "command": "press", "value": "Escape" }` (a verb + its value/argument)
+>     - `{ "waitMs": 400 }` (a pause)
+>     - `{ "eval": "..." }` (a raw expression)
+>   Anything else — e.g. a `{ "verb": "...", "ms": ... }` shape — is rejected.
+>   Prefer an opener from `candidateTriggers` with `aria-controls`/`aria-expanded`/
 >   `aria-haspopup`; fall back to proximity + `cursorPointer`/`role=button`.
 > - `retarget_iframe` — `{ url }`. Only for a nested/non-dominant frame (rare; the
 >   dominant cross-origin case is already handled upstream). `url` is required.
