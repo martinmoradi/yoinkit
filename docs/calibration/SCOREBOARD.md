@@ -126,37 +126,47 @@ permanent two-port smoke fixture. Pending PM sign-off; not changed unilaterally.
   (119) — the -16 is entirely flowfest's dedup, partly offset by +4 on ashley.
 - No source changed; this run only measures.
 
-## Repair-loop sub-table (Part 6 — schema, awaiting first repair-enabled run)
+## Repair-loop sub-table (Part 7 — first repair-enabled run, 2026-06-16)
 
-The capture-repair loop (`docs/PART-5-repair-loop-design.md`) is off by default,
-so this baseline run was captured with it inert and the numbers above are the
-engine's unaided floor. When a run is captured **with** a provider
-(`--repair-cmd …`), `bin/calib-metrics` splits the headline and emits a `repair`
-block. The scoreboard then carries this sub-table, with **`ok_first_try` kept as
-the primary headline** (the engine's honest tool-quality signal); `ok_after_repair`
-is the visible increment and is never silently folded into one hit% that hides the
-floor.
-
-Format (filled per repair-enabled run; mechanical, no model judgment):
+The capture-repair loop (`docs/PART-5-repair-loop-design.md`) ran ON for the first
+time via the `/motion-decompiler` skill's agent-driven repair stage (parallel
+diagnosis subagents → engine re-measure), across the three repair-bearing sites.
+Full narrative + the honest "distinct new" read in
+`docs/calibration/2026-06-16-skill-repair-validation.md`. **`ok_first_try` is the
+primary headline** (the engine's unaided floor); `ok_after_repair` is the loop
+increment, never folded into one hit% that hides the floor. Numbers below are
+mechanical, emitted by `bin/calib-metrics` from each run's `metrics.json.repair`.
 
 | site | ok_first_try | ok_after_repair | check_first_try | check_after_repair | repair attempted | succeeded |
 |------|--------------|-----------------|-----------------|--------------------|------------------|-----------|
-| _per site_ | _engine floor_ | _loop increment_ | … | … | _entered loop_ | _ok-after-repair_ |
+| ashleybrookecs | 4 | 4 | 4 | 1 | 7 | 5 |
+| enerblock | 2 | 1 | 0 | 1 | 2 | 2 |
+| flowfest | 3 | 2 | 1 | 0 | 6 | 2 |
+| **totals** | **9** | **7** | **5** | **2** | **15** | **9** |
 
-Repair detail (per run), from `metrics.json.repair`:
+`succeeded` = repairable captures converted to ok **or** check after repair (7 ok
++ 2 check = 9). **Honest caveat (see the validation note):** the 9 converted rows
+are ~5 *distinct new* animations — several `use_other_instance`/`retarget` wins
+resolve to a target already captured first-try (both flowfest repairs land on the
+Buy-Tickets button; two ashley rows duplicate siblings), and `assembleSpec` dedups
+by target. ~5 distinct new is squarely the design §9 ~5–7 projection.
 
-- **by_action** — `{att, ok}` per winning action kind (`precondition_action`,
-  `use_other_instance`, `retarget_selector`, `scroll_into_view`, …): how many
-  attempts used it vs how many it won.
-- **by_bucket** — `{att, ok}` per Part 1 failure bucket that entered the loop:
-  which residual shapes the loop actually converts.
-- **terminal** — tally of honest STOPs by cause (`genuinely_inert`,
-  `genuinely_absent`, `needs_human`, `cross_origin_iframe`, `provider_error`).
-  A `genuinely_absent`/`genuinely_inert` terminal is a **first-class result**
-  (the drift/inert long tail), not a silent empty — it is what lets the
-  scoreboard distinguish "the tool failed" from "there is nothing here to
-  capture."
+Repair detail (summed across the three sites), from `metrics.json.repair`:
 
-Expected shape on the calibration set (design §9): not a hit% leap (~5–7 captures
-gained, dominated by `precondition_action` the deterministic planner cannot
-author), plus the inert/absent long tail converted to recorded terminal verdicts.
+- **by_bucket** `{att, ok}` — `occlusion {7, 5}`, `hidden_not_visible {4, 3}`,
+  `inert_representative {4, 1}`. Occlusion and hidden convert well; inert mostly
+  does not (and correctly — most inert reps are genuinely inert → honest STOP).
+- **by_action** `{att, ok}` — `retarget_selector {5, 4}`, `use_other_instance
+  {6, 3}`, `precondition_action {2, 1}`, `scroll_into_view {2, 1}`,
+  `terminal_give_up {6, 0}`.
+- **terminal** — `genuinely_absent ×1` (the flowfest speakers-grid-lines drift,
+  design §7), `genuinely_inert ×3`, `needs_human ×2`. Six first-class honest STOPs,
+  not silent empties — this is what lets the scoreboard distinguish "the tool
+  failed" from "there is nothing here to capture."
+
+Verdict vs the design §9 projection: confirmed. Not a hit% leap — ~5 distinct new
+captures (dominated by `retarget`/`precondition`/`scroll` repairs the deterministic
+planner cannot author) plus the inert/absent long tail converted to recorded
+terminal verdicts. All three guarantees held in the live run: every win is
+engine-measured (no number from a subagent), the drift case terminated in bounded
+attempts, and every stateful repair opened a fresh page (M1, no state leak).

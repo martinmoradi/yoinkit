@@ -326,17 +326,40 @@ Each behavior part ends by re-running the Part 0 harness and reporting the diff.
     the design's ~5-7 estimate is still a projection and the scoreboard repair
     sub-table is structural-only (zero real repairs recorded). The mechanics and
     safety are proven; the yield is unmeasured.
-- **Next: Part 7 (real repair provider + measure the loop).** Build the
-  LLM-backed `--repair-cmd` provider at the adapter boundary (NOT the tool core),
-  then run the calibration with repair OFF then ON on the same set so the
-  within-run delta is the clean, denominator-controlled repair measurement. This
-  is where the ~5-7 estimate becomes a real number and the design's value is
-  confirmed or corrected. The provider's model prompt is the real intelligence
-  artifact (it must default `expect: moved` and weight `animatableHere` for
-  terminal calls). Needs the headed browser + a real model; folds in capturing
-  `report-vwlab.netlify.app`'s baseline to complete the swap. Prompt in the Part 7
-  section below. All deterministic floor-raisers (Parts 1-4) and the repair-loop
-  mechanics (Part 6) are landed.
+- **Part 7 — done (repair shipped as the `/motion-decompiler` skill's repair
+  stage, and MEASURED)** (skill branch / PR #2). **Pivot from the original Part 7
+  plan:** instead of an LLM-backed `--repair-cmd` subprocess, the repair provider
+  is the skill's **agent-driven diagnosis subagents** (Phase A parallel,
+  browser-free → Phase B/C apply + engine re-measure). This uses local Opus/
+  subagents (no API key) and fits the project's skill-driven, driver-agnostic
+  model. The in-tool `--repair-cmd` path stays valid as the headless/automated
+  driver (stub-tested); `--repair-dump` (`b19b805`) decouples the §2 diagnosis so
+  the skill can diagnose in parallel.
+  - **The skill** (`5a635a0` + hardening `9eae8c5`/`9de2bd9`/`a876f0a`/`61bf2a8`/
+    `00d0640`): one direct-invoke `/motion-decompiler`, URL (whole page) or NL
+    request (targeted). Thin orchestration over the CLI + the repair stage; engine
+    stays the sole measurer.
+  - **The measurement (the long-deferred Part 7 question, answered)** -- full run
+    in `docs/calibration/2026-06-16-skill-repair-validation.md`, mechanical numbers
+    now in the SCOREBOARD repair sub-table. 15 repairable captures across the 3
+    sites: **9 converted (7 ok + 2 check) after repair, 6 honest terminals.**
+    by_bucket: occlusion 7->5, hidden 4->3, inert 4->1. **Honest read: ~5 DISTINCT
+    new animations** (enerblock +2, flowfest +0, ashley +3) -- several conversions
+    dedup to a target already captured first-try; `assembleSpec` dedups by target.
+    This is squarely the design §9 ~5-7 projection: not a hit% leap, a real modest
+    increment dominated by repairs the deterministic planner cannot author, plus an
+    honest terminal-verdict tail. All three guarantees held live (engine-measured
+    wins, bounded drift terminal, M1 no-leak).
+- **The roadmap is complete.** Deterministic floor (Parts 1-4) -> repair design
+  (5) -> repair build (6) -> productized `/motion-decompiler` skill with the repair
+  stage + measured value (7). Remaining are optional follow-ups, not roadmap
+  blockers: (a) complete the vwlab->netlify swap in the MAIN scoreboard table (the
+  netlify re-baseline run is already on disk:
+  `runs/report-vwlab.netlify.app/...`); (b) build the headless LLM `--repair-cmd`
+  provider if/when an unattended/CI repair path is wanted (the skill covers the
+  interactive/local-agent path); (c) broaden the calibration set for more breadth.
+  The original API-provider Part 7 prompt below is **superseded** by the skill
+  approach; kept for history.
 
 ---
 
@@ -847,6 +870,14 @@ design, and the honest "what is not yet proven" note.
 ---
 
 ## Part 7 — Real repair provider + measure the loop (needs browser + a model)
+
+> **SUPERSEDED (kept for history).** Part 7 shipped differently: the repair
+> provider is the `/motion-decompiler` skill's agent-driven diagnosis subagents,
+> not an LLM-backed `--repair-cmd` subprocess (no API key; uses local
+> Opus/subagents; fits the skill-driven model). The measurement was done that way
+> and is recorded in the Status log + `2026-06-16-skill-repair-validation.md`. The
+> prompt below describes the original subprocess-provider plan; build it only if a
+> headless/unattended/CI repair path is later wanted.
 
 Part 6 proved the loop is correct and safe. Part 7 proves whether it is *useful*:
 it wires a real LLM provider to `--repair-cmd` and runs the calibration with
