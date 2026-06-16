@@ -1,0 +1,89 @@
+{
+  "evidence": {
+    "gsap": {
+      "customEaseInstalled": true,
+      "customEases": [
+        {
+          "at": 297.1,
+          "data": "0.87, 0, 0.13, 1",
+          "id": "ease-primary",
+          "svgData": "M0,100 C87,100 13,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.31,0.75,0.22,1",
+          "id": "ease-secondary",
+          "svgData": "M0,100 C31,25 22,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.76, 0, 0.24, 1",
+          "id": "ease-fade",
+          "svgData": "M0,100 C76,100 24,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.25, 1, 0.5, 1",
+          "id": "ease-preloader",
+          "svgData": "M0,100 C25,0 50,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.16, 1, 0.35, 1",
+          "id": "ease-transition",
+          "svgData": "M0,100 C16,0 35,0 100,0 "
+        }
+      ],
+      "entries": [],
+      "installed": true
+    }
+  },
+  "findings": [],
+  "meta": {
+    "captureSource": "split-reveal-3-h1-hero-home-heading-u-text-style-display",
+    "capturedFrom": "capture-animation.js",
+    "durationMs": 1797,
+    "elementsMoved": 0,
+    "instrumentation": {
+      "customEase": true,
+      "gsap": true
+    },
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "scan",
+    "rootLocator": {
+      "matchCount": 1,
+      "shortSelector": "h1.hero_home_heading.u-text-style-display",
+      "text": "MURALS THAT MAKE YOUR BUSINESS IMPOSSIBLE TO IGNORE.",
+      "uniqueSelector": "h1[aria-label=\"Murals that make your business impossible to ignore.\"]",
+      "visibleMatchCount": 1
+    },
+    "rootSelector": "h1[aria-label=\"Murals that make your business impossible to ignore.\"]",
+    "sampledProperties": [
+      "transform",
+      "opacity",
+      "filter",
+      "clipPath",
+      "backgroundSize",
+      "backgroundPosition",
+      "backgroundColor",
+      "color",
+      "height",
+      "width"
+    ],
+    "sampledPseudoElements": [
+      "::before",
+      "::after"
+    ],
+    "source": "https://mammothmurals.com/",
+    "terminationReason": "manualDump",
+    "trigger": "scroll"
+  },
+  "stagger": null,
+  "summary": "no animation captured"
+}

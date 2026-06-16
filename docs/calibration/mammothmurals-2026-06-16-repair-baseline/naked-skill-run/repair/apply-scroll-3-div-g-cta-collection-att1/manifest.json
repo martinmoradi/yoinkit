@@ -1,0 +1,29 @@
+{
+  "url": "https://mammothmurals.com/",
+  "viewport": [
+    1280,
+    800
+  ],
+  "captureStrategy": "reuse-page",
+  "captureGroups": {
+    "main-page-after-intro": {
+      "resetScroll": true,
+      "reason": "Reusable settled page for non-stateful hover, scroll, and manual captures."
+    }
+  },
+  "initialWaitMs": 1500,
+  "captureInitialWaitMs": 1500,
+  "captures": [
+    {
+      "id": "scroll-3-div-g-cta-collection",
+      "type": "scroll-reveal",
+      "label": "G cta collection scroll callback reveal",
+      "root": "div.g_cta_content",
+      "group": "main-page-after-intro",
+      "waitMs": 1600,
+      "reason": "ScrollTrigger 3 has callbacks (onEnter) but no bound tween in the registry.",
+      "selector": "div.g_cta_content",
+      "scrollTarget": "div.g_cta_content"
+    }
+  ]
+}

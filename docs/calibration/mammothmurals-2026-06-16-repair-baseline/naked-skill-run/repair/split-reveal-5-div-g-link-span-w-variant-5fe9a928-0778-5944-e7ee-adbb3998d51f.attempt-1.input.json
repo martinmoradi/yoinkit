@@ -1,0 +1,317 @@
+{
+  "captureId": "split-reveal-5-div-g-link-span-w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f",
+  "attempt": 1,
+  "url": "https://mammothmurals.com/",
+  "viewport": [
+    1280,
+    800
+  ],
+  "failure": {
+    "status": "empty",
+    "reason": "no animation captured",
+    "cause": "inert_representative",
+    "causeSignals": {
+      "found": true,
+      "visible": true,
+      "zeroBox": false,
+      "hoverSelfAnimatable": false,
+      "hoverPseudoAnimatable": false,
+      "pseudoHasTransition": false
+    }
+  },
+  "failedRecipe": {
+    "type": "scroll-reveal",
+    "selector": "div.g_link_span.w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f",
+    "root": "div.g_link_span.w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f",
+    "action": "scrollintoview div.g_link_span.w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f",
+    "arm": "window.__cap.scan(\"div.g_link_span.w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f\", { trigger: \"scroll\", captureSource: \"split-reveal-5-div-g-link-span-w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f\" })",
+    "beforeAction": null,
+    "waitMs": 1800
+  },
+  "screenshot": "repair/split-reveal-5-div-g-link-span-w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f.attempt-1.png",
+  "mapSubtree": {
+    "group": "main-page-after-intro",
+    "label": "G link span w variant 5fe9a928 0778 5944 e7ee adbb3998d51f split reveal",
+    "section": null,
+    "fromSplitReveal": true,
+    "inHoverCandidates": true,
+    "inCssHovers": false
+  },
+  "repairContext": {
+    "ancestors": [
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "g_link_text",
+          "u-text-style-small",
+          "u-weight-bold",
+          "u-text-transform-uppercase"
+        ],
+        "cursorPointer": true,
+        "role": null,
+        "tag": "a"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "footer_nav_li"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "li"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "footer_nav_ul"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "ul"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "footer_top"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "footer_wrap"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "footer"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "page_wrap"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      }
+    ],
+    "animatableHere": {
+      "childAnimated": false,
+      "pseudoHover": false,
+      "scrollTriggerBound": false,
+      "selfHover": false
+    },
+    "candidateTriggers": [
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          30,
+          375,
+          87,
+          51
+        ],
+        "selector": "a.g_link_text.u-text-style-small.u-weight-bold",
+        "text": "HOME"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          -212,
+          32,
+          161,
+          40
+        ],
+        "selector": "a.navbar_home_link_wordmark.w-inline-block.w--current",
+        "text": "MAMMOTH MURALS"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          500,
+          -6,
+          71,
+          64
+        ],
+        "selector": "span.navbar_btn_container.is-duplicate",
+        "text": "WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          500,
+          -58,
+          74,
+          44
+        ],
+        "selector": "a.navbar_btn_default.is-overlap.w-inline-block",
+        "text": "WORK WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          500,
+          -58,
+          74,
+          44
+        ],
+        "selector": "span.navbar_btn_container",
+        "text": "WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          516,
+          -41,
+          41,
+          11
+        ],
+        "selector": "span.navbar_btn_text.u-text-style-small.u-text-transform-uppercase",
+        "text": "WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          512,
+          -75,
+          205,
+          122
+        ],
+        "selector": "div.g_btn_container.w-variant-0cb8073d-b726-480f-f755-814264e2f505.is-duplicate",
+        "text": "BOOK A DISCOVERY CALL"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          519,
+          -120,
+          228,
+          45
+        ],
+        "selector": "a.g_btn_main.w-variant-0cb8073d-b726-480f-f755-814264e2f505.w-inline-block",
+        "text": "BOOK A DISCOVERY CALL BOOK A DISCOVERY CALL"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          519,
+          -120,
+          228,
+          45
+        ],
+        "selector": "div.g_btn_container.w-variant-0cb8073d-b726-480f-f755-814264e2f505",
+        "text": "BOOK A DISCOVERY CALL"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1314,
+          85,
+          29,
+          34
+        ],
+        "selector": "div.g_btn_cover.is-duplicate",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1321,
+          38,
+          28,
+          28
+        ],
+        "selector": "div.g_btn_cover",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1322,
+          39,
+          26,
+          26
+        ],
+        "selector": "img.g_btn_cover_image",
+        "text": ""
+      }
+    ],
+    "matches": [
+      {
+        "display": "block",
+        "nth": 0,
+        "occludedBy": null,
+        "rect": [
+          30,
+          375,
+          85,
+          51
+        ],
+        "visible": true
+      },
+      {
+        "display": "block",
+        "nth": 1,
+        "occludedBy": null,
+        "rect": [
+          280,
+          375,
+          89,
+          51
+        ],
+        "visible": true
+      },
+      {
+        "display": "block",
+        "nth": 2,
+        "occludedBy": null,
+        "rect": [
+          534,
+          375,
+          97,
+          51
+        ],
+        "visible": true
+      },
+      {
+        "display": "block",
+        "nth": 3,
+        "occludedBy": null,
+        "rect": [
+          796,
+          375,
+          140,
+          51
+        ],
+        "visible": true
+      },
+      {
+        "display": "block",
+        "nth": 4,
+        "occludedBy": null,
+        "rect": [
+          1101,
+          375,
+          132,
+          51
+        ],
+        "visible": true
+      }
+    ],
+    "siblings": []
+  },
+  "attemptHistory": []
+}

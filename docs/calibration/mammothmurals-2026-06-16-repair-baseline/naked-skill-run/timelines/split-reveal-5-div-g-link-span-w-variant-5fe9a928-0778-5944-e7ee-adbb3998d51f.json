@@ -1,0 +1,2402 @@
+{
+  "evidence": {
+    "gsap": {
+      "customEaseInstalled": true,
+      "customEases": [
+        {
+          "at": 297.1,
+          "data": "0.87, 0, 0.13, 1",
+          "id": "ease-primary",
+          "svgData": "M0,100 C87,100 13,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.31,0.75,0.22,1",
+          "id": "ease-secondary",
+          "svgData": "M0,100 C31,25 22,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.76, 0, 0.24, 1",
+          "id": "ease-fade",
+          "svgData": "M0,100 C76,100 24,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.25, 1, 0.5, 1",
+          "id": "ease-preloader",
+          "svgData": "M0,100 C25,0 50,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.16, 1, 0.35, 1",
+          "id": "ease-transition",
+          "svgData": "M0,100 C16,0 35,0 100,0 "
+        }
+      ],
+      "entries": [
+        {
+          "at": 13032.3,
+          "duration": 0.98,
+          "id": 129,
+          "kind": "timeline",
+          "method": "to",
+          "position": 0.33,
+          "target": {
+            "matchCount": 7,
+            "shortSelector": "div.g_cta_image",
+            "text": null,
+            "uniqueSelector": "div.g_cta_image:nth-of-type(1)",
+            "visibleMatchCount": 0
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(1)",
+              "visibleMatchCount": 0
+            }
+          ],
+          "totalDuration": 0.98,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "filter": "blur(0px)",
+              "overwrite": false,
+              "parent": {
+                "_act": 0,
+                "_delay": 0,
+                "_dirty": 1,
+                "_dp": {
+                  "_delay": 0,
+                  "_dirty": 1,
+                  "_dur": 0.65,
+                  "_overwrite": false,
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_tDur": 0.65,
+                  "_targets": "[circular]",
+                  "_ts": 1,
+                  "timeline": "[circular]",
+                  "vars": {
+                    "autoAlpha": 1,
+                    "delay": 0,
+                    "duration": 0.65,
+                    "ease": "ease-secondary",
+                    "filter": "blur(0px)",
+                    "overwrite": false,
+                    "scale": 1,
+                    "stagger": "[object]"
+                  }
+                },
+                "_dur": 0,
+                "_end": 12.836,
+                "_first": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.65,
+                  "_end": 0.98,
+                  "_overwrite": false,
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0.33,
+                  "_tDur": 0.65,
+                  "_targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(1)",
+                      "visibleMatchCount": 0
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": "[circular]"
+                },
+                "_last": "[circular]",
+                "_next": null,
+                "_prev": null,
+                "_recent": "[circular]",
+                "_repeat": 0,
+                "_sort": true,
+                "_start": 0,
+                "_tDur": 0,
+                "_ts": 1,
+                "autoRemoveChildren": false,
+                "data": "nested",
+                "labels": {},
+                "parent": "[circular]",
+                "smoothChildTiming": false,
+                "vars": {
+                  "data": "nested",
+                  "defaults": {},
+                  "targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(1)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(2)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(3)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(4)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(5)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(6)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(7)",
+                      "visibleMatchCount": 0
+                    }
+                  ]
+                }
+              },
+              "scale": 1,
+              "stagger": 0
+            },
+            "stagger": 0
+          }
+        },
+        {
+          "at": 13034.2,
+          "duration": 0.98,
+          "id": 130,
+          "kind": "timeline",
+          "method": "to",
+          "position": 0.22,
+          "target": {
+            "matchCount": 7,
+            "shortSelector": "div.g_cta_image",
+            "text": null,
+            "uniqueSelector": "div.g_cta_image:nth-of-type(2)",
+            "visibleMatchCount": 0
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(2)",
+              "visibleMatchCount": 0
+            }
+          ],
+          "totalDuration": 0.98,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "filter": "blur(0px)",
+              "overwrite": false,
+              "parent": {
+                "_act": 0,
+                "_delay": 0,
+                "_dirty": 0,
+                "_dp": {
+                  "_delay": 0,
+                  "_dirty": 1,
+                  "_dur": 0.65,
+                  "_overwrite": false,
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_tDur": 0.65,
+                  "_targets": "[circular]",
+                  "_ts": 1,
+                  "timeline": "[circular]",
+                  "vars": {
+                    "autoAlpha": 1,
+                    "delay": 0,
+                    "duration": 0.65,
+                    "ease": "ease-secondary",
+                    "filter": "blur(0px)",
+                    "overwrite": false,
+                    "scale": 1,
+                    "stagger": "[object]"
+                  }
+                },
+                "_dur": 0.98,
+                "_ease": "[function anonymous]",
+                "_end": 0.98,
+                "_first": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.65,
+                  "_end": 0.87,
+                  "_next": {
+                    "_delay": 0,
+                    "_dp": "[object]",
+                    "_dur": 0.65,
+                    "_end": 0.98,
+                    "_overwrite": false,
+                    "_prev": "[object]",
+                    "_ptLookup": "[object]",
+                    "_repeat": 0,
+                    "_start": 0.33,
+                    "_tDur": 0.65,
+                    "_targets": "[object]",
+                    "_ts": 1,
+                    "parent": "[object]",
+                    "timeline": 0,
+                    "vars": "[object]"
+                  },
+                  "_overwrite": false,
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0.22,
+                  "_tDur": 0.65,
+                  "_targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(2)",
+                      "visibleMatchCount": 0
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": "[circular]"
+                },
+                "_last": "[circular]",
+                "_next": null,
+                "_prev": null,
+                "_recent": "[circular]",
+                "_repeat": 0,
+                "_sort": true,
+                "_start": 0,
+                "_tDur": 0.98,
+                "_ts": 1,
+                "autoRemoveChildren": false,
+                "data": "nested",
+                "labels": {},
+                "parent": "[circular]",
+                "smoothChildTiming": false,
+                "vars": {
+                  "data": "nested",
+                  "defaults": {},
+                  "targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(1)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(2)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(3)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(4)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(5)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(6)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(7)",
+                      "visibleMatchCount": 0
+                    }
+                  ]
+                }
+              },
+              "scale": 1,
+              "stagger": 0
+            },
+            "stagger": 0
+          }
+        },
+        {
+          "at": 13036.2,
+          "duration": 0.98,
+          "id": 131,
+          "kind": "timeline",
+          "method": "to",
+          "position": 0.11,
+          "target": {
+            "matchCount": 7,
+            "shortSelector": "div.g_cta_image",
+            "text": null,
+            "uniqueSelector": "div.g_cta_image:nth-of-type(3)",
+            "visibleMatchCount": 0
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(3)",
+              "visibleMatchCount": 0
+            }
+          ],
+          "totalDuration": 0.98,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "filter": "blur(0px)",
+              "overwrite": false,
+              "parent": {
+                "_act": 0,
+                "_delay": 0,
+                "_dirty": 0,
+                "_dp": {
+                  "_delay": 0,
+                  "_dirty": 1,
+                  "_dur": 0.65,
+                  "_overwrite": false,
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_tDur": 0.65,
+                  "_targets": "[circular]",
+                  "_ts": 1,
+                  "timeline": "[circular]",
+                  "vars": {
+                    "autoAlpha": 1,
+                    "delay": 0,
+                    "duration": 0.65,
+                    "ease": "ease-secondary",
+                    "filter": "blur(0px)",
+                    "overwrite": false,
+                    "scale": 1,
+                    "stagger": "[object]"
+                  }
+                },
+                "_dur": 0.98,
+                "_ease": "[function anonymous]",
+                "_end": 0.98,
+                "_first": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.65,
+                  "_end": 0.76,
+                  "_next": {
+                    "_delay": 0,
+                    "_dp": "[object]",
+                    "_dur": 0.65,
+                    "_end": 0.87,
+                    "_next": "[object]",
+                    "_overwrite": false,
+                    "_prev": "[object]",
+                    "_ptLookup": "[object]",
+                    "_repeat": 0,
+                    "_start": 0.22,
+                    "_tDur": 0.65,
+                    "_targets": "[object]",
+                    "_ts": 1,
+                    "parent": "[object]",
+                    "timeline": 0,
+                    "vars": "[object]"
+                  },
+                  "_overwrite": false,
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0.11,
+                  "_tDur": 0.65,
+                  "_targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(3)",
+                      "visibleMatchCount": 0
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": "[circular]"
+                },
+                "_last": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.65,
+                  "_end": 0.98,
+                  "_overwrite": false,
+                  "_prev": "[circular]",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0.33,
+                  "_tDur": 0.65,
+                  "_targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(1)",
+                      "visibleMatchCount": 0
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": {
+                    "autoAlpha": 1,
+                    "delay": 0,
+                    "duration": 0.65,
+                    "ease": "ease-secondary",
+                    "filter": "blur(0px)",
+                    "overwrite": false,
+                    "parent": "[object]",
+                    "scale": 1,
+                    "stagger": 0
+                  }
+                },
+                "_next": null,
+                "_prev": null,
+                "_recent": "[circular]",
+                "_repeat": 0,
+                "_sort": true,
+                "_start": 0,
+                "_tDur": 0.98,
+                "_ts": 1,
+                "autoRemoveChildren": false,
+                "data": "nested",
+                "labels": {},
+                "parent": "[circular]",
+                "smoothChildTiming": false,
+                "vars": {
+                  "data": "nested",
+                  "defaults": {},
+                  "targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(1)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(2)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(3)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(4)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(5)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(6)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(7)",
+                      "visibleMatchCount": 0
+                    }
+                  ]
+                }
+              },
+              "scale": 1,
+              "stagger": 0
+            },
+            "stagger": 0
+          }
+        },
+        {
+          "at": 13038,
+          "duration": 0.98,
+          "id": 132,
+          "kind": "timeline",
+          "method": "to",
+          "position": 0,
+          "target": {
+            "matchCount": 7,
+            "shortSelector": "div.g_cta_image",
+            "text": null,
+            "uniqueSelector": "div.g_cta_image:nth-of-type(4)",
+            "visibleMatchCount": 0
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(4)",
+              "visibleMatchCount": 0
+            }
+          ],
+          "totalDuration": 0.98,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "filter": "blur(0px)",
+              "overwrite": false,
+              "parent": {
+                "_act": 0,
+                "_delay": 0,
+                "_dirty": 0,
+                "_dp": {
+                  "_delay": 0,
+                  "_dirty": 1,
+                  "_dur": 0.65,
+                  "_overwrite": false,
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_tDur": 0.65,
+                  "_targets": "[circular]",
+                  "_ts": 1,
+                  "timeline": "[circular]",
+                  "vars": {
+                    "autoAlpha": 1,
+                    "delay": 0,
+                    "duration": 0.65,
+                    "ease": "ease-secondary",
+                    "filter": "blur(0px)",
+                    "overwrite": false,
+                    "scale": 1,
+                    "stagger": "[object]"
+                  }
+                },
+                "_dur": 0.98,
+                "_ease": "[function anonymous]",
+                "_end": 0.98,
+                "_first": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.65,
+                  "_end": 0.65,
+                  "_next": {
+                    "_delay": 0,
+                    "_dp": "[object]",
+                    "_dur": 0.65,
+                    "_end": 0.76,
+                    "_next": "[object]",
+                    "_overwrite": false,
+                    "_prev": "[object]",
+                    "_ptLookup": "[object]",
+                    "_repeat": 0,
+                    "_start": 0.11,
+                    "_tDur": 0.65,
+                    "_targets": "[object]",
+                    "_ts": 1,
+                    "parent": "[object]",
+                    "timeline": 0,
+                    "vars": "[object]"
+                  },
+                  "_overwrite": false,
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0,
+                  "_tDur": 0.65,
+                  "_targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(4)",
+                      "visibleMatchCount": 0
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": "[circular]"
+                },
+                "_last": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.65,
+                  "_end": 0.98,
+                  "_overwrite": false,
+                  "_prev": {
+                    "_delay": 0,
+                    "_dp": "[object]",
+                    "_dur": 0.65,
+                    "_end": 0.87,
+                    "_next": "[object]",
+                    "_overwrite": false,
+                    "_prev": "[object]",
+                    "_ptLookup": "[object]",
+                    "_repeat": 0,
+                    "_start": 0.22,
+                    "_tDur": 0.65,
+                    "_targets": "[object]",
+                    "_ts": 1,
+                    "parent": "[object]",
+                    "timeline": 0,
+                    "vars": "[object]"
+                  },
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0.33,
+                  "_tDur": 0.65,
+                  "_targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(1)",
+                      "visibleMatchCount": 0
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": {
+                    "autoAlpha": 1,
+                    "delay": 0,
+                    "duration": 0.65,
+                    "ease": "ease-secondary",
+                    "filter": "blur(0px)",
+                    "overwrite": false,
+                    "parent": "[object]",
+                    "scale": 1,
+                    "stagger": 0
+                  }
+                },
+                "_next": null,
+                "_prev": null,
+                "_recent": "[circular]",
+                "_repeat": 0,
+                "_sort": true,
+                "_start": 0,
+                "_tDur": 0.98,
+                "_ts": 1,
+                "autoRemoveChildren": false,
+                "data": "nested",
+                "labels": {},
+                "parent": "[circular]",
+                "smoothChildTiming": false,
+                "vars": {
+                  "data": "nested",
+                  "defaults": {},
+                  "targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(1)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(2)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(3)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(4)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(5)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(6)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(7)",
+                      "visibleMatchCount": 0
+                    }
+                  ]
+                }
+              },
+              "scale": 1,
+              "stagger": 0
+            },
+            "stagger": 0
+          }
+        },
+        {
+          "at": 13040.2,
+          "duration": 0.98,
+          "id": 133,
+          "kind": "timeline",
+          "method": "to",
+          "position": 0.11,
+          "target": {
+            "matchCount": 7,
+            "shortSelector": "div.g_cta_image",
+            "text": null,
+            "uniqueSelector": "div.g_cta_image:nth-of-type(5)",
+            "visibleMatchCount": 0
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(5)",
+              "visibleMatchCount": 0
+            }
+          ],
+          "totalDuration": 0.98,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "filter": "blur(0px)",
+              "overwrite": false,
+              "parent": {
+                "_act": 0,
+                "_delay": 0,
+                "_dirty": 0,
+                "_dp": {
+                  "_delay": 0,
+                  "_dirty": 1,
+                  "_dur": 0.65,
+                  "_overwrite": false,
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_tDur": 0.65,
+                  "_targets": "[circular]",
+                  "_ts": 1,
+                  "timeline": "[circular]",
+                  "vars": {
+                    "autoAlpha": 1,
+                    "delay": 0,
+                    "duration": 0.65,
+                    "ease": "ease-secondary",
+                    "filter": "blur(0px)",
+                    "overwrite": false,
+                    "scale": 1,
+                    "stagger": "[object]"
+                  }
+                },
+                "_dur": 0.98,
+                "_ease": "[function anonymous]",
+                "_end": 0.98,
+                "_first": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.65,
+                  "_end": 0.65,
+                  "_next": {
+                    "_delay": 0,
+                    "_dp": "[object]",
+                    "_dur": 0.65,
+                    "_end": 0.76,
+                    "_next": "[object]",
+                    "_overwrite": false,
+                    "_prev": "[object]",
+                    "_ptLookup": "[object]",
+                    "_repeat": 0,
+                    "_start": 0.11,
+                    "_tDur": 0.65,
+                    "_targets": "[object]",
+                    "_ts": 1,
+                    "parent": "[object]",
+                    "timeline": 0,
+                    "vars": "[object]"
+                  },
+                  "_overwrite": false,
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0,
+                  "_tDur": 0.65,
+                  "_targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(4)",
+                      "visibleMatchCount": 0
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": {
+                    "autoAlpha": 1,
+                    "delay": 0,
+                    "duration": 0.65,
+                    "ease": "ease-secondary",
+                    "filter": "blur(0px)",
+                    "overwrite": false,
+                    "parent": "[object]",
+                    "scale": 1,
+                    "stagger": 0
+                  }
+                },
+                "_last": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.65,
+                  "_end": 0.98,
+                  "_overwrite": false,
+                  "_prev": {
+                    "_delay": 0,
+                    "_dp": "[object]",
+                    "_dur": 0.65,
+                    "_end": 0.87,
+                    "_next": "[object]",
+                    "_overwrite": false,
+                    "_prev": "[object]",
+                    "_ptLookup": "[object]",
+                    "_repeat": 0,
+                    "_start": 0.22,
+                    "_tDur": 0.65,
+                    "_targets": "[object]",
+                    "_ts": 1,
+                    "parent": "[object]",
+                    "timeline": 0,
+                    "vars": "[object]"
+                  },
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0.33,
+                  "_tDur": 0.65,
+                  "_targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(1)",
+                      "visibleMatchCount": 0
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": {
+                    "autoAlpha": 1,
+                    "delay": 0,
+                    "duration": 0.65,
+                    "ease": "ease-secondary",
+                    "filter": "blur(0px)",
+                    "overwrite": false,
+                    "parent": "[object]",
+                    "scale": 1,
+                    "stagger": 0
+                  }
+                },
+                "_next": null,
+                "_prev": null,
+                "_recent": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.65,
+                  "_end": 0.76,
+                  "_next": "[circular]",
+                  "_overwrite": false,
+                  "_prev": "[circular]",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0.11,
+                  "_tDur": 0.65,
+                  "_targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(5)",
+                      "visibleMatchCount": 0
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": "[circular]"
+                },
+                "_repeat": 0,
+                "_sort": true,
+                "_start": 0,
+                "_tDur": 0.98,
+                "_ts": 1,
+                "autoRemoveChildren": false,
+                "data": "nested",
+                "labels": {},
+                "parent": "[circular]",
+                "smoothChildTiming": false,
+                "vars": {
+                  "data": "nested",
+                  "defaults": {},
+                  "targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(1)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(2)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(3)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(4)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(5)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(6)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(7)",
+                      "visibleMatchCount": 0
+                    }
+                  ]
+                }
+              },
+              "scale": 1,
+              "stagger": 0
+            },
+            "stagger": 0
+          }
+        },
+        {
+          "at": 13042.1,
+          "duration": 0.98,
+          "id": 134,
+          "kind": "timeline",
+          "method": "to",
+          "position": 0.22,
+          "target": {
+            "matchCount": 7,
+            "shortSelector": "div.g_cta_image",
+            "text": null,
+            "uniqueSelector": "div.g_cta_image:nth-of-type(6)",
+            "visibleMatchCount": 0
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(6)",
+              "visibleMatchCount": 0
+            }
+          ],
+          "totalDuration": 0.98,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "filter": "blur(0px)",
+              "overwrite": false,
+              "parent": {
+                "_act": 0,
+                "_delay": 0,
+                "_dirty": 0,
+                "_dp": {
+                  "_delay": 0,
+                  "_dirty": 1,
+                  "_dur": 0.65,
+                  "_overwrite": false,
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_tDur": 0.65,
+                  "_targets": "[circular]",
+                  "_ts": 1,
+                  "timeline": "[circular]",
+                  "vars": {
+                    "autoAlpha": 1,
+                    "delay": 0,
+                    "duration": 0.65,
+                    "ease": "ease-secondary",
+                    "filter": "blur(0px)",
+                    "overwrite": false,
+                    "scale": 1,
+                    "stagger": "[object]"
+                  }
+                },
+                "_dur": 0.98,
+                "_ease": "[function anonymous]",
+                "_end": 0.98,
+                "_first": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.65,
+                  "_end": 0.65,
+                  "_next": {
+                    "_delay": 0,
+                    "_dp": "[object]",
+                    "_dur": 0.65,
+                    "_end": 0.76,
+                    "_next": "[object]",
+                    "_overwrite": false,
+                    "_prev": "[object]",
+                    "_ptLookup": "[object]",
+                    "_repeat": 0,
+                    "_start": 0.11,
+                    "_tDur": 0.65,
+                    "_targets": "[object]",
+                    "_ts": 1,
+                    "parent": "[object]",
+                    "timeline": 0,
+                    "vars": "[object]"
+                  },
+                  "_overwrite": false,
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0,
+                  "_tDur": 0.65,
+                  "_targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(4)",
+                      "visibleMatchCount": 0
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": {
+                    "autoAlpha": 1,
+                    "delay": 0,
+                    "duration": 0.65,
+                    "ease": "ease-secondary",
+                    "filter": "blur(0px)",
+                    "overwrite": false,
+                    "parent": "[object]",
+                    "scale": 1,
+                    "stagger": 0
+                  }
+                },
+                "_last": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.65,
+                  "_end": 0.98,
+                  "_overwrite": false,
+                  "_prev": {
+                    "_delay": 0,
+                    "_dp": "[object]",
+                    "_dur": 0.65,
+                    "_end": 0.87,
+                    "_next": "[object]",
+                    "_overwrite": false,
+                    "_prev": "[object]",
+                    "_ptLookup": "[object]",
+                    "_repeat": 0,
+                    "_start": 0.22,
+                    "_tDur": 0.65,
+                    "_targets": "[object]",
+                    "_ts": 1,
+                    "parent": "[object]",
+                    "timeline": 0,
+                    "vars": "[object]"
+                  },
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0.33,
+                  "_tDur": 0.65,
+                  "_targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(1)",
+                      "visibleMatchCount": 0
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": {
+                    "autoAlpha": 1,
+                    "delay": 0,
+                    "duration": 0.65,
+                    "ease": "ease-secondary",
+                    "filter": "blur(0px)",
+                    "overwrite": false,
+                    "parent": "[object]",
+                    "scale": 1,
+                    "stagger": 0
+                  }
+                },
+                "_next": null,
+                "_prev": null,
+                "_recent": "[circular]",
+                "_repeat": 0,
+                "_sort": true,
+                "_start": 0,
+                "_tDur": 0.98,
+                "_ts": 1,
+                "autoRemoveChildren": false,
+                "data": "nested",
+                "labels": {},
+                "parent": "[circular]",
+                "smoothChildTiming": false,
+                "vars": {
+                  "data": "nested",
+                  "defaults": {},
+                  "targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(1)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(2)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(3)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(4)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(5)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(6)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(7)",
+                      "visibleMatchCount": 0
+                    }
+                  ]
+                }
+              },
+              "scale": 1,
+              "stagger": 0
+            },
+            "stagger": 0
+          }
+        },
+        {
+          "at": 13044.1,
+          "duration": 0.98,
+          "id": 135,
+          "kind": "timeline",
+          "method": "to",
+          "position": 0.33,
+          "target": {
+            "matchCount": 7,
+            "shortSelector": "div.g_cta_image",
+            "text": null,
+            "uniqueSelector": "div.g_cta_image:nth-of-type(7)",
+            "visibleMatchCount": 0
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(7)",
+              "visibleMatchCount": 0
+            }
+          ],
+          "totalDuration": 0.98,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "filter": "blur(0px)",
+              "overwrite": false,
+              "parent": {
+                "_act": 0,
+                "_delay": 0,
+                "_dirty": 0,
+                "_dp": {
+                  "_delay": 0,
+                  "_dirty": 1,
+                  "_dur": 0.65,
+                  "_overwrite": false,
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_tDur": 0.65,
+                  "_targets": "[circular]",
+                  "_ts": 1,
+                  "timeline": "[circular]",
+                  "vars": {
+                    "autoAlpha": 1,
+                    "delay": 0,
+                    "duration": 0.65,
+                    "ease": "ease-secondary",
+                    "filter": "blur(0px)",
+                    "overwrite": false,
+                    "scale": 1,
+                    "stagger": "[object]"
+                  }
+                },
+                "_dur": 0.98,
+                "_ease": "[function anonymous]",
+                "_end": 0.98,
+                "_first": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.65,
+                  "_end": 0.65,
+                  "_next": {
+                    "_delay": 0,
+                    "_dp": "[object]",
+                    "_dur": 0.65,
+                    "_end": 0.76,
+                    "_next": "[object]",
+                    "_overwrite": false,
+                    "_prev": "[object]",
+                    "_ptLookup": "[object]",
+                    "_repeat": 0,
+                    "_start": 0.11,
+                    "_tDur": 0.65,
+                    "_targets": "[object]",
+                    "_ts": 1,
+                    "parent": "[object]",
+                    "timeline": 0,
+                    "vars": "[object]"
+                  },
+                  "_overwrite": false,
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0,
+                  "_tDur": 0.65,
+                  "_targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(4)",
+                      "visibleMatchCount": 0
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": {
+                    "autoAlpha": 1,
+                    "delay": 0,
+                    "duration": 0.65,
+                    "ease": "ease-secondary",
+                    "filter": "blur(0px)",
+                    "overwrite": false,
+                    "parent": "[object]",
+                    "scale": 1,
+                    "stagger": 0
+                  }
+                },
+                "_last": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.65,
+                  "_end": 0.98,
+                  "_overwrite": false,
+                  "_prev": {
+                    "_delay": 0,
+                    "_dp": "[object]",
+                    "_dur": 0.65,
+                    "_end": 0.98,
+                    "_next": "[object]",
+                    "_overwrite": false,
+                    "_prev": "[object]",
+                    "_ptLookup": "[object]",
+                    "_repeat": 0,
+                    "_start": 0.33,
+                    "_tDur": 0.65,
+                    "_targets": "[object]",
+                    "_ts": 1,
+                    "parent": "[object]",
+                    "timeline": 0,
+                    "vars": "[object]"
+                  },
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0.33,
+                  "_tDur": 0.65,
+                  "_targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(7)",
+                      "visibleMatchCount": 0
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": "[circular]"
+                },
+                "_next": null,
+                "_prev": null,
+                "_recent": "[circular]",
+                "_repeat": 0,
+                "_sort": true,
+                "_start": 0,
+                "_tDur": 0.98,
+                "_ts": 1,
+                "autoRemoveChildren": false,
+                "data": "nested",
+                "labels": {},
+                "parent": "[circular]",
+                "smoothChildTiming": false,
+                "vars": {
+                  "data": "nested",
+                  "defaults": {},
+                  "targets": [
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(1)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(2)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(3)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(4)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(5)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(6)",
+                      "visibleMatchCount": 0
+                    },
+                    {
+                      "matchCount": 7,
+                      "shortSelector": "div.g_cta_image",
+                      "text": null,
+                      "uniqueSelector": "div.g_cta_image:nth-of-type(7)",
+                      "visibleMatchCount": 0
+                    }
+                  ]
+                }
+              },
+              "scale": 1,
+              "stagger": 0
+            },
+            "stagger": 0
+          }
+        },
+        {
+          "at": 13047.2,
+          "duration": 0.98,
+          "id": 136,
+          "kind": "gsap",
+          "method": "to",
+          "target": [
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(1)",
+              "visibleMatchCount": 0
+            },
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(2)",
+              "visibleMatchCount": 0
+            },
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(3)",
+              "visibleMatchCount": 0
+            },
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(4)",
+              "visibleMatchCount": 0
+            },
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(5)",
+              "visibleMatchCount": 0
+            },
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(6)",
+              "visibleMatchCount": 0
+            },
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(7)",
+              "visibleMatchCount": 0
+            }
+          ],
+          "targetCount": 7,
+          "targets": [
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(1)",
+              "visibleMatchCount": 0
+            },
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(2)",
+              "visibleMatchCount": 0
+            },
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(3)",
+              "visibleMatchCount": 0
+            },
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(4)",
+              "visibleMatchCount": 0
+            },
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(5)",
+              "visibleMatchCount": 0
+            },
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(6)",
+              "visibleMatchCount": 0
+            },
+            {
+              "matchCount": 7,
+              "shortSelector": "div.g_cta_image",
+              "text": null,
+              "uniqueSelector": "div.g_cta_image:nth-of-type(7)",
+              "visibleMatchCount": 0
+            }
+          ],
+          "totalDuration": 0.98,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "filter": "blur(0px)",
+              "overwrite": false,
+              "scale": 1,
+              "stagger": {
+                "each": 0.055,
+                "from": "center"
+              }
+            },
+            "stagger": {
+              "each": 0.055,
+              "from": "center"
+            }
+          }
+        },
+        {
+          "at": 13047.8,
+          "duration": 0.4,
+          "id": 137,
+          "kind": "timeline",
+          "method": "to",
+          "position": 0,
+          "target": {
+            "matchCount": 3,
+            "shortSelector": "li.navbar_links_li",
+            "text": "WORK WORK",
+            "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+            "visibleMatchCount": 3
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "WORK WORK",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+              "visibleMatchCount": 3
+            }
+          ],
+          "totalDuration": 0.4,
+          "vars": {
+            "delay": 0,
+            "duration": 0.4,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.4,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "parent": {
+                "_act": 0,
+                "_delay": 0,
+                "_dirty": 1,
+                "_dp": {
+                  "_delay": 0,
+                  "_dirty": 1,
+                  "_dur": 0.4,
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_tDur": 0.4,
+                  "_targets": "[circular]",
+                  "_ts": 1,
+                  "timeline": "[circular]",
+                  "vars": {
+                    "delay": 0,
+                    "duration": 0.4,
+                    "ease": "ease-secondary",
+                    "overwrite": "auto",
+                    "rotation": 0.001,
+                    "stagger": 0.055,
+                    "yPercent": -200
+                  }
+                },
+                "_dur": 0,
+                "_end": 12.836,
+                "_first": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.4,
+                  "_end": 0.4,
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0,
+                  "_tDur": 0.4,
+                  "_targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": "[circular]"
+                },
+                "_last": "[circular]",
+                "_next": null,
+                "_prev": null,
+                "_recent": "[circular]",
+                "_repeat": 0,
+                "_sort": true,
+                "_start": 0,
+                "_tDur": 0,
+                "_ts": 1,
+                "autoRemoveChildren": false,
+                "data": "nested",
+                "labels": {},
+                "parent": "[circular]",
+                "smoothChildTiming": false,
+                "vars": {
+                  "data": "nested",
+                  "defaults": {},
+                  "targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "ABOUT ABOUT",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "SERVICES SERVICES",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+                      "visibleMatchCount": 3
+                    }
+                  ]
+                }
+              },
+              "rotation": 0.001,
+              "stagger": 0,
+              "yPercent": -200
+            },
+            "stagger": 0
+          }
+        },
+        {
+          "at": 13048.1,
+          "duration": 0.455,
+          "id": 138,
+          "kind": "timeline",
+          "method": "to",
+          "position": 0.055,
+          "target": {
+            "matchCount": 3,
+            "shortSelector": "li.navbar_links_li",
+            "text": "ABOUT ABOUT",
+            "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+            "visibleMatchCount": 3
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "ABOUT ABOUT",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+              "visibleMatchCount": 3
+            }
+          ],
+          "totalDuration": 0.455,
+          "vars": {
+            "delay": 0,
+            "duration": 0.4,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.4,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "parent": {
+                "_act": 0,
+                "_delay": 0,
+                "_dirty": 1,
+                "_dp": {
+                  "_delay": 0,
+                  "_dirty": 1,
+                  "_dur": 0.4,
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_tDur": 0.4,
+                  "_targets": "[circular]",
+                  "_ts": 1,
+                  "timeline": "[circular]",
+                  "vars": {
+                    "delay": 0,
+                    "duration": 0.4,
+                    "ease": "ease-secondary",
+                    "overwrite": "auto",
+                    "rotation": 0.001,
+                    "stagger": 0.055,
+                    "yPercent": -200
+                  }
+                },
+                "_dur": 0.4,
+                "_ease": "[function anonymous]",
+                "_end": 0.4,
+                "_first": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.4,
+                  "_end": 0.4,
+                  "_next": {
+                    "_delay": 0,
+                    "_dp": "[object]",
+                    "_dur": 0.4,
+                    "_end": 0.455,
+                    "_overwrite": "auto",
+                    "_prev": "[object]",
+                    "_ptLookup": "[object]",
+                    "_repeat": 0,
+                    "_start": 0.055,
+                    "_tDur": 0.4,
+                    "_targets": "[object]",
+                    "_ts": 1,
+                    "parent": "[object]",
+                    "timeline": 0,
+                    "vars": "[object]"
+                  },
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0,
+                  "_tDur": 0.4,
+                  "_targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": {
+                    "delay": 0,
+                    "duration": 0.4,
+                    "ease": "ease-secondary",
+                    "overwrite": "auto",
+                    "parent": "[object]",
+                    "rotation": 0.001,
+                    "stagger": 0,
+                    "yPercent": -200
+                  }
+                },
+                "_last": "[circular]",
+                "_next": null,
+                "_prev": null,
+                "_recent": "[circular]",
+                "_repeat": 0,
+                "_sort": true,
+                "_start": 0,
+                "_tDur": 0.4,
+                "_ts": 1,
+                "autoRemoveChildren": false,
+                "data": "nested",
+                "labels": {},
+                "parent": "[circular]",
+                "smoothChildTiming": false,
+                "vars": {
+                  "data": "nested",
+                  "defaults": {},
+                  "targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "ABOUT ABOUT",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "SERVICES SERVICES",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+                      "visibleMatchCount": 3
+                    }
+                  ]
+                }
+              },
+              "rotation": 0.001,
+              "stagger": 0,
+              "yPercent": -200
+            },
+            "stagger": 0
+          }
+        },
+        {
+          "at": 13048.4,
+          "duration": 0.51,
+          "id": 139,
+          "kind": "timeline",
+          "method": "to",
+          "position": 0.11,
+          "target": {
+            "matchCount": 3,
+            "shortSelector": "li.navbar_links_li",
+            "text": "SERVICES SERVICES",
+            "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+            "visibleMatchCount": 3
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "SERVICES SERVICES",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+              "visibleMatchCount": 3
+            }
+          ],
+          "totalDuration": 0.51,
+          "vars": {
+            "delay": 0,
+            "duration": 0.4,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.4,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "parent": {
+                "_act": 0,
+                "_delay": 0,
+                "_dirty": 1,
+                "_dp": {
+                  "_delay": 0,
+                  "_dirty": 1,
+                  "_dur": 0.4,
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_tDur": 0.4,
+                  "_targets": "[circular]",
+                  "_ts": 1,
+                  "timeline": "[circular]",
+                  "vars": {
+                    "delay": 0,
+                    "duration": 0.4,
+                    "ease": "ease-secondary",
+                    "overwrite": "auto",
+                    "rotation": 0.001,
+                    "stagger": 0.055,
+                    "yPercent": -200
+                  }
+                },
+                "_dur": 0.455,
+                "_ease": "[function anonymous]",
+                "_end": 0.455,
+                "_first": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.4,
+                  "_end": 0.4,
+                  "_next": {
+                    "_delay": 0,
+                    "_dp": "[object]",
+                    "_dur": 0.4,
+                    "_end": 0.455,
+                    "_next": "[object]",
+                    "_overwrite": "auto",
+                    "_prev": "[object]",
+                    "_ptLookup": "[object]",
+                    "_repeat": 0,
+                    "_start": 0.055,
+                    "_tDur": 0.4,
+                    "_targets": "[object]",
+                    "_ts": 1,
+                    "parent": "[object]",
+                    "timeline": 0,
+                    "vars": "[object]"
+                  },
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0,
+                  "_tDur": 0.4,
+                  "_targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": {
+                    "delay": 0,
+                    "duration": 0.4,
+                    "ease": "ease-secondary",
+                    "overwrite": "auto",
+                    "parent": "[object]",
+                    "rotation": 0.001,
+                    "stagger": 0,
+                    "yPercent": -200
+                  }
+                },
+                "_last": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.4,
+                  "_end": 0.51,
+                  "_overwrite": "auto",
+                  "_prev": "[circular]",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0.11,
+                  "_tDur": 0.4,
+                  "_targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "SERVICES SERVICES",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+                      "visibleMatchCount": 3
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": "[circular]"
+                },
+                "_next": null,
+                "_prev": null,
+                "_recent": "[circular]",
+                "_repeat": 0,
+                "_sort": true,
+                "_start": 0,
+                "_tDur": 0.455,
+                "_ts": 1,
+                "autoRemoveChildren": false,
+                "data": "nested",
+                "labels": {},
+                "parent": "[circular]",
+                "smoothChildTiming": false,
+                "vars": {
+                  "data": "nested",
+                  "defaults": {},
+                  "targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "ABOUT ABOUT",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "SERVICES SERVICES",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+                      "visibleMatchCount": 3
+                    }
+                  ]
+                }
+              },
+              "rotation": 0.001,
+              "stagger": 0,
+              "yPercent": -200
+            },
+            "stagger": 0
+          }
+        },
+        {
+          "at": 13048.6,
+          "duration": 0.51,
+          "id": 140,
+          "kind": "gsap",
+          "method": "to",
+          "target": [
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "WORK WORK",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+              "visibleMatchCount": 3
+            },
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "ABOUT ABOUT",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+              "visibleMatchCount": 3
+            },
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "SERVICES SERVICES",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+              "visibleMatchCount": 3
+            }
+          ],
+          "targetCount": 3,
+          "targets": [
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "WORK WORK",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+              "visibleMatchCount": 3
+            },
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "ABOUT ABOUT",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+              "visibleMatchCount": 3
+            },
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "SERVICES SERVICES",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+              "visibleMatchCount": 3
+            }
+          ],
+          "totalDuration": 0.51,
+          "vars": {
+            "delay": 0,
+            "duration": 0.4,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.4,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "rotation": 0.001,
+              "stagger": 0.055,
+              "yPercent": -200
+            },
+            "stagger": 0.055
+          }
+        },
+        {
+          "at": 13048.7,
+          "duration": 0.65,
+          "id": 141,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 1,
+            "shortSelector": "a.navbar_home_link_wordmark.w-inline-block",
+            "text": "MAMMOTH MURALS",
+            "uniqueSelector": "a.navbar_home_link_wordmark.w-inline-block",
+            "visibleMatchCount": 1
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 1,
+              "shortSelector": "a.navbar_home_link_wordmark.w-inline-block",
+              "text": "MAMMOTH MURALS",
+              "uniqueSelector": "a.navbar_home_link_wordmark.w-inline-block",
+              "visibleMatchCount": 1
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "delay": 0,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "rotation": 0.001,
+              "xPercent": -150
+            }
+          }
+        },
+        {
+          "at": 13048.7,
+          "duration": 0.65,
+          "id": 142,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 1,
+            "shortSelector": "#w-node-f0092fd8-4d8b-da06-857d-4cb081e7938c-81e7936b",
+            "text": "CHAT WITH US CHAT WITH US",
+            "uniqueSelector": "#w-node-f0092fd8-4d8b-da06-857d-4cb081e7938c-81e7936b",
+            "visibleMatchCount": 1
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 1,
+              "shortSelector": "#w-node-f0092fd8-4d8b-da06-857d-4cb081e7938c-81e7936b",
+              "text": "CHAT WITH US CHAT WITH US",
+              "uniqueSelector": "#w-node-f0092fd8-4d8b-da06-857d-4cb081e7938c-81e7936b",
+              "visibleMatchCount": 1
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "delay": 0,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "rotation": 0.001,
+              "xPercent": 150
+            }
+          }
+        }
+      ],
+      "installed": true
+    }
+  },
+  "findings": [],
+  "meta": {
+    "captureSource": "split-reveal-5-div-g-link-span-w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f",
+    "capturedFrom": "capture-animation.js",
+    "durationMs": 1768.5,
+    "elementsMoved": 0,
+    "instrumentation": {
+      "customEase": true,
+      "gsap": true
+    },
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "scan",
+    "rootLocator": {
+      "matchCount": 5,
+      "shortSelector": "div.g_link_span.w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f",
+      "text": "HOME",
+      "uniqueSelector": "a.g_link_text.u-text-style-small.u-weight-bold > div[aria-label=\"Home\"]",
+      "visibleMatchCount": 5
+    },
+    "rootSelector": "a.g_link_text.u-text-style-small.u-weight-bold > div[aria-label=\"Home\"]",
+    "sampledProperties": [
+      "transform",
+      "opacity",
+      "filter",
+      "clipPath",
+      "backgroundSize",
+      "backgroundPosition",
+      "backgroundColor",
+      "color",
+      "height",
+      "width"
+    ],
+    "sampledPseudoElements": [
+      "::before",
+      "::after"
+    ],
+    "source": "https://mammothmurals.com/",
+    "terminationReason": "manualDump",
+    "trigger": "scroll"
+  },
+  "stagger": null,
+  "summary": "no animation captured"
+}

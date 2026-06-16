@@ -1,0 +1,280 @@
+{
+  "captureId": "split-reveal-4-p-hero-home-p-u-text-style-large",
+  "attempt": 1,
+  "url": "https://mammothmurals.com/",
+  "viewport": [
+    1280,
+    800
+  ],
+  "failure": {
+    "status": "empty",
+    "reason": "no animation captured",
+    "cause": "inert_representative",
+    "causeSignals": {
+      "found": true,
+      "visible": true,
+      "zeroBox": false,
+      "hoverSelfAnimatable": false,
+      "hoverPseudoAnimatable": false,
+      "pseudoHasTransition": false
+    }
+  },
+  "failedRecipe": {
+    "type": "scroll-reveal",
+    "selector": "p.hero_home_p.u-text-style-large",
+    "root": "p.hero_home_p.u-text-style-large",
+    "action": "scrollintoview p.hero_home_p.u-text-style-large",
+    "arm": "window.__cap.scan(\"p.hero_home_p.u-text-style-large\", { trigger: \"scroll\", captureSource: \"split-reveal-4-p-hero-home-p-u-text-style-large\" })",
+    "beforeAction": null,
+    "waitMs": 1800
+  },
+  "screenshot": "repair/split-reveal-4-p-hero-home-p-u-text-style-large.attempt-1.png",
+  "mapSubtree": {
+    "group": "main-page-after-intro",
+    "label": "Hero home p u text style large split reveal",
+    "section": "section.hero_home_wrap",
+    "fromSplitReveal": true,
+    "inHoverCandidates": false,
+    "inCssHovers": false
+  },
+  "repairContext": {
+    "ancestors": [
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "hero_home_content"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "hero_home_bottom"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "hero_home_contain"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "hero_home_container"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "hero_home_wrap"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "section"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "page_main"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "main"
+      }
+    ],
+    "animatableHere": {
+      "childAnimated": false,
+      "pseudoHover": false,
+      "scrollTriggerBound": false,
+      "selfHover": false
+    },
+    "candidateTriggers": [
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          30,
+          484,
+          423,
+          45
+        ],
+        "selector": "div.hero_home_content_btns",
+        "text": "BOOK A DISCOVERY CALL BOOK A DISCOVERY CALL SEE OUR WORK SEE"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          30,
+          32,
+          161,
+          40
+        ],
+        "selector": "a.navbar_home_link_wordmark.w-inline-block.w--current",
+        "text": "MAMMOTH MURALS"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          500,
+          82,
+          71,
+          64
+        ],
+        "selector": "span.navbar_btn_container.is-duplicate",
+        "text": "WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          500,
+          30,
+          74,
+          44
+        ],
+        "selector": "a.navbar_btn_default.is-overlap.w-inline-block",
+        "text": "WORK WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          500,
+          30,
+          74,
+          44
+        ],
+        "selector": "span.navbar_btn_container",
+        "text": "WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          516,
+          47,
+          41,
+          11
+        ],
+        "selector": "span.navbar_btn_text.u-text-style-small.u-text-transform-uppercase",
+        "text": "WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          931,
+          281,
+          304,
+          171
+        ],
+        "selector": "button.g_video_button",
+        "text": "Open Video"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1084,
+          85,
+          29,
+          34
+        ],
+        "selector": "div.g_btn_cover.is-duplicate",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1090,
+          38,
+          28,
+          28
+        ],
+        "selector": "div.g_btn_cover",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1091,
+          39,
+          26,
+          26
+        ],
+        "selector": "img.g_btn_cover_image",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1075,
+          75,
+          140,
+          94
+        ],
+        "selector": "div.g_btn_container.is-duplicate",
+        "text": "CHAT WITH US"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1082,
+          30,
+          154,
+          45
+        ],
+        "selector": "div.navbar_cta_btn",
+        "text": "CHAT WITH US CHAT WITH US"
+      }
+    ],
+    "matches": [
+      {
+        "display": "flow-root",
+        "nth": 0,
+        "occludedBy": null,
+        "rect": [
+          30,
+          347,
+          423,
+          106
+        ],
+        "visible": true
+      }
+    ],
+    "siblings": [
+      {
+        "display": "flex",
+        "nth": -1,
+        "occludedBy": null,
+        "rect": [
+          30,
+          484,
+          423,
+          45
+        ],
+        "selector": "div.hero_home_content_btns",
+        "visible": true
+      }
+    ]
+  },
+  "attemptHistory": []
+}

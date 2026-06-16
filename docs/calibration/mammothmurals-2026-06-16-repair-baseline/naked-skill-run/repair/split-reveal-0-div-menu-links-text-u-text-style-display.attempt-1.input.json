@@ -1,0 +1,316 @@
+{
+  "captureId": "split-reveal-0-div-menu-links-text-u-text-style-display",
+  "attempt": 1,
+  "url": "https://mammothmurals.com/",
+  "viewport": [
+    1280,
+    800
+  ],
+  "failure": {
+    "status": "error",
+    "reason": "Preflight failed for scrollintoview div.menu_links_text.u-text-style-display: selector matched no visible elements",
+    "cause": "hidden_not_visible",
+    "causeSignals": {
+      "found": true,
+      "visible": false,
+      "zeroBox": true,
+      "hoverSelfAnimatable": false,
+      "hoverPseudoAnimatable": false,
+      "pseudoHasTransition": false
+    }
+  },
+  "failedRecipe": {
+    "type": "scroll-reveal",
+    "selector": "div.menu_links_text.u-text-style-display",
+    "root": "div.menu_links_text.u-text-style-display",
+    "action": "scrollintoview div.menu_links_text.u-text-style-display",
+    "arm": "window.__cap.scan(\"div.menu_links_text.u-text-style-display\", { trigger: \"scroll\", captureSource: \"split-reveal-0-div-menu-links-text-u-text-style-display\" })",
+    "beforeAction": null,
+    "waitMs": 1800
+  },
+  "screenshot": "repair/split-reveal-0-div-menu-links-text-u-text-style-display.attempt-1.png",
+  "mapSubtree": {
+    "group": "main-page-after-intro",
+    "label": "Menu links text u text style display split reveal",
+    "section": null,
+    "fromSplitReveal": true,
+    "inHoverCandidates": true,
+    "inCssHovers": false
+  },
+  "repairContext": {
+    "ancestors": [
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "menu_contain_link"
+        ],
+        "cursorPointer": true,
+        "role": null,
+        "tag": "span"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "menu_contain_text"
+        ],
+        "cursorPointer": true,
+        "role": null,
+        "tag": "span"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "menu_links_link",
+          "w-inline-block",
+          "w--current"
+        ],
+        "cursorPointer": true,
+        "role": null,
+        "tag": "a"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "menu_links_li"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "menu_links_ul"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "menu_contain"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      }
+    ],
+    "animatableHere": {
+      "childAnimated": false,
+      "pseudoHover": false,
+      "scrollTriggerBound": false,
+      "selfHover": false
+    },
+    "candidateTriggers": [
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          500,
+          82,
+          71,
+          64
+        ],
+        "selector": "span.navbar_btn_container.is-duplicate",
+        "text": "WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          500,
+          30,
+          74,
+          44
+        ],
+        "selector": "a.navbar_btn_default.is-overlap.w-inline-block",
+        "text": "WORK WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          500,
+          30,
+          74,
+          44
+        ],
+        "selector": "span.navbar_btn_container",
+        "text": "WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          516,
+          47,
+          41,
+          11
+        ],
+        "selector": "span.navbar_btn_text.u-text-style-small.u-text-transform-uppercase",
+        "text": "WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          931,
+          571,
+          304,
+          171
+        ],
+        "selector": "button.g_video_button",
+        "text": "Open Video"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1084,
+          85,
+          29,
+          34
+        ],
+        "selector": "div.g_btn_cover.is-duplicate",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          30,
+          774,
+          423,
+          45
+        ],
+        "selector": "div.hero_home_content_btns",
+        "text": "BOOK A DISCOVERY CALL BOOK A DISCOVERY CALL SEE OUR WORK SEE"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1075,
+          75,
+          140,
+          94
+        ],
+        "selector": "div.g_btn_container.is-duplicate",
+        "text": "CHAT WITH US"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1090,
+          38,
+          28,
+          28
+        ],
+        "selector": "div.g_btn_cover",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1091,
+          39,
+          26,
+          26
+        ],
+        "selector": "img.g_btn_cover_image",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1082,
+          30,
+          154,
+          45
+        ],
+        "selector": "div.navbar_cta_btn",
+        "text": "CHAT WITH US CHAT WITH US"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1082,
+          30,
+          154,
+          45
+        ],
+        "selector": "a.g_btn_main.w-inline-block",
+        "text": "CHAT WITH US CHAT WITH US"
+      }
+    ],
+    "matches": [
+      {
+        "display": "flow-root",
+        "nth": 0,
+        "occludedBy": null,
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "display": "flow-root",
+        "nth": 1,
+        "occludedBy": null,
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "display": "flow-root",
+        "nth": 2,
+        "occludedBy": null,
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "display": "flow-root",
+        "nth": 3,
+        "occludedBy": null,
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "display": "flow-root",
+        "nth": 4,
+        "occludedBy": null,
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      }
+    ],
+    "siblings": []
+  },
+  "attemptHistory": []
+}

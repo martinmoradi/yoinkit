@@ -1,0 +1,179 @@
+{
+  "site": "mammothmurals",
+  "url": "https://mammothmurals.com/",
+  "run_dir": "docs/calibration/mammothmurals-2026-06-16-repair-baseline/naked-skill-run",
+  "date": "2026-06-16",
+  "stack": [
+    "GSAP",
+    "ScrollTrigger",
+    "Lenis",
+    "Webflow",
+    "jQuery"
+  ],
+  "hard_fail": false,
+  "captures": {
+    "proposed": 18,
+    "results": 18,
+    "ok": 7,
+    "ok_first_try": 5,
+    "ok_after_repair": 2,
+    "check": 3,
+    "check_first_try": 3,
+    "check_after_repair": 0,
+    "empty": 5,
+    "error": 3,
+    "skipped": 0,
+    "attempted": 18,
+    "hit_rate": 0.389,
+    "usable_rate": 0.556
+  },
+  "repair": {
+    "attempted": 10,
+    "succeeded": 2,
+    "by_action": {
+      "terminal_give_up": {
+        "att": 7,
+        "ok": 0
+      },
+      "retarget_selector": {
+        "att": 1,
+        "ok": 1
+      },
+      "precondition_action": {
+        "att": 3,
+        "ok": 1
+      }
+    },
+    "by_bucket": {
+      "hidden_not_visible": {
+        "att": 3,
+        "ok": 1
+      },
+      "occlusion": {
+        "att": 2,
+        "ok": 0
+      },
+      "inert_representative": {
+        "att": 5,
+        "ok": 1
+      }
+    },
+    "terminal": {
+      "genuinely_absent": 7
+    }
+  },
+  "spec": {
+    "animations": 50,
+    "measured": 17,
+    "verify": 33,
+    "timelines_written": 15
+  },
+  "map": {
+    "scroll_triggers": 8,
+    "hover_candidates": 64,
+    "css_hovers": 13,
+    "loops": 10,
+    "split_reveals": 6
+  },
+  "failure_causes": {
+    "occlusion": 2,
+    "hidden_not_visible": 2,
+    "inert_representative": 4,
+    "pseudo_element": 0,
+    "wrong_trigger_boot_vs_scroll": 0,
+    "wrong_document_iframe": 0,
+    "vendor_animation": 0,
+    "other": 0
+  },
+  "wrong_document": null,
+  "notable_wins": [
+    {
+      "id": "wordmark-hover",
+      "type": "hover",
+      "findings": 13,
+      "summary": "Staggered 13-item animation (e.g. split text): each item y 0->-31.1px, ~3.7ms apart, 0.28s (measured) unknown (rAF/JS) — verify."
+    },
+    {
+      "id": "work-card-hover",
+      "type": "hover",
+      "findings": 6,
+      "summary": "Staggered 5-item animation (e.g. split text): each item scale 1.1->1, ~16.9ms apart, 0.65s cubic-bezier(0.16, 1, 0.3, 1)."
+    },
+    {
+      "id": "scroll-3-div-g-cta-collection",
+      "type": "scroll-reveal",
+      "findings": 2,
+      "summary": "2 layers animate together: div.hero_contact_top-left.u-sprite [CSS sprite-sheet: 4 frames stepped via background-position]; div.hero_contact_top-left.u-sprite [CSS sprite-sheet: 4 frames stepped via b"
+    },
+    {
+      "id": "scroll-7-div-work-home-cover",
+      "type": "scroll-reveal",
+      "findings": 2,
+      "summary": "2 layers animate together: img.work_home_image.u-ratio-3-2 [opacity: 1 -> 0]; img.work_home_image.u-ratio-3-2 [opacity: 0 -> 1] — 0.31s (measured) unknown (rAF/JS) — verify."
+    },
+    {
+      "id": "primary-button-hover",
+      "type": "hover",
+      "findings": 2,
+      "summary": "2 layers animate together: span.navbar_btn_container [scale 1->0]; span.navbar_btn_container [y 44.02->0px, rotateX -34.4->0deg, rotateY -19.1->0deg, rotateZ 23.1->0deg] — 0.45s cubic-bezier(0.31, 0.7"
+    }
+  ],
+  "top_failures": [
+    {
+      "id": "css-hover-div-vimeo-lightbox-btn",
+      "type": "hover",
+      "status": "error",
+      "cause": "hidden_not_visible",
+      "note": "Preflight failed for hover div.vimeo-lightbox__btn: selector matched no visible elements"
+    },
+    {
+      "id": "link-hover",
+      "type": "hover",
+      "status": "error",
+      "cause": "occlusion",
+      "note": "Preflight failed for hover a.g_link_text.u-text-style-small: selector center is covered by div.g_btn_container"
+    },
+    {
+      "id": "split-reveal-0-div-menu-links-text-u-text-style-display",
+      "type": "scroll-reveal",
+      "status": "error",
+      "cause": "hidden_not_visible",
+      "note": "Preflight failed for scrollintoview div.menu_links_text.u-text-style-display: selector matched no visible elements"
+    },
+    {
+      "id": "split-reveal-1-div-g-link-span-w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88",
+      "type": "scroll-reveal",
+      "status": "empty",
+      "cause": "occlusion",
+      "note": "no animation captured"
+    },
+    {
+      "id": "split-reveal-2-div-navbar-home-link-text-u-text-style-display",
+      "type": "scroll-reveal",
+      "status": "empty",
+      "cause": "inert_representative",
+      "note": "no animation captured"
+    },
+    {
+      "id": "split-reveal-3-h1-hero-home-heading-u-text-style-display",
+      "type": "scroll-reveal",
+      "status": "empty",
+      "cause": "inert_representative",
+      "note": "no animation captured"
+    },
+    {
+      "id": "split-reveal-4-p-hero-home-p-u-text-style-large",
+      "type": "scroll-reveal",
+      "status": "empty",
+      "cause": "inert_representative",
+      "note": "no animation captured"
+    },
+    {
+      "id": "split-reveal-5-div-g-link-span-w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f",
+      "type": "scroll-reveal",
+      "status": "empty",
+      "cause": "inert_representative",
+      "note": "no animation captured"
+    }
+  ]
+}

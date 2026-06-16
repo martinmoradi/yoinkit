@@ -1,0 +1,642 @@
+{
+  "evidence": {
+    "gsap": {
+      "customEaseInstalled": true,
+      "customEases": [
+        {
+          "at": 297.1,
+          "data": "0.87, 0, 0.13, 1",
+          "id": "ease-primary",
+          "svgData": "M0,100 C87,100 13,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.31,0.75,0.22,1",
+          "id": "ease-secondary",
+          "svgData": "M0,100 C31,25 22,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.76, 0, 0.24, 1",
+          "id": "ease-fade",
+          "svgData": "M0,100 C76,100 24,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.25, 1, 0.5, 1",
+          "id": "ease-preloader",
+          "svgData": "M0,100 C25,0 50,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.16, 1, 0.35, 1",
+          "id": "ease-transition",
+          "svgData": "M0,100 C16,0 35,0 100,0 "
+        }
+      ],
+      "entries": [
+        {
+          "at": 10795.4,
+          "duration": 0,
+          "id": 112,
+          "kind": "gsap",
+          "method": "timeline",
+          "target": null,
+          "targetCount": 0,
+          "targets": [],
+          "totalDuration": 0,
+          "vars": {}
+        },
+        {
+          "at": 10795.4,
+          "duration": 0,
+          "id": 113,
+          "kind": "timeline",
+          "method": "call",
+          "position": 0,
+          "target": "[function anonymous]",
+          "targetCount": 0,
+          "targets": [],
+          "totalDuration": 0,
+          "vars": {
+            "props": []
+          }
+        },
+        {
+          "at": 10795.4,
+          "duration": 0.15,
+          "id": 114,
+          "kind": "timeline",
+          "method": "call",
+          "position": 0.15,
+          "target": "[function anonymous]",
+          "targetCount": 0,
+          "targets": [],
+          "totalDuration": 0.15,
+          "vars": {
+            "props": []
+          }
+        },
+        {
+          "at": 10795.4,
+          "duration": 0.3,
+          "id": 115,
+          "kind": "timeline",
+          "method": "call",
+          "position": 0.3,
+          "target": "[function anonymous]",
+          "targetCount": 0,
+          "targets": [],
+          "totalDuration": 0.3,
+          "vars": {
+            "props": []
+          }
+        },
+        {
+          "at": 10795.5,
+          "duration": 0.45,
+          "id": 116,
+          "kind": "timeline",
+          "method": "call",
+          "position": 0.45,
+          "target": "[function anonymous]",
+          "targetCount": 0,
+          "targets": [],
+          "totalDuration": 0.45,
+          "vars": {
+            "props": []
+          }
+        },
+        {
+          "at": 10812.3,
+          "duration": 0,
+          "id": 117,
+          "kind": "gsap",
+          "method": "set",
+          "target": {
+            "matchCount": 4,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div.partners_logo_target",
+            "visibleMatchCount": 4
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 4,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div.partners_logo_target",
+              "visibleMatchCount": 4
+            }
+          ],
+          "totalDuration": 0,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0,
+            "ease": "[function anonymous]",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0,
+              "ease": "[function anonymous]",
+              "overwrite": false,
+              "repeat": 0,
+              "yPercent": 30
+            },
+            "repeat": 0
+          }
+        },
+        {
+          "at": 10813.1,
+          "duration": 0.25,
+          "id": 118,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 5,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(1) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+            "visibleMatchCount": 4
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 5,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(1) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+              "visibleMatchCount": 4
+            }
+          ],
+          "totalDuration": 0.25,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0.25,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0.25,
+              "ease": "ease-secondary",
+              "onComplete": "[function onComplete]",
+              "overwrite": false,
+              "yPercent": -30
+            }
+          }
+        },
+        {
+          "at": 10813.9,
+          "duration": 0.65,
+          "id": 119,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 5,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div.partners_logo_target:nth-of-type(3)",
+            "visibleMatchCount": 4
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 5,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div.partners_logo_target:nth-of-type(3)",
+              "visibleMatchCount": 4
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0.1,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0.1,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": false,
+              "yPercent": 0
+            }
+          }
+        },
+        {
+          "at": 10961.9,
+          "duration": 0,
+          "id": 120,
+          "kind": "gsap",
+          "method": "set",
+          "target": {
+            "matchCount": 5,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div.partners_logo_target",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 5,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div.partners_logo_target",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0,
+            "ease": "[function anonymous]",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0,
+              "ease": "[function anonymous]",
+              "overwrite": false,
+              "repeat": 0,
+              "yPercent": 30
+            },
+            "repeat": 0
+          }
+        },
+        {
+          "at": 10962.9,
+          "duration": 0.25,
+          "id": 121,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(2) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(2) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.25,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0.25,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0.25,
+              "ease": "ease-secondary",
+              "onComplete": "[function onComplete]",
+              "overwrite": false,
+              "yPercent": -30
+            }
+          }
+        },
+        {
+          "at": 10963.4,
+          "duration": 0.65,
+          "id": 122,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(2) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(2) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0.1,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0.1,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": false,
+              "yPercent": 0
+            }
+          }
+        },
+        {
+          "at": 11112.4,
+          "duration": 0,
+          "id": 123,
+          "kind": "gsap",
+          "method": "set",
+          "target": {
+            "matchCount": 5,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div.partners_logo_target",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 5,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div.partners_logo_target",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0,
+            "ease": "[function anonymous]",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0,
+              "ease": "[function anonymous]",
+              "overwrite": false,
+              "repeat": 0,
+              "yPercent": 30
+            },
+            "repeat": 0
+          }
+        },
+        {
+          "at": 11113.1,
+          "duration": 0.25,
+          "id": 124,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(3) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(3) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.25,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0.25,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0.25,
+              "ease": "ease-secondary",
+              "onComplete": "[function onComplete]",
+              "overwrite": false,
+              "yPercent": -30
+            }
+          }
+        },
+        {
+          "at": 11113.6,
+          "duration": 0.65,
+          "id": 125,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(3) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(3) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0.1,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0.1,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": false,
+              "yPercent": 0
+            }
+          }
+        },
+        {
+          "at": 11262.8,
+          "duration": 0,
+          "id": 126,
+          "kind": "gsap",
+          "method": "set",
+          "target": {
+            "matchCount": 5,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div.partners_logo_target",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 5,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div.partners_logo_target",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0,
+            "ease": "[function anonymous]",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0,
+              "ease": "[function anonymous]",
+              "overwrite": false,
+              "repeat": 0,
+              "yPercent": 30
+            },
+            "repeat": 0
+          }
+        },
+        {
+          "at": 11263.5,
+          "duration": 0.25,
+          "id": 127,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(4) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(4) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.25,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0.25,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0.25,
+              "ease": "ease-secondary",
+              "onComplete": "[function onComplete]",
+              "overwrite": false,
+              "yPercent": -30
+            }
+          }
+        },
+        {
+          "at": 11264,
+          "duration": 0.65,
+          "id": 128,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(4) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(4) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0.1,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0.1,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": false,
+              "yPercent": 0
+            }
+          }
+        }
+      ],
+      "installed": true
+    }
+  },
+  "findings": [],
+  "meta": {
+    "captureSource": "split-reveal-4-p-hero-home-p-u-text-style-large",
+    "capturedFrom": "capture-animation.js",
+    "durationMs": 1813.5,
+    "elementsMoved": 0,
+    "instrumentation": {
+      "customEase": true,
+      "gsap": true
+    },
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "scan",
+    "rootLocator": {
+      "matchCount": 1,
+      "shortSelector": "p.hero_home_p.u-text-style-large",
+      "text": "We paint bold, hand-crafted walls for real estate developers, and design-driven brands ...",
+      "uniqueSelector": "p.hero_home_p.u-text-style-large",
+      "visibleMatchCount": 1
+    },
+    "rootSelector": "p.hero_home_p.u-text-style-large",
+    "sampledProperties": [
+      "transform",
+      "opacity",
+      "filter",
+      "clipPath",
+      "backgroundSize",
+      "backgroundPosition",
+      "backgroundColor",
+      "color",
+      "height",
+      "width"
+    ],
+    "sampledPseudoElements": [
+      "::before",
+      "::after"
+    ],
+    "source": "https://mammothmurals.com/",
+    "terminationReason": "manualDump",
+    "trigger": "scroll"
+  },
+  "stagger": null,
+  "summary": "no animation captured"
+}

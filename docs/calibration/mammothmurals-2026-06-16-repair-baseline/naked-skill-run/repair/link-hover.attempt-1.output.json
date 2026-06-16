@@ -1,0 +1,14 @@
+{
+  "diagnosis": "The footer link representative is either hidden or covered, and the repair context reports no self, pseudo, child, or scroll-trigger animation around the matched links. This looks like a deduped hover target with no measurable motion left to recover.",
+  "rootCause": "occlusion",
+  "confidence": 0.84,
+  "action": {
+    "kind": "terminal_give_up",
+    "terminalCause": "genuinely_absent",
+    "rationale": "All candidate link instances are hidden or covered, and animatableHere is false for every available signal near the failed target."
+  },
+  "successCriterion": {
+    "expect": "moved"
+  },
+  "abortCriterion": "Stop repairing this capture unless a later map identifies a concrete animating link instance."
+}

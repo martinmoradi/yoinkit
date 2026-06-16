@@ -1,0 +1,32 @@
+{
+  "records": [
+    {
+      "phase": "capture:css-hover-div-vimeo-lightbox-btn:open",
+      "outcome": "ready",
+      "waitedMs": 1537,
+      "state": {
+        "blocked": false,
+        "blockers": [],
+        "buttonCount": 13,
+        "elementCount": 1102,
+        "linkCount": 33,
+        "loading": false,
+        "ready": true,
+        "readyState": "complete",
+        "scrollHeight": 11286,
+        "stabilityKey": "complete|5280|1102|11286|",
+        "textLength": 5280,
+        "textSample": "MAMMOTH MURALS WORK WORK ABOUT ABOUT SERVICES SERVICES CHAT WITH US CHAT WITH US MURALS THAT MAKE YOUR BUSINESS IMPOSSIBLE TO IGNORE. Showreel (2023-2025) We paint bold, hand-craft",
+        "title": "Mammoth Murals | Mural agency based in Alabama, Birmingham",
+        "url": "https://mammothmurals.com/",
+        "viewport": [
+          1280,
+          800
+        ]
+      },
+      "sampleCount": 7,
+      "sampledAt": "2026-06-16T02:50:54.623Z"
+    }
+  ],
+  "updatedAt": "2026-06-16T02:50:54.623Z"
+}

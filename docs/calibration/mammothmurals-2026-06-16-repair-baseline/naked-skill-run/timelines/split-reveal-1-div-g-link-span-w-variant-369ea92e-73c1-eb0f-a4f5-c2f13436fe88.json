@@ -1,0 +1,89 @@
+{
+  "evidence": {
+    "gsap": {
+      "customEaseInstalled": true,
+      "customEases": [
+        {
+          "at": 297.1,
+          "data": "0.87, 0, 0.13, 1",
+          "id": "ease-primary",
+          "svgData": "M0,100 C87,100 13,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.31,0.75,0.22,1",
+          "id": "ease-secondary",
+          "svgData": "M0,100 C31,25 22,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.76, 0, 0.24, 1",
+          "id": "ease-fade",
+          "svgData": "M0,100 C76,100 24,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.25, 1, 0.5, 1",
+          "id": "ease-preloader",
+          "svgData": "M0,100 C25,0 50,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.16, 1, 0.35, 1",
+          "id": "ease-transition",
+          "svgData": "M0,100 C16,0 35,0 100,0 "
+        }
+      ],
+      "entries": [],
+      "installed": true
+    }
+  },
+  "findings": [],
+  "meta": {
+    "captureSource": "split-reveal-1-div-g-link-span-w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88",
+    "capturedFrom": "capture-animation.js",
+    "durationMs": 0,
+    "elementsMoved": 0,
+    "instrumentation": {
+      "customEase": true,
+      "gsap": true
+    },
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "scan",
+    "rootLocator": {
+      "matchCount": 5,
+      "shortSelector": "div.g_link_span.w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88",
+      "text": "ANDREW@MAMMOTHMURALS.COM",
+      "uniqueSelector": "#w-node-_30a042ca-61d5-ff29-a04c-367b3d1c3782-3d1c376f > a.g_link_text.u-text-style-small.u-weight-bold > div[aria-label=\"andrew@mammothmurals.com\"]",
+      "visibleMatchCount": 3
+    },
+    "rootSelector": "#w-node-_30a042ca-61d5-ff29-a04c-367b3d1c3782-3d1c376f > a.g_link_text.u-text-style-small.u-weight-bold > div[aria-label=\"andrew@mammothmurals.com\"]",
+    "sampledProperties": [
+      "transform",
+      "opacity",
+      "filter",
+      "clipPath",
+      "backgroundSize",
+      "backgroundPosition",
+      "backgroundColor",
+      "color",
+      "height",
+      "width"
+    ],
+    "sampledPseudoElements": [
+      "::before",
+      "::after"
+    ],
+    "source": "https://mammothmurals.com/",
+    "terminationReason": "stopped",
+    "trigger": "scroll"
+  },
+  "stagger": null,
+  "summary": "no animation captured"
+}

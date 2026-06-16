@@ -1,0 +1,1007 @@
+{
+  "evidence": {
+    "gsap": {
+      "customEaseInstalled": true,
+      "customEases": [
+        {
+          "at": 297.1,
+          "data": "0.87, 0, 0.13, 1",
+          "id": "ease-primary",
+          "svgData": "M0,100 C87,100 13,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.31,0.75,0.22,1",
+          "id": "ease-secondary",
+          "svgData": "M0,100 C31,25 22,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.76, 0, 0.24, 1",
+          "id": "ease-fade",
+          "svgData": "M0,100 C76,100 24,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.25, 1, 0.5, 1",
+          "id": "ease-preloader",
+          "svgData": "M0,100 C25,0 50,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.16, 1, 0.35, 1",
+          "id": "ease-transition",
+          "svgData": "M0,100 C16,0 35,0 100,0 "
+        }
+      ],
+      "entries": [
+        {
+          "at": 19602.7,
+          "duration": 0.4,
+          "id": 183,
+          "kind": "timeline",
+          "method": "to",
+          "position": 0,
+          "target": {
+            "matchCount": 3,
+            "shortSelector": "li.navbar_links_li",
+            "text": "WORK WORK",
+            "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+            "visibleMatchCount": 3
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "WORK WORK",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+              "visibleMatchCount": 3
+            }
+          ],
+          "totalDuration": 0.4,
+          "vars": {
+            "delay": 0,
+            "duration": 0.4,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.4,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "parent": {
+                "_act": 0,
+                "_delay": 0,
+                "_dirty": 1,
+                "_dp": {
+                  "_delay": 0,
+                  "_dirty": 1,
+                  "_dur": 0.4,
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_tDur": 0.4,
+                  "_targets": "[circular]",
+                  "_ts": 1,
+                  "timeline": "[circular]",
+                  "vars": {
+                    "delay": 0,
+                    "duration": 0.4,
+                    "ease": "ease-secondary",
+                    "overwrite": "auto",
+                    "rotation": 0.001,
+                    "stagger": 0.055,
+                    "yPercent": -200
+                  }
+                },
+                "_dur": 0,
+                "_end": 19.408,
+                "_first": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.4,
+                  "_end": 0.4,
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0,
+                  "_tDur": 0.4,
+                  "_targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": "[circular]"
+                },
+                "_last": "[circular]",
+                "_next": null,
+                "_prev": null,
+                "_recent": "[circular]",
+                "_repeat": 0,
+                "_sort": true,
+                "_start": 0,
+                "_tDur": 0,
+                "_ts": 1,
+                "autoRemoveChildren": false,
+                "data": "nested",
+                "labels": {},
+                "parent": "[circular]",
+                "smoothChildTiming": false,
+                "vars": {
+                  "data": "nested",
+                  "defaults": {},
+                  "targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "ABOUT ABOUT",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "SERVICES SERVICES",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+                      "visibleMatchCount": 3
+                    }
+                  ]
+                }
+              },
+              "rotation": 0.001,
+              "stagger": 0,
+              "yPercent": -200
+            },
+            "stagger": 0
+          }
+        },
+        {
+          "at": 19603,
+          "duration": 0.455,
+          "id": 184,
+          "kind": "timeline",
+          "method": "to",
+          "position": 0.055,
+          "target": {
+            "matchCount": 3,
+            "shortSelector": "li.navbar_links_li",
+            "text": "ABOUT ABOUT",
+            "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+            "visibleMatchCount": 3
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "ABOUT ABOUT",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+              "visibleMatchCount": 3
+            }
+          ],
+          "totalDuration": 0.455,
+          "vars": {
+            "delay": 0,
+            "duration": 0.4,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.4,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "parent": {
+                "_act": 0,
+                "_delay": 0,
+                "_dirty": 1,
+                "_dp": {
+                  "_delay": 0,
+                  "_dirty": 1,
+                  "_dur": 0.4,
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_tDur": 0.4,
+                  "_targets": "[circular]",
+                  "_ts": 1,
+                  "timeline": "[circular]",
+                  "vars": {
+                    "delay": 0,
+                    "duration": 0.4,
+                    "ease": "ease-secondary",
+                    "overwrite": "auto",
+                    "rotation": 0.001,
+                    "stagger": 0.055,
+                    "yPercent": -200
+                  }
+                },
+                "_dur": 0.4,
+                "_ease": "[function anonymous]",
+                "_end": 0.4,
+                "_first": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.4,
+                  "_end": 0.4,
+                  "_next": {
+                    "_delay": 0,
+                    "_dp": "[object]",
+                    "_dur": 0.4,
+                    "_end": 0.455,
+                    "_overwrite": "auto",
+                    "_prev": "[object]",
+                    "_ptLookup": "[object]",
+                    "_repeat": 0,
+                    "_start": 0.055,
+                    "_tDur": 0.4,
+                    "_targets": "[object]",
+                    "_ts": 1,
+                    "parent": "[object]",
+                    "timeline": 0,
+                    "vars": "[object]"
+                  },
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0,
+                  "_tDur": 0.4,
+                  "_targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": {
+                    "delay": 0,
+                    "duration": 0.4,
+                    "ease": "ease-secondary",
+                    "overwrite": "auto",
+                    "parent": "[object]",
+                    "rotation": 0.001,
+                    "stagger": 0,
+                    "yPercent": -200
+                  }
+                },
+                "_last": "[circular]",
+                "_next": null,
+                "_prev": null,
+                "_recent": "[circular]",
+                "_repeat": 0,
+                "_sort": true,
+                "_start": 0,
+                "_tDur": 0.4,
+                "_ts": 1,
+                "autoRemoveChildren": false,
+                "data": "nested",
+                "labels": {},
+                "parent": "[circular]",
+                "smoothChildTiming": false,
+                "vars": {
+                  "data": "nested",
+                  "defaults": {},
+                  "targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "ABOUT ABOUT",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "SERVICES SERVICES",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+                      "visibleMatchCount": 3
+                    }
+                  ]
+                }
+              },
+              "rotation": 0.001,
+              "stagger": 0,
+              "yPercent": -200
+            },
+            "stagger": 0
+          }
+        },
+        {
+          "at": 19603.2,
+          "duration": 0.51,
+          "id": 185,
+          "kind": "timeline",
+          "method": "to",
+          "position": 0.11,
+          "target": {
+            "matchCount": 3,
+            "shortSelector": "li.navbar_links_li",
+            "text": "SERVICES SERVICES",
+            "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+            "visibleMatchCount": 3
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "SERVICES SERVICES",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+              "visibleMatchCount": 3
+            }
+          ],
+          "totalDuration": 0.51,
+          "vars": {
+            "delay": 0,
+            "duration": 0.4,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.4,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "parent": {
+                "_act": 0,
+                "_delay": 0,
+                "_dirty": 1,
+                "_dp": {
+                  "_delay": 0,
+                  "_dirty": 1,
+                  "_dur": 0.4,
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_tDur": 0.4,
+                  "_targets": "[circular]",
+                  "_ts": 1,
+                  "timeline": "[circular]",
+                  "vars": {
+                    "delay": 0,
+                    "duration": 0.4,
+                    "ease": "ease-secondary",
+                    "overwrite": "auto",
+                    "rotation": 0.001,
+                    "stagger": 0.055,
+                    "yPercent": -200
+                  }
+                },
+                "_dur": 0.455,
+                "_ease": "[function anonymous]",
+                "_end": 0.455,
+                "_first": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.4,
+                  "_end": 0.4,
+                  "_next": {
+                    "_delay": 0,
+                    "_dp": "[object]",
+                    "_dur": 0.4,
+                    "_end": 0.455,
+                    "_next": "[object]",
+                    "_overwrite": "auto",
+                    "_prev": "[object]",
+                    "_ptLookup": "[object]",
+                    "_repeat": 0,
+                    "_start": 0.055,
+                    "_tDur": 0.4,
+                    "_targets": "[object]",
+                    "_ts": 1,
+                    "parent": "[object]",
+                    "timeline": 0,
+                    "vars": "[object]"
+                  },
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0,
+                  "_tDur": 0.4,
+                  "_targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": {
+                    "delay": 0,
+                    "duration": 0.4,
+                    "ease": "ease-secondary",
+                    "overwrite": "auto",
+                    "parent": "[object]",
+                    "rotation": 0.001,
+                    "stagger": 0,
+                    "yPercent": -200
+                  }
+                },
+                "_last": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.4,
+                  "_end": 0.51,
+                  "_overwrite": "auto",
+                  "_prev": "[circular]",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0.11,
+                  "_tDur": 0.4,
+                  "_targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "SERVICES SERVICES",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+                      "visibleMatchCount": 3
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": "[circular]"
+                },
+                "_next": null,
+                "_prev": null,
+                "_recent": "[circular]",
+                "_repeat": 0,
+                "_sort": true,
+                "_start": 0,
+                "_tDur": 0.455,
+                "_ts": 1,
+                "autoRemoveChildren": false,
+                "data": "nested",
+                "labels": {},
+                "parent": "[circular]",
+                "smoothChildTiming": false,
+                "vars": {
+                  "data": "nested",
+                  "defaults": {},
+                  "targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "ABOUT ABOUT",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "SERVICES SERVICES",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+                      "visibleMatchCount": 3
+                    }
+                  ]
+                }
+              },
+              "rotation": 0.001,
+              "stagger": 0,
+              "yPercent": -200
+            },
+            "stagger": 0
+          }
+        },
+        {
+          "at": 19603.4,
+          "duration": 0.51,
+          "id": 186,
+          "kind": "gsap",
+          "method": "to",
+          "target": [
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "WORK WORK",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+              "visibleMatchCount": 3
+            },
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "ABOUT ABOUT",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+              "visibleMatchCount": 3
+            },
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "SERVICES SERVICES",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+              "visibleMatchCount": 3
+            }
+          ],
+          "targetCount": 3,
+          "targets": [
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "WORK WORK",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+              "visibleMatchCount": 3
+            },
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "ABOUT ABOUT",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+              "visibleMatchCount": 3
+            },
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "SERVICES SERVICES",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+              "visibleMatchCount": 3
+            }
+          ],
+          "totalDuration": 0.51,
+          "vars": {
+            "delay": 0,
+            "duration": 0.4,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.4,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "rotation": 0.001,
+              "stagger": 0.055,
+              "yPercent": -200
+            },
+            "stagger": 0.055
+          }
+        },
+        {
+          "at": 19603.4,
+          "duration": 0.65,
+          "id": 187,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 1,
+            "shortSelector": "a.navbar_home_link_wordmark.w-inline-block",
+            "text": "MAMMOTH MURALS",
+            "uniqueSelector": "a.navbar_home_link_wordmark.w-inline-block",
+            "visibleMatchCount": 1
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 1,
+              "shortSelector": "a.navbar_home_link_wordmark.w-inline-block",
+              "text": "MAMMOTH MURALS",
+              "uniqueSelector": "a.navbar_home_link_wordmark.w-inline-block",
+              "visibleMatchCount": 1
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "delay": 0,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "rotation": 0.001,
+              "xPercent": -150
+            }
+          }
+        },
+        {
+          "at": 19603.4,
+          "duration": 0.65,
+          "id": 188,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 1,
+            "shortSelector": "#w-node-f0092fd8-4d8b-da06-857d-4cb081e7938c-81e7936b",
+            "text": "CHAT WITH US CHAT WITH US",
+            "uniqueSelector": "#w-node-f0092fd8-4d8b-da06-857d-4cb081e7938c-81e7936b",
+            "visibleMatchCount": 1
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 1,
+              "shortSelector": "#w-node-f0092fd8-4d8b-da06-857d-4cb081e7938c-81e7936b",
+              "text": "CHAT WITH US CHAT WITH US",
+              "uniqueSelector": "#w-node-f0092fd8-4d8b-da06-857d-4cb081e7938c-81e7936b",
+              "visibleMatchCount": 1
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "delay": 0,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "rotation": 0.001,
+              "xPercent": 150
+            }
+          }
+        },
+        {
+          "at": 19903.8,
+          "duration": 0,
+          "id": 189,
+          "kind": "gsap",
+          "method": "set",
+          "target": {
+            "matchCount": 7,
+            "shortSelector": "img.work_home_image.u-ratio-3-2",
+            "text": null,
+            "uniqueSelector": "img.work_home_image.u-ratio-3-2.u-background-skeleton:nth-of-type(1)",
+            "visibleMatchCount": 7
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 7,
+              "shortSelector": "img.work_home_image.u-ratio-3-2",
+              "text": null,
+              "uniqueSelector": "img.work_home_image.u-ratio-3-2.u-background-skeleton:nth-of-type(1)",
+              "visibleMatchCount": 7
+            }
+          ],
+          "totalDuration": 0,
+          "vars": {
+            "delay": 0,
+            "duration": 0,
+            "ease": "[function anonymous]",
+            "props": {
+              "delay": 0,
+              "duration": 0,
+              "ease": "[function anonymous]",
+              "opacity": 0,
+              "overwrite": false,
+              "repeat": 0
+            },
+            "repeat": 0
+          }
+        },
+        {
+          "at": 19904,
+          "duration": 0,
+          "id": 190,
+          "kind": "gsap",
+          "method": "set",
+          "target": {
+            "matchCount": 7,
+            "shortSelector": "img.work_home_image.u-ratio-3-2",
+            "text": null,
+            "uniqueSelector": "img.work_home_image.u-ratio-3-2.u-background-skeleton:nth-of-type(2)",
+            "visibleMatchCount": 7
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 7,
+              "shortSelector": "img.work_home_image.u-ratio-3-2",
+              "text": null,
+              "uniqueSelector": "img.work_home_image.u-ratio-3-2.u-background-skeleton:nth-of-type(2)",
+              "visibleMatchCount": 7
+            }
+          ],
+          "totalDuration": 0,
+          "vars": {
+            "delay": 0,
+            "duration": 0,
+            "ease": "[function anonymous]",
+            "props": {
+              "delay": 0,
+              "duration": 0,
+              "ease": "[function anonymous]",
+              "opacity": 1,
+              "overwrite": false,
+              "repeat": 0
+            },
+            "repeat": 0
+          }
+        },
+        {
+          "at": 20203.8,
+          "duration": 0,
+          "id": 191,
+          "kind": "gsap",
+          "method": "set",
+          "target": {
+            "matchCount": 7,
+            "shortSelector": "img.work_home_image.u-ratio-3-2",
+            "text": null,
+            "uniqueSelector": "img.work_home_image.u-ratio-3-2.u-background-skeleton:nth-of-type(2)",
+            "visibleMatchCount": 7
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 7,
+              "shortSelector": "img.work_home_image.u-ratio-3-2",
+              "text": null,
+              "uniqueSelector": "img.work_home_image.u-ratio-3-2.u-background-skeleton:nth-of-type(2)",
+              "visibleMatchCount": 7
+            }
+          ],
+          "totalDuration": 0,
+          "vars": {
+            "delay": 0,
+            "duration": 0,
+            "ease": "[function anonymous]",
+            "props": {
+              "delay": 0,
+              "duration": 0,
+              "ease": "[function anonymous]",
+              "opacity": 0,
+              "overwrite": false,
+              "repeat": 0
+            },
+            "repeat": 0
+          }
+        },
+        {
+          "at": 20204,
+          "duration": 0,
+          "id": 192,
+          "kind": "gsap",
+          "method": "set",
+          "target": {
+            "matchCount": 7,
+            "shortSelector": "img.work_home_image.u-ratio-3-2",
+            "text": null,
+            "uniqueSelector": "img.work_home_image.u-ratio-3-2.u-background-skeleton:nth-of-type(3)",
+            "visibleMatchCount": 7
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 7,
+              "shortSelector": "img.work_home_image.u-ratio-3-2",
+              "text": null,
+              "uniqueSelector": "img.work_home_image.u-ratio-3-2.u-background-skeleton:nth-of-type(3)",
+              "visibleMatchCount": 7
+            }
+          ],
+          "totalDuration": 0,
+          "vars": {
+            "delay": 0,
+            "duration": 0,
+            "ease": "[function anonymous]",
+            "props": {
+              "delay": 0,
+              "duration": 0,
+              "ease": "[function anonymous]",
+              "opacity": 1,
+              "overwrite": false,
+              "repeat": 0
+            },
+            "repeat": 0
+          }
+        }
+      ],
+      "installed": true
+    }
+  },
+  "findings": [
+    {
+      "frameCount": 2,
+      "from": "1",
+      "gsap": {
+        "relatedEntryIds": [
+          189
+        ]
+      },
+      "leadProperty": "opacity",
+      "locator": {
+        "matchCount": 7,
+        "shortSelector": "img.work_home_image.u-ratio-3-2",
+        "text": null,
+        "uniqueSelector": "img.work_home_image.u-ratio-3-2.u-background-skeleton:nth-of-type(1)",
+        "visibleMatchCount": 7
+      },
+      "properties": {
+        "opacity": {
+          "from": "1",
+          "rawFrames": [
+            {
+              "t": 0,
+              "v": "1"
+            },
+            {
+              "t": 313.6,
+              "v": "0"
+            }
+          ],
+          "technique": "opacity: 1 -> 0",
+          "timeline": [
+            {
+              "t": 0,
+              "v": "1"
+            },
+            {
+              "t": 313.6,
+              "v": "0"
+            }
+          ],
+          "timing": {
+            "duration": "0.31s (measured)",
+            "easing": "unknown (rAF/JS) — verify"
+          },
+          "to": "0"
+        }
+      },
+      "selector": "img.work_home_image.u-ratio-3-2",
+      "technique": "opacity: 1 -> 0",
+      "timeline": [
+        {
+          "t": 0,
+          "v": "1"
+        },
+        {
+          "t": 313.6,
+          "v": "0"
+        }
+      ],
+      "timing": {
+        "duration": "0.31s (measured)",
+        "easing": "unknown (rAF/JS) — verify"
+      },
+      "to": "0",
+      "type": "opacity"
+    },
+    {
+      "frameCount": 2,
+      "from": "0",
+      "gsap": {
+        "relatedEntryIds": [
+          190,
+          191
+        ]
+      },
+      "leadProperty": "opacity",
+      "locator": {
+        "matchCount": 7,
+        "shortSelector": "img.work_home_image.u-ratio-3-2",
+        "text": null,
+        "uniqueSelector": "img.work_home_image.u-ratio-3-2.u-background-skeleton:nth-of-type(2)",
+        "visibleMatchCount": 7
+      },
+      "properties": {
+        "opacity": {
+          "from": "0",
+          "rawFrames": [
+            {
+              "t": 0,
+              "v": "0"
+            },
+            {
+              "t": 313.8,
+              "v": "1"
+            }
+          ],
+          "technique": "opacity: 0 -> 1",
+          "timeline": [
+            {
+              "t": 0,
+              "v": "0"
+            },
+            {
+              "t": 313.8,
+              "v": "1"
+            }
+          ],
+          "timing": {
+            "duration": "0.31s (measured)",
+            "easing": "unknown (rAF/JS) — verify"
+          },
+          "to": "1"
+        }
+      },
+      "selector": "img.work_home_image.u-ratio-3-2",
+      "technique": "opacity: 0 -> 1",
+      "timeline": [
+        {
+          "t": 0,
+          "v": "0"
+        },
+        {
+          "t": 313.8,
+          "v": "1"
+        }
+      ],
+      "timing": {
+        "duration": "0.31s (measured)",
+        "easing": "unknown (rAF/JS) — verify"
+      },
+      "to": "1",
+      "type": "opacity"
+    }
+  ],
+  "meta": {
+    "captureSource": "scroll-7-div-work-home-cover",
+    "capturedFrom": "capture-animation.js",
+    "durationMs": 547.3,
+    "elementsMoved": 2,
+    "instrumentation": {
+      "customEase": true,
+      "gsap": true
+    },
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "scan",
+    "rootLocator": {
+      "matchCount": 1,
+      "shortSelector": "div.work_home_cover",
+      "text": null,
+      "uniqueSelector": "div.work_home_cover",
+      "visibleMatchCount": 1
+    },
+    "rootSelector": "div.work_home_cover",
+    "sampledProperties": [
+      "transform",
+      "opacity",
+      "filter",
+      "clipPath",
+      "backgroundSize",
+      "backgroundPosition",
+      "backgroundColor",
+      "color",
+      "height",
+      "width"
+    ],
+    "sampledPseudoElements": [
+      "::before",
+      "::after"
+    ],
+    "source": "https://mammothmurals.com/",
+    "terminationReason": "settled",
+    "trigger": "scroll"
+  },
+  "stagger": null,
+  "summary": "2 layers animate together: img.work_home_image.u-ratio-3-2 [opacity: 1 -> 0]; img.work_home_image.u-ratio-3-2 [opacity: 0 -> 1] — 0.31s (measured) unknown (rAF/JS) — verify."
+}

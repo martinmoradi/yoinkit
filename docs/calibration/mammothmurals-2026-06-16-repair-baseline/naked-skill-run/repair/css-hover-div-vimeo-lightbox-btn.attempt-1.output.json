@@ -1,0 +1,16 @@
+{
+  "diagnosis": "The Vimeo play control exists but is hidden because the lightbox interface is not open. Click the stable Open Video button first, wait for the overlay UI, then let the original hover recipe be re-measured.",
+  "rootCause": "hidden_not_visible",
+  "confidence": 0.76,
+  "action": {
+    "kind": "precondition_action",
+    "actions": [
+      "click button.g_video_button",
+      "wait 500"
+    ]
+  },
+  "successCriterion": {
+    "expect": "moved"
+  },
+  "abortCriterion": "If opening the video does not make the original Vimeo button visible and moving, stop rather than targeting unrelated hero buttons."
+}

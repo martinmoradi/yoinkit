@@ -1,0 +1,642 @@
+{
+  "evidence": {
+    "gsap": {
+      "customEaseInstalled": true,
+      "customEases": [
+        {
+          "at": 297.1,
+          "data": "0.87, 0, 0.13, 1",
+          "id": "ease-primary",
+          "svgData": "M0,100 C87,100 13,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.31,0.75,0.22,1",
+          "id": "ease-secondary",
+          "svgData": "M0,100 C31,25 22,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.76, 0, 0.24, 1",
+          "id": "ease-fade",
+          "svgData": "M0,100 C76,100 24,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.25, 1, 0.5, 1",
+          "id": "ease-preloader",
+          "svgData": "M0,100 C25,0 50,0 100,0 "
+        },
+        {
+          "at": 297.3,
+          "data": "0.16, 1, 0.35, 1",
+          "id": "ease-transition",
+          "svgData": "M0,100 C16,0 35,0 100,0 "
+        }
+      ],
+      "entries": [
+        {
+          "at": 7308.7,
+          "duration": 0,
+          "id": 95,
+          "kind": "gsap",
+          "method": "timeline",
+          "target": null,
+          "targetCount": 0,
+          "targets": [],
+          "totalDuration": 0,
+          "vars": {}
+        },
+        {
+          "at": 7308.8,
+          "duration": 0,
+          "id": 96,
+          "kind": "timeline",
+          "method": "call",
+          "position": 0,
+          "target": "[function anonymous]",
+          "targetCount": 0,
+          "targets": [],
+          "totalDuration": 0,
+          "vars": {
+            "props": []
+          }
+        },
+        {
+          "at": 7308.8,
+          "duration": 0.15,
+          "id": 97,
+          "kind": "timeline",
+          "method": "call",
+          "position": 0.15,
+          "target": "[function anonymous]",
+          "targetCount": 0,
+          "targets": [],
+          "totalDuration": 0.15,
+          "vars": {
+            "props": []
+          }
+        },
+        {
+          "at": 7308.9,
+          "duration": 0.3,
+          "id": 98,
+          "kind": "timeline",
+          "method": "call",
+          "position": 0.3,
+          "target": "[function anonymous]",
+          "targetCount": 0,
+          "targets": [],
+          "totalDuration": 0.3,
+          "vars": {
+            "props": []
+          }
+        },
+        {
+          "at": 7308.9,
+          "duration": 0.45,
+          "id": 99,
+          "kind": "timeline",
+          "method": "call",
+          "position": 0.45,
+          "target": "[function anonymous]",
+          "targetCount": 0,
+          "targets": [],
+          "totalDuration": 0.45,
+          "vars": {
+            "props": []
+          }
+        },
+        {
+          "at": 7326,
+          "duration": 0,
+          "id": 100,
+          "kind": "gsap",
+          "method": "set",
+          "target": {
+            "matchCount": 4,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div.partners_logo_target",
+            "visibleMatchCount": 4
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 4,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div.partners_logo_target",
+              "visibleMatchCount": 4
+            }
+          ],
+          "totalDuration": 0,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0,
+            "ease": "[function anonymous]",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0,
+              "ease": "[function anonymous]",
+              "overwrite": false,
+              "repeat": 0,
+              "yPercent": 30
+            },
+            "repeat": 0
+          }
+        },
+        {
+          "at": 7326.6,
+          "duration": 0.25,
+          "id": 101,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 5,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(1) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+            "visibleMatchCount": 4
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 5,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(1) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+              "visibleMatchCount": 4
+            }
+          ],
+          "totalDuration": 0.25,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0.25,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0.25,
+              "ease": "ease-secondary",
+              "onComplete": "[function onComplete]",
+              "overwrite": false,
+              "yPercent": -30
+            }
+          }
+        },
+        {
+          "at": 7327,
+          "duration": 0.65,
+          "id": 102,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 5,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div.partners_logo_target:nth-of-type(3)",
+            "visibleMatchCount": 4
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 5,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div.partners_logo_target:nth-of-type(3)",
+              "visibleMatchCount": 4
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0.1,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0.1,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": false,
+              "yPercent": 0
+            }
+          }
+        },
+        {
+          "at": 7459.1,
+          "duration": 0,
+          "id": 103,
+          "kind": "gsap",
+          "method": "set",
+          "target": {
+            "matchCount": 5,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div.partners_logo_target",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 5,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div.partners_logo_target",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0,
+            "ease": "[function anonymous]",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0,
+              "ease": "[function anonymous]",
+              "overwrite": false,
+              "repeat": 0,
+              "yPercent": 30
+            },
+            "repeat": 0
+          }
+        },
+        {
+          "at": 7459.8,
+          "duration": 0.25,
+          "id": 104,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(2) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(2) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.25,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0.25,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0.25,
+              "ease": "ease-secondary",
+              "onComplete": "[function onComplete]",
+              "overwrite": false,
+              "yPercent": -30
+            }
+          }
+        },
+        {
+          "at": 7460.4,
+          "duration": 0.65,
+          "id": 105,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(2) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(2) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0.1,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0.1,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": false,
+              "yPercent": 0
+            }
+          }
+        },
+        {
+          "at": 7609.8,
+          "duration": 0,
+          "id": 106,
+          "kind": "gsap",
+          "method": "set",
+          "target": {
+            "matchCount": 5,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div.partners_logo_target",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 5,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div.partners_logo_target",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0,
+            "ease": "[function anonymous]",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0,
+              "ease": "[function anonymous]",
+              "overwrite": false,
+              "repeat": 0,
+              "yPercent": 30
+            },
+            "repeat": 0
+          }
+        },
+        {
+          "at": 7610.5,
+          "duration": 0.25,
+          "id": 107,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(3) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(3) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.25,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0.25,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0.25,
+              "ease": "ease-secondary",
+              "onComplete": "[function onComplete]",
+              "overwrite": false,
+              "yPercent": -30
+            }
+          }
+        },
+        {
+          "at": 7611.1,
+          "duration": 0.65,
+          "id": 108,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(3) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(3) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0.1,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0.1,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": false,
+              "yPercent": 0
+            }
+          }
+        },
+        {
+          "at": 7759.7,
+          "duration": 0,
+          "id": 109,
+          "kind": "gsap",
+          "method": "set",
+          "target": {
+            "matchCount": 5,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div.partners_logo_target",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 5,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div.partners_logo_target",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0,
+            "ease": "[function anonymous]",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0,
+              "ease": "[function anonymous]",
+              "overwrite": false,
+              "repeat": 0,
+              "yPercent": 30
+            },
+            "repeat": 0
+          }
+        },
+        {
+          "at": 7760.4,
+          "duration": 0.25,
+          "id": 110,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(4) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(4) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.25,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0.25,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0.25,
+              "ease": "ease-secondary",
+              "onComplete": "[function onComplete]",
+              "overwrite": false,
+              "yPercent": -30
+            }
+          }
+        },
+        {
+          "at": 7761,
+          "duration": 0.65,
+          "id": 111,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(4) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(4) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0.1,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0.1,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": false,
+              "yPercent": 0
+            }
+          }
+        }
+      ],
+      "installed": true
+    }
+  },
+  "findings": [],
+  "meta": {
+    "captureSource": "split-reveal-2-div-navbar-home-link-text-u-text-style-display",
+    "capturedFrom": "capture-animation.js",
+    "durationMs": 1806.2,
+    "elementsMoved": 0,
+    "instrumentation": {
+      "customEase": true,
+      "gsap": true
+    },
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "scan",
+    "rootLocator": {
+      "matchCount": 1,
+      "shortSelector": "div.navbar_home_link_text.u-text-style-display",
+      "text": "MAMMOTH MURALS",
+      "uniqueSelector": "div[aria-label=\"Mammoth Murals\"]",
+      "visibleMatchCount": 1
+    },
+    "rootSelector": "div[aria-label=\"Mammoth Murals\"]",
+    "sampledProperties": [
+      "transform",
+      "opacity",
+      "filter",
+      "clipPath",
+      "backgroundSize",
+      "backgroundPosition",
+      "backgroundColor",
+      "color",
+      "height",
+      "width"
+    ],
+    "sampledPseudoElements": [
+      "::before",
+      "::after"
+    ],
+    "source": "https://mammothmurals.com/",
+    "terminationReason": "manualDump",
+    "trigger": "scroll"
+  },
+  "stagger": null,
+  "summary": "no animation captured"
+}

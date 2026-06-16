@@ -1,0 +1,319 @@
+{
+  "captureId": "split-reveal-1-div-g-link-span-w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88",
+  "attempt": 1,
+  "url": "https://mammothmurals.com/",
+  "viewport": [
+    1280,
+    800
+  ],
+  "failure": {
+    "status": "empty",
+    "reason": "no animation captured",
+    "cause": "occlusion",
+    "causeSignals": {
+      "found": true,
+      "visible": true,
+      "zeroBox": false,
+      "occludedBy": "div.g_btn_text.u-weight-bold.u-text-transform-uppercase",
+      "hoverSelfAnimatable": false,
+      "hoverPseudoAnimatable": false,
+      "pseudoHasTransition": false
+    }
+  },
+  "failedRecipe": {
+    "type": "scroll-reveal",
+    "selector": "div.g_link_span.w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88",
+    "root": "div.g_link_span.w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88",
+    "action": "scrollintoview div.g_link_span.w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88",
+    "arm": "window.__cap.scan(\"div.g_link_span.w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88\", { trigger: \"scroll\", captureSource: \"split-reveal-1-div-g-link-span-w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88\" })",
+    "beforeAction": null,
+    "waitMs": 1800
+  },
+  "screenshot": "repair/split-reveal-1-div-g-link-span-w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88.attempt-1.png",
+  "mapSubtree": {
+    "group": "main-page-after-intro",
+    "label": "G link span w variant 369ea92e 73c1 eb0f a4f5 c2f13436fe88 split reveal",
+    "section": null,
+    "fromSplitReveal": true,
+    "inHoverCandidates": true,
+    "inCssHovers": false
+  },
+  "repairContext": {
+    "ancestors": [
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "g_link_text",
+          "u-text-style-small",
+          "u-weight-bold",
+          "u-text-transform-uppercase"
+        ],
+        "cursorPointer": true,
+        "role": null,
+        "tag": "a"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "footer_details_left"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "address"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "footer_details_wrap",
+          "u-grid-custom"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "footer_top"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "footer_wrap"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "footer"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "page_wrap"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      }
+    ],
+    "animatableHere": {
+      "childAnimated": false,
+      "pseudoHover": false,
+      "scrollTriggerBound": false,
+      "selfHover": false
+    },
+    "candidateTriggers": [
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          30,
+          10128,
+          87,
+          51
+        ],
+        "selector": "a.g_link_text.u-text-style-small.u-weight-bold",
+        "text": "HOME"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          512,
+          9678,
+          205,
+          122
+        ],
+        "selector": "div.g_btn_container.w-variant-0cb8073d-b726-480f-f755-814264e2f505.is-duplicate",
+        "text": "BOOK A DISCOVERY CALL"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          519,
+          9633,
+          228,
+          45
+        ],
+        "selector": "a.g_btn_main.w-variant-0cb8073d-b726-480f-f755-814264e2f505.w-inline-block",
+        "text": "BOOK A DISCOVERY CALL BOOK A DISCOVERY CALL"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          519,
+          9633,
+          228,
+          45
+        ],
+        "selector": "div.g_btn_container.w-variant-0cb8073d-b726-480f-f755-814264e2f505",
+        "text": "BOOK A DISCOVERY CALL"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          542,
+          8463,
+          694,
+          57
+        ],
+        "selector": "button.accordion_css_item_top",
+        "text": "How do I share my ideas with a custom project? CLOSE OPEN"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1218,
+          8491,
+          18,
+          3
+        ],
+        "selector": "svg.accordion-css__item-icon-svg.is-open",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          831,
+          7265,
+          29,
+          34
+        ],
+        "selector": "div.g_btn_cover.is-duplicate.w-variant-24805e52-7828-2d20-eeac-e66a36df3f67",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          839,
+          7273,
+          13,
+          17
+        ],
+        "selector": "div.g_btn_arrow.w-variant-24805e52-7828-2d20-eeac-e66a36df3f67.is-duplicate",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          846,
+          7224,
+          12,
+          16
+        ],
+        "selector": "div.g_btn_arrow.w-variant-24805e52-7828-2d20-eeac-e66a36df3f67",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          846,
+          7224,
+          12,
+          16
+        ],
+        "selector": "svg.g_btn_cover_arrow.w-variant-24805e52-7828-2d20-eeac-e66a36df3f67",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          281,
+          4945,
+          91,
+          58
+        ],
+        "selector": "div.services_home_arrows.is-services",
+        "text": "→ → →"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          281,
+          4945,
+          704,
+          58
+        ],
+        "selector": "a.services_home_cta.w-inline-block",
+        "text": "→ → → LEARN ABOUT OUR SERVICES ← ← ←"
+      }
+    ],
+    "matches": [
+      {
+        "display": "block",
+        "nth": 0,
+        "occludedBy": null,
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "display": "block",
+        "nth": 1,
+        "occludedBy": null,
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "display": "block",
+        "nth": 2,
+        "occludedBy": "div.g_btn_text.u-weight-bold.u-text-transform-uppercase",
+        "rect": [
+          30,
+          10321,
+          265,
+          26
+        ],
+        "visible": true
+      },
+      {
+        "display": "block",
+        "nth": 3,
+        "occludedBy": "div.hero_home_bottom",
+        "rect": [
+          587,
+          10379,
+          90,
+          26
+        ],
+        "visible": true
+      },
+      {
+        "display": "block",
+        "nth": 4,
+        "occludedBy": "div.hero_home_bottom",
+        "rect": [
+          1111,
+          10347,
+          123,
+          26
+        ],
+        "visible": true
+      }
+    ],
+    "siblings": []
+  },
+  "attemptHistory": []
+}

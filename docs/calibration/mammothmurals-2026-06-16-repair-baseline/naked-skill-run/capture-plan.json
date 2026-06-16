@@ -1,0 +1,55 @@
+{
+  "generatedAt": "2026-06-16T02:44:23.842Z",
+  "sourceMap": "map.json",
+  "manifest": "manifest.proposed.json",
+  "counts": {
+    "proposedCaptures": 18,
+    "scrollTriggers": 8,
+    "hoverCandidates": 64,
+    "cssHovers": 13,
+    "splitReveals": 6,
+    "skipped": 10
+  },
+  "skipped": [
+    {
+      "id": "scrolltrigger-6",
+      "reason": "Callback-only ScrollTrigger has no trigger selector in map.json."
+    },
+    {
+      "id": "css-hover-span-navbar-btn-container",
+      "reason": "covered by parent navbar button hover."
+    },
+    {
+      "id": "css-hover-div-g-btn-container",
+      "reason": "covered by parent button/CTA hover."
+    },
+    {
+      "id": "css-hover-div-work-home-cover-deco",
+      "reason": "covered by parent work-card-hover."
+    },
+    {
+      "id": "css-hover-div-work-home-link-overlay",
+      "reason": "covered by parent work-card-hover."
+    },
+    {
+      "id": "css-hover-div-work-home-link-clip",
+      "reason": "covered by parent work-card-hover."
+    },
+    {
+      "id": "css-hover-div-g-btn-container-w-variant-0cb8073d-b726-480f-f755-814264e2f505",
+      "reason": "covered by parent button/CTA hover."
+    },
+    {
+      "id": "hover-w-node-f0092fd8-4d8b-da06-857d-4cb081e79381-81e7936b",
+      "reason": "Generated Webflow node id is too brittle for a default capture plan."
+    },
+    {
+      "id": "hover-w-node-f0092fd8-4d8b-da06-857d-4cb081e7938c-81e7936b",
+      "reason": "Generated Webflow node id is too brittle for a default capture plan."
+    },
+    {
+      "id": "hover-div-hero-contact-top-left-u-sprite",
+      "reason": "Sprite/keyframe elements are represented by loop entries, not hover captures."
+    }
+  ]
+}

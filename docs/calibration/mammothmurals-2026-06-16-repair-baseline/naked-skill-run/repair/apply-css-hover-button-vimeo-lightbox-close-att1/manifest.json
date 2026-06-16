@@ -1,0 +1,33 @@
+{
+  "url": "https://mammothmurals.com/",
+  "viewport": [
+    1280,
+    800
+  ],
+  "captureStrategy": "reuse-page",
+  "captureGroups": {
+    "main-page-after-intro": {
+      "resetScroll": true,
+      "reason": "Reusable settled page for non-stateful hover, scroll, and manual captures."
+    }
+  },
+  "initialWaitMs": 1500,
+  "captureInitialWaitMs": 1500,
+  "captures": [
+    {
+      "id": "css-hover-button-vimeo-lightbox-close",
+      "type": "hover",
+      "label": "Vimeo lightbox close CSS hover",
+      "root": "button.vimeo-lightbox__close",
+      "action": "hover button.vimeo-lightbox__close",
+      "group": "main-page-after-intro",
+      "waitMs": 1150,
+      "reason": "Representative CSS hover group: all 0.5s cubic-bezier(0.625, 0.05, 0, 1).",
+      "beforeAction": [
+        "click button.g_video_button",
+        "wait 500"
+      ],
+      "fresh": true
+    }
+  ]
+}

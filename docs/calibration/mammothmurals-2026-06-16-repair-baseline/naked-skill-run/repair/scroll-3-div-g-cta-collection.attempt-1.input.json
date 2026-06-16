@@ -1,0 +1,280 @@
+{
+  "captureId": "scroll-3-div-g-cta-collection",
+  "attempt": 1,
+  "url": "https://mammothmurals.com/",
+  "viewport": [
+    1280,
+    800
+  ],
+  "failure": {
+    "status": "empty",
+    "reason": "no animation captured",
+    "cause": "inert_representative",
+    "causeSignals": {
+      "found": true,
+      "visible": true,
+      "zeroBox": false,
+      "hoverSelfAnimatable": false,
+      "hoverPseudoAnimatable": false,
+      "pseudoHasTransition": false
+    }
+  },
+  "failedRecipe": {
+    "type": "scroll-reveal",
+    "selector": "div.g_cta_collection",
+    "root": "div.g_cta_collection",
+    "action": "scrollintoview div.g_cta_collection",
+    "arm": "window.__cap.scan(\"div.g_cta_collection\", { trigger: \"scroll\", captureSource: \"scroll-3-div-g-cta-collection\" })",
+    "beforeAction": null,
+    "waitMs": 1600
+  },
+  "screenshot": "repair/scroll-3-div-g-cta-collection.attempt-1.png",
+  "mapSubtree": {
+    "group": "main-page-after-intro",
+    "label": "G cta collection scroll callback reveal",
+    "section": null,
+    "fromSplitReveal": false,
+    "inHoverCandidates": true,
+    "inCssHovers": false
+  },
+  "repairContext": {
+    "ancestors": [
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "g_cta_contain"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "g_cta_wrap"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "section"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "page_main"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "main"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "page_wrap"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "body"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "w-mod-js",
+          "lenis",
+          "lenis-smooth"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "html"
+      }
+    ],
+    "animatableHere": {
+      "childAnimated": false,
+      "pseudoHover": false,
+      "scrollTriggerBound": true,
+      "selfHover": false
+    },
+    "candidateTriggers": [
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          512,
+          77,
+          205,
+          122
+        ],
+        "selector": "div.g_btn_container.w-variant-0cb8073d-b726-480f-f755-814264e2f505.is-duplicate",
+        "text": "BOOK A DISCOVERY CALL"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          519,
+          32,
+          228,
+          45
+        ],
+        "selector": "a.g_btn_main.w-variant-0cb8073d-b726-480f-f755-814264e2f505.w-inline-block",
+        "text": "BOOK A DISCOVERY CALL BOOK A DISCOVERY CALL"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          519,
+          32,
+          228,
+          45
+        ],
+        "selector": "div.g_btn_container.w-variant-0cb8073d-b726-480f-f755-814264e2f505",
+        "text": "BOOK A DISCOVERY CALL"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          500,
+          -6,
+          71,
+          64
+        ],
+        "selector": "span.navbar_btn_container.is-duplicate",
+        "text": "WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          516,
+          -41,
+          41,
+          11
+        ],
+        "selector": "span.navbar_btn_text.u-text-style-small.u-text-transform-uppercase",
+        "text": "WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          500,
+          -58,
+          74,
+          44
+        ],
+        "selector": "a.navbar_btn_default.is-overlap.w-inline-block",
+        "text": "WORK WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          500,
+          -58,
+          74,
+          44
+        ],
+        "selector": "span.navbar_btn_container",
+        "text": "WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          30,
+          527,
+          87,
+          51
+        ],
+        "selector": "a.g_link_text.u-text-style-small.u-weight-bold",
+        "text": "HOME"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1314,
+          85,
+          29,
+          34
+        ],
+        "selector": "div.g_btn_cover.is-duplicate",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1321,
+          38,
+          28,
+          28
+        ],
+        "selector": "div.g_btn_cover",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1322,
+          39,
+          26,
+          26
+        ],
+        "selector": "img.g_btn_cover_image",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1305,
+          75,
+          140,
+          94
+        ],
+        "selector": "div.g_btn_container.is-duplicate",
+        "text": "CHAT WITH US"
+      }
+    ],
+    "matches": [
+      {
+        "display": "block",
+        "nth": 0,
+        "occludedBy": null,
+        "rect": [
+          30,
+          304,
+          1206,
+          193
+        ],
+        "visible": true
+      }
+    ],
+    "siblings": [
+      {
+        "display": "flex",
+        "nth": -1,
+        "occludedBy": null,
+        "rect": [
+          150,
+          -327,
+          966,
+          404
+        ],
+        "selector": "div.g_cta_content",
+        "visible": true
+      }
+    ]
+  },
+  "attemptHistory": []
+}

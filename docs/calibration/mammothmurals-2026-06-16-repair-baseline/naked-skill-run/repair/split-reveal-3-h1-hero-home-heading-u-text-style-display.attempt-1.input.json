@@ -1,0 +1,293 @@
+{
+  "captureId": "split-reveal-3-h1-hero-home-heading-u-text-style-display",
+  "attempt": 1,
+  "url": "https://mammothmurals.com/",
+  "viewport": [
+    1280,
+    800
+  ],
+  "failure": {
+    "status": "empty",
+    "reason": "no animation captured",
+    "cause": "inert_representative",
+    "causeSignals": {
+      "found": true,
+      "visible": true,
+      "zeroBox": false,
+      "hoverSelfAnimatable": false,
+      "hoverPseudoAnimatable": false,
+      "pseudoHasTransition": false
+    }
+  },
+  "failedRecipe": {
+    "type": "scroll-reveal",
+    "selector": "h1.hero_home_heading.u-text-style-display",
+    "root": "h1.hero_home_heading.u-text-style-display",
+    "action": "scrollintoview h1.hero_home_heading.u-text-style-display",
+    "arm": "window.__cap.scan(\"h1.hero_home_heading.u-text-style-display\", { trigger: \"scroll\", captureSource: \"split-reveal-3-h1-hero-home-heading-u-text-style-display\" })",
+    "beforeAction": null,
+    "waitMs": 1800
+  },
+  "screenshot": "repair/split-reveal-3-h1-hero-home-heading-u-text-style-display.attempt-1.png",
+  "mapSubtree": {
+    "group": "main-page-after-intro",
+    "label": "H1 hero home heading u text style display split reveal",
+    "section": "section.hero_home_wrap",
+    "fromSplitReveal": true,
+    "inHoverCandidates": false,
+    "inCssHovers": false
+  },
+  "repairContext": {
+    "ancestors": [
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "hero_home_header"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "hero_home_contain"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "hero_home_container"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "hero_home_wrap"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "section"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "page_main"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "main"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "page_wrap"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      }
+    ],
+    "animatableHere": {
+      "childAnimated": false,
+      "pseudoHover": false,
+      "scrollTriggerBound": false,
+      "selfHover": false
+    },
+    "candidateTriggers": [
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          500,
+          82,
+          71,
+          64
+        ],
+        "selector": "span.navbar_btn_container.is-duplicate",
+        "text": "WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          500,
+          30,
+          74,
+          44
+        ],
+        "selector": "a.navbar_btn_default.is-overlap.w-inline-block",
+        "text": "WORK WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          500,
+          30,
+          74,
+          44
+        ],
+        "selector": "span.navbar_btn_container",
+        "text": "WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          516,
+          47,
+          41,
+          11
+        ],
+        "selector": "span.navbar_btn_text.u-text-style-small.u-text-transform-uppercase",
+        "text": "WORK"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          30,
+          32,
+          161,
+          40
+        ],
+        "selector": "a.navbar_home_link_wordmark.w-inline-block.w--current",
+        "text": "MAMMOTH MURALS"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          30,
+          774,
+          423,
+          45
+        ],
+        "selector": "div.hero_home_content_btns",
+        "text": "BOOK A DISCOVERY CALL BOOK A DISCOVERY CALL SEE OUR WORK SEE"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1084,
+          85,
+          29,
+          34
+        ],
+        "selector": "div.g_btn_cover.is-duplicate",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1090,
+          38,
+          28,
+          28
+        ],
+        "selector": "div.g_btn_cover",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1091,
+          39,
+          26,
+          26
+        ],
+        "selector": "img.g_btn_cover_image",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          931,
+          571,
+          304,
+          171
+        ],
+        "selector": "button.g_video_button",
+        "text": "Open Video"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1075,
+          75,
+          140,
+          94
+        ],
+        "selector": "div.g_btn_container.is-duplicate",
+        "text": "CHAT WITH US"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1082,
+          30,
+          154,
+          45
+        ],
+        "selector": "div.navbar_cta_btn",
+        "text": "CHAT WITH US CHAT WITH US"
+      }
+    ],
+    "matches": [
+      {
+        "display": "flow-root",
+        "nth": 0,
+        "occludedBy": null,
+        "rect": [
+          30,
+          142,
+          841,
+          372
+        ],
+        "visible": true
+      }
+    ],
+    "siblings": [
+      {
+        "display": "flex",
+        "nth": -1,
+        "occludedBy": "div.lines-split",
+        "rect": [
+          0,
+          0,
+          1265,
+          800
+        ],
+        "selector": "div.vimeo-lightbox",
+        "visible": true
+      },
+      {
+        "display": "block",
+        "nth": -1,
+        "occludedBy": null,
+        "rect": [
+          931,
+          571,
+          304,
+          199
+        ],
+        "selector": "div.hero_home_reel",
+        "visible": true
+      }
+    ]
+  },
+  "attemptHistory": []
+}

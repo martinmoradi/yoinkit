@@ -1,0 +1,373 @@
+{
+  "captureId": "link-hover",
+  "attempt": 1,
+  "url": "https://mammothmurals.com/",
+  "viewport": [
+    1280,
+    800
+  ],
+  "failure": {
+    "status": "error",
+    "reason": "Preflight failed for hover a.g_link_text.u-text-style-small: selector center is covered by div.g_btn_container",
+    "cause": "occlusion",
+    "causeSignals": {
+      "found": true,
+      "visible": true,
+      "zeroBox": false,
+      "occludedBy": "div.g_btn_container",
+      "hoverSelfAnimatable": false,
+      "hoverPseudoAnimatable": false,
+      "pseudoHasTransition": false
+    }
+  },
+  "failedRecipe": {
+    "type": "hover",
+    "selector": "a.g_link_text.u-text-style-small",
+    "root": "a.g_link_text.u-text-style-small",
+    "action": "hover a.g_link_text.u-text-style-small",
+    "arm": "window.__cap.scan(\"a.g_link_text.u-text-style-small\", { trigger: \"hover\", captureSource: \"link-hover\" })",
+    "beforeAction": null,
+    "waitMs": 1300
+  },
+  "screenshot": "repair/link-hover.attempt-1.png",
+  "mapSubtree": {
+    "group": "main-page-after-intro",
+    "label": "G link text u text style small hover",
+    "section": null,
+    "fromSplitReveal": false,
+    "inHoverCandidates": true,
+    "inCssHovers": false
+  },
+  "repairContext": {
+    "ancestors": [
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "footer_nav_li"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "li"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "footer_nav_ul"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "ul"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "footer_top"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "footer_wrap"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "footer"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [
+          "page_wrap"
+        ],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "div"
+      },
+      {
+        "ariaControls": null,
+        "ariaExpanded": null,
+        "ariaHidden": null,
+        "classes": [],
+        "cursorPointer": false,
+        "role": null,
+        "tag": "body"
+      }
+    ],
+    "animatableHere": {
+      "childAnimated": false,
+      "pseudoHover": false,
+      "scrollTriggerBound": false,
+      "selfHover": false
+    },
+    "candidateTriggers": [
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          30,
+          10128,
+          87,
+          51
+        ],
+        "selector": "a.g_link_text.u-text-style-small.u-weight-bold",
+        "text": "HOME"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          512,
+          9678,
+          205,
+          122
+        ],
+        "selector": "div.g_btn_container.w-variant-0cb8073d-b726-480f-f755-814264e2f505.is-duplicate",
+        "text": "BOOK A DISCOVERY CALL"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          519,
+          9633,
+          228,
+          45
+        ],
+        "selector": "a.g_btn_main.w-variant-0cb8073d-b726-480f-f755-814264e2f505.w-inline-block",
+        "text": "BOOK A DISCOVERY CALL BOOK A DISCOVERY CALL"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          519,
+          9633,
+          228,
+          45
+        ],
+        "selector": "div.g_btn_container.w-variant-0cb8073d-b726-480f-f755-814264e2f505",
+        "text": "BOOK A DISCOVERY CALL"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          542,
+          8463,
+          694,
+          57
+        ],
+        "selector": "button.accordion_css_item_top",
+        "text": "How do I share my ideas with a custom project? CLOSE OPEN"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          1218,
+          8491,
+          18,
+          3
+        ],
+        "selector": "svg.accordion-css__item-icon-svg.is-open",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          831,
+          7265,
+          29,
+          34
+        ],
+        "selector": "div.g_btn_cover.is-duplicate.w-variant-24805e52-7828-2d20-eeac-e66a36df3f67",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          839,
+          7273,
+          13,
+          17
+        ],
+        "selector": "div.g_btn_arrow.w-variant-24805e52-7828-2d20-eeac-e66a36df3f67.is-duplicate",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          846,
+          7224,
+          12,
+          16
+        ],
+        "selector": "div.g_btn_arrow.w-variant-24805e52-7828-2d20-eeac-e66a36df3f67",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          846,
+          7224,
+          12,
+          16
+        ],
+        "selector": "svg.g_btn_cover_arrow.w-variant-24805e52-7828-2d20-eeac-e66a36df3f67",
+        "text": ""
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          281,
+          4945,
+          91,
+          58
+        ],
+        "selector": "div.services_home_arrows.is-services",
+        "text": "→ → →"
+      },
+      {
+        "opensTarget": "proximity",
+        "rect": [
+          281,
+          4945,
+          704,
+          58
+        ],
+        "selector": "a.services_home_cta.w-inline-block",
+        "text": "→ → → LEARN ABOUT OUR SERVICES ← ← ←"
+      }
+    ],
+    "matches": [
+      {
+        "display": "flex",
+        "nth": 0,
+        "occludedBy": null,
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "display": "flex",
+        "nth": 1,
+        "occludedBy": null,
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "visible": false
+      },
+      {
+        "display": "flex",
+        "nth": 2,
+        "occludedBy": "div.g_btn_container",
+        "rect": [
+          30,
+          10128,
+          87,
+          51
+        ],
+        "visible": true
+      },
+      {
+        "display": "flex",
+        "nth": 3,
+        "occludedBy": "span.navbar_btn_text.u-text-style-small.u-text-transform-uppercase",
+        "rect": [
+          280,
+          10128,
+          91,
+          51
+        ],
+        "visible": true
+      },
+      {
+        "display": "flex",
+        "nth": 4,
+        "occludedBy": "div.hero_home_bottom",
+        "rect": [
+          534,
+          10128,
+          99,
+          51
+        ],
+        "visible": true
+      },
+      {
+        "display": "flex",
+        "nth": 5,
+        "occludedBy": "div.hero_home_bottom",
+        "rect": [
+          796,
+          10128,
+          142,
+          51
+        ],
+        "visible": true
+      },
+      {
+        "display": "flex",
+        "nth": 6,
+        "occludedBy": "div.hero_home_bottom",
+        "rect": [
+          1101,
+          10128,
+          134,
+          51
+        ],
+        "visible": true
+      },
+      {
+        "display": "flex",
+        "nth": 7,
+        "occludedBy": "div.g_btn_text.u-weight-bold.u-text-transform-uppercase",
+        "rect": [
+          30,
+          10321,
+          267,
+          26
+        ],
+        "visible": true
+      },
+      {
+        "display": "flex",
+        "nth": 8,
+        "occludedBy": "div.hero_home_bottom",
+        "rect": [
+          587,
+          10379,
+          92,
+          26
+        ],
+        "visible": true
+      },
+      {
+        "display": "flex",
+        "nth": 9,
+        "occludedBy": "div.hero_home_bottom",
+        "rect": [
+          1111,
+          10347,
+          125,
+          26
+        ],
+        "visible": true
+      }
+    ],
+    "siblings": []
+  },
+  "attemptHistory": []
+}

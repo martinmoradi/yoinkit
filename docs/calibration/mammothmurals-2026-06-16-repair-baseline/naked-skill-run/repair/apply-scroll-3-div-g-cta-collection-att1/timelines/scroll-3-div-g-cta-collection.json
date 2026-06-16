@@ -1,0 +1,1510 @@
+{
+  "evidence": {
+    "gsap": {
+      "customEaseInstalled": true,
+      "customEases": [
+        {
+          "at": 379.8,
+          "data": "0.87, 0, 0.13, 1",
+          "id": "ease-primary",
+          "svgData": "M0,100 C87,100 13,0 100,0 "
+        },
+        {
+          "at": 380,
+          "data": "0.31,0.75,0.22,1",
+          "id": "ease-secondary",
+          "svgData": "M0,100 C31,25 22,0 100,0 "
+        },
+        {
+          "at": 380.1,
+          "data": "0.76, 0, 0.24, 1",
+          "id": "ease-fade",
+          "svgData": "M0,100 C76,100 24,0 100,0 "
+        },
+        {
+          "at": 380.1,
+          "data": "0.25, 1, 0.5, 1",
+          "id": "ease-preloader",
+          "svgData": "M0,100 C25,0 50,0 100,0 "
+        },
+        {
+          "at": 380.1,
+          "data": "0.16, 1, 0.35, 1",
+          "id": "ease-transition",
+          "svgData": "M0,100 C16,0 35,0 100,0 "
+        }
+      ],
+      "entries": [
+        {
+          "at": 3892.7,
+          "duration": 0,
+          "id": 78,
+          "kind": "gsap",
+          "method": "timeline",
+          "target": null,
+          "targetCount": 0,
+          "targets": [],
+          "totalDuration": 0,
+          "vars": {}
+        },
+        {
+          "at": 3892.7,
+          "duration": 0,
+          "id": 79,
+          "kind": "timeline",
+          "method": "call",
+          "position": 0,
+          "target": "[function anonymous]",
+          "targetCount": 0,
+          "targets": [],
+          "totalDuration": 0,
+          "vars": {
+            "props": []
+          }
+        },
+        {
+          "at": 3892.7,
+          "duration": 0.15,
+          "id": 80,
+          "kind": "timeline",
+          "method": "call",
+          "position": 0.15,
+          "target": "[function anonymous]",
+          "targetCount": 0,
+          "targets": [],
+          "totalDuration": 0.15,
+          "vars": {
+            "props": []
+          }
+        },
+        {
+          "at": 3892.7,
+          "duration": 0.3,
+          "id": 81,
+          "kind": "timeline",
+          "method": "call",
+          "position": 0.3,
+          "target": "[function anonymous]",
+          "targetCount": 0,
+          "targets": [],
+          "totalDuration": 0.3,
+          "vars": {
+            "props": []
+          }
+        },
+        {
+          "at": 3892.7,
+          "duration": 0.45,
+          "id": 82,
+          "kind": "timeline",
+          "method": "call",
+          "position": 0.45,
+          "target": "[function anonymous]",
+          "targetCount": 0,
+          "targets": [],
+          "totalDuration": 0.45,
+          "vars": {
+            "props": []
+          }
+        },
+        {
+          "at": 3910.7,
+          "duration": 0,
+          "id": 83,
+          "kind": "gsap",
+          "method": "set",
+          "target": {
+            "matchCount": 4,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div.partners_logo_target",
+            "visibleMatchCount": 4
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 4,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div.partners_logo_target",
+              "visibleMatchCount": 4
+            }
+          ],
+          "totalDuration": 0,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0,
+            "ease": "[function anonymous]",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0,
+              "ease": "[function anonymous]",
+              "overwrite": false,
+              "repeat": 0,
+              "yPercent": 30
+            },
+            "repeat": 0
+          }
+        },
+        {
+          "at": 3911.4,
+          "duration": 0.25,
+          "id": 84,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 5,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(1) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+            "visibleMatchCount": 4
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 5,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(1) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+              "visibleMatchCount": 4
+            }
+          ],
+          "totalDuration": 0.25,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0.25,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0.25,
+              "ease": "ease-secondary",
+              "onComplete": "[function onComplete]",
+              "overwrite": false,
+              "yPercent": -30
+            }
+          }
+        },
+        {
+          "at": 3912.1,
+          "duration": 0.65,
+          "id": 85,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 5,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div.partners_logo_target:nth-of-type(3)",
+            "visibleMatchCount": 4
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 5,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div.partners_logo_target:nth-of-type(3)",
+              "visibleMatchCount": 4
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0.1,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0.1,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": false,
+              "yPercent": 0
+            }
+          }
+        },
+        {
+          "at": 3960.3,
+          "duration": 0.4,
+          "id": 86,
+          "kind": "timeline",
+          "method": "to",
+          "position": 0,
+          "target": {
+            "matchCount": 3,
+            "shortSelector": "li.navbar_links_li",
+            "text": "WORK WORK",
+            "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+            "visibleMatchCount": 3
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "WORK WORK",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+              "visibleMatchCount": 3
+            }
+          ],
+          "totalDuration": 0.4,
+          "vars": {
+            "delay": 0,
+            "duration": 0.4,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.4,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "parent": {
+                "_act": 0,
+                "_delay": 0,
+                "_dirty": 1,
+                "_dp": {
+                  "_delay": 0,
+                  "_dirty": 1,
+                  "_dur": 0.4,
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_tDur": 0.4,
+                  "_targets": "[circular]",
+                  "_ts": 1,
+                  "timeline": "[circular]",
+                  "vars": {
+                    "delay": 0,
+                    "duration": 0.4,
+                    "ease": "ease-secondary",
+                    "overwrite": "auto",
+                    "rotation": 0.001,
+                    "stagger": 0.055,
+                    "yPercent": -200
+                  }
+                },
+                "_dur": 0,
+                "_end": 3.719,
+                "_first": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.4,
+                  "_end": 0.4,
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0,
+                  "_tDur": 0.4,
+                  "_targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": "[circular]"
+                },
+                "_last": "[circular]",
+                "_next": null,
+                "_prev": null,
+                "_recent": "[circular]",
+                "_repeat": 0,
+                "_sort": true,
+                "_start": 0,
+                "_tDur": 0,
+                "_ts": 1,
+                "autoRemoveChildren": false,
+                "data": "nested",
+                "labels": {},
+                "parent": "[circular]",
+                "smoothChildTiming": false,
+                "vars": {
+                  "data": "nested",
+                  "defaults": {},
+                  "targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "ABOUT ABOUT",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "SERVICES SERVICES",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+                      "visibleMatchCount": 3
+                    }
+                  ]
+                }
+              },
+              "rotation": 0.001,
+              "stagger": 0,
+              "yPercent": -200
+            },
+            "stagger": 0
+          }
+        },
+        {
+          "at": 3960.5,
+          "duration": 0.455,
+          "id": 87,
+          "kind": "timeline",
+          "method": "to",
+          "position": 0.055,
+          "target": {
+            "matchCount": 3,
+            "shortSelector": "li.navbar_links_li",
+            "text": "ABOUT ABOUT",
+            "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+            "visibleMatchCount": 3
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "ABOUT ABOUT",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+              "visibleMatchCount": 3
+            }
+          ],
+          "totalDuration": 0.455,
+          "vars": {
+            "delay": 0,
+            "duration": 0.4,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.4,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "parent": {
+                "_act": 0,
+                "_delay": 0,
+                "_dirty": 1,
+                "_dp": {
+                  "_delay": 0,
+                  "_dirty": 1,
+                  "_dur": 0.4,
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_tDur": 0.4,
+                  "_targets": "[circular]",
+                  "_ts": 1,
+                  "timeline": "[circular]",
+                  "vars": {
+                    "delay": 0,
+                    "duration": 0.4,
+                    "ease": "ease-secondary",
+                    "overwrite": "auto",
+                    "rotation": 0.001,
+                    "stagger": 0.055,
+                    "yPercent": -200
+                  }
+                },
+                "_dur": 0.4,
+                "_ease": "[function anonymous]",
+                "_end": 0.4,
+                "_first": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.4,
+                  "_end": 0.4,
+                  "_next": {
+                    "_delay": 0,
+                    "_dp": "[object]",
+                    "_dur": 0.4,
+                    "_end": 0.455,
+                    "_overwrite": "auto",
+                    "_prev": "[object]",
+                    "_ptLookup": "[object]",
+                    "_repeat": 0,
+                    "_start": 0.055,
+                    "_tDur": 0.4,
+                    "_targets": "[object]",
+                    "_ts": 1,
+                    "parent": "[object]",
+                    "timeline": 0,
+                    "vars": "[object]"
+                  },
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0,
+                  "_tDur": 0.4,
+                  "_targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": {
+                    "delay": 0,
+                    "duration": 0.4,
+                    "ease": "ease-secondary",
+                    "overwrite": "auto",
+                    "parent": "[object]",
+                    "rotation": 0.001,
+                    "stagger": 0,
+                    "yPercent": -200
+                  }
+                },
+                "_last": "[circular]",
+                "_next": null,
+                "_prev": null,
+                "_recent": "[circular]",
+                "_repeat": 0,
+                "_sort": true,
+                "_start": 0,
+                "_tDur": 0.4,
+                "_ts": 1,
+                "autoRemoveChildren": false,
+                "data": "nested",
+                "labels": {},
+                "parent": "[circular]",
+                "smoothChildTiming": false,
+                "vars": {
+                  "data": "nested",
+                  "defaults": {},
+                  "targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "ABOUT ABOUT",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "SERVICES SERVICES",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+                      "visibleMatchCount": 3
+                    }
+                  ]
+                }
+              },
+              "rotation": 0.001,
+              "stagger": 0,
+              "yPercent": -200
+            },
+            "stagger": 0
+          }
+        },
+        {
+          "at": 3960.8,
+          "duration": 0.51,
+          "id": 88,
+          "kind": "timeline",
+          "method": "to",
+          "position": 0.11,
+          "target": {
+            "matchCount": 3,
+            "shortSelector": "li.navbar_links_li",
+            "text": "SERVICES SERVICES",
+            "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+            "visibleMatchCount": 3
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "SERVICES SERVICES",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+              "visibleMatchCount": 3
+            }
+          ],
+          "totalDuration": 0.51,
+          "vars": {
+            "delay": 0,
+            "duration": 0.4,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.4,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "parent": {
+                "_act": 0,
+                "_delay": 0,
+                "_dirty": 1,
+                "_dp": {
+                  "_delay": 0,
+                  "_dirty": 1,
+                  "_dur": 0.4,
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_tDur": 0.4,
+                  "_targets": "[circular]",
+                  "_ts": 1,
+                  "timeline": "[circular]",
+                  "vars": {
+                    "delay": 0,
+                    "duration": 0.4,
+                    "ease": "ease-secondary",
+                    "overwrite": "auto",
+                    "rotation": 0.001,
+                    "stagger": 0.055,
+                    "yPercent": -200
+                  }
+                },
+                "_dur": 0.455,
+                "_ease": "[function anonymous]",
+                "_end": 0.455,
+                "_first": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.4,
+                  "_end": 0.4,
+                  "_next": {
+                    "_delay": 0,
+                    "_dp": "[object]",
+                    "_dur": 0.4,
+                    "_end": 0.455,
+                    "_next": "[object]",
+                    "_overwrite": "auto",
+                    "_prev": "[object]",
+                    "_ptLookup": "[object]",
+                    "_repeat": 0,
+                    "_start": 0.055,
+                    "_tDur": 0.4,
+                    "_targets": "[object]",
+                    "_ts": 1,
+                    "parent": "[object]",
+                    "timeline": 0,
+                    "vars": "[object]"
+                  },
+                  "_overwrite": "auto",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0,
+                  "_tDur": 0.4,
+                  "_targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": {
+                    "delay": 0,
+                    "duration": 0.4,
+                    "ease": "ease-secondary",
+                    "overwrite": "auto",
+                    "parent": "[object]",
+                    "rotation": 0.001,
+                    "stagger": 0,
+                    "yPercent": -200
+                  }
+                },
+                "_last": {
+                  "_delay": 0,
+                  "_dp": "[circular]",
+                  "_dur": 0.4,
+                  "_end": 0.51,
+                  "_overwrite": "auto",
+                  "_prev": "[circular]",
+                  "_ptLookup": [],
+                  "_repeat": 0,
+                  "_start": 0.11,
+                  "_tDur": 0.4,
+                  "_targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "SERVICES SERVICES",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+                      "visibleMatchCount": 3
+                    }
+                  ],
+                  "_ts": 1,
+                  "parent": "[circular]",
+                  "timeline": 0,
+                  "vars": "[circular]"
+                },
+                "_next": null,
+                "_prev": null,
+                "_recent": "[circular]",
+                "_repeat": 0,
+                "_sort": true,
+                "_start": 0,
+                "_tDur": 0.455,
+                "_ts": 1,
+                "autoRemoveChildren": false,
+                "data": "nested",
+                "labels": {},
+                "parent": "[circular]",
+                "smoothChildTiming": false,
+                "vars": {
+                  "data": "nested",
+                  "defaults": {},
+                  "targets": [
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "WORK WORK",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "ABOUT ABOUT",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+                      "visibleMatchCount": 3
+                    },
+                    {
+                      "matchCount": 3,
+                      "shortSelector": "li.navbar_links_li",
+                      "text": "SERVICES SERVICES",
+                      "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+                      "visibleMatchCount": 3
+                    }
+                  ]
+                }
+              },
+              "rotation": 0.001,
+              "stagger": 0,
+              "yPercent": -200
+            },
+            "stagger": 0
+          }
+        },
+        {
+          "at": 3961.1,
+          "duration": 0.51,
+          "id": 89,
+          "kind": "gsap",
+          "method": "to",
+          "target": [
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "WORK WORK",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+              "visibleMatchCount": 3
+            },
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "ABOUT ABOUT",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+              "visibleMatchCount": 3
+            },
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "SERVICES SERVICES",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+              "visibleMatchCount": 3
+            }
+          ],
+          "targetCount": 3,
+          "targets": [
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "WORK WORK",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(1)",
+              "visibleMatchCount": 3
+            },
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "ABOUT ABOUT",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(2)",
+              "visibleMatchCount": 3
+            },
+            {
+              "matchCount": 3,
+              "shortSelector": "li.navbar_links_li",
+              "text": "SERVICES SERVICES",
+              "uniqueSelector": "li.navbar_links_li:nth-of-type(3)",
+              "visibleMatchCount": 3
+            }
+          ],
+          "totalDuration": 0.51,
+          "vars": {
+            "delay": 0,
+            "duration": 0.4,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.4,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "rotation": 0.001,
+              "stagger": 0.055,
+              "yPercent": -200
+            },
+            "stagger": 0.055
+          }
+        },
+        {
+          "at": 3961.1,
+          "duration": 0.65,
+          "id": 90,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 1,
+            "shortSelector": "a.navbar_home_link_wordmark.w-inline-block",
+            "text": "MAMMOTH MURALS",
+            "uniqueSelector": "a.navbar_home_link_wordmark.w-inline-block",
+            "visibleMatchCount": 1
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 1,
+              "shortSelector": "a.navbar_home_link_wordmark.w-inline-block",
+              "text": "MAMMOTH MURALS",
+              "uniqueSelector": "a.navbar_home_link_wordmark.w-inline-block",
+              "visibleMatchCount": 1
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "delay": 0,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "rotation": 0.001,
+              "xPercent": -150
+            }
+          }
+        },
+        {
+          "at": 3961.2,
+          "duration": 0.65,
+          "id": 91,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 1,
+            "shortSelector": "#w-node-f0092fd8-4d8b-da06-857d-4cb081e7938c-81e7936b",
+            "text": "CHAT WITH US CHAT WITH US",
+            "uniqueSelector": "#w-node-f0092fd8-4d8b-da06-857d-4cb081e7938c-81e7936b",
+            "visibleMatchCount": 1
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 1,
+              "shortSelector": "#w-node-f0092fd8-4d8b-da06-857d-4cb081e7938c-81e7936b",
+              "text": "CHAT WITH US CHAT WITH US",
+              "uniqueSelector": "#w-node-f0092fd8-4d8b-da06-857d-4cb081e7938c-81e7936b",
+              "visibleMatchCount": 1
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "delay": 0,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "delay": 0,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": "auto",
+              "rotation": 0.001,
+              "xPercent": 150
+            }
+          }
+        },
+        {
+          "at": 4043.3,
+          "duration": 0,
+          "id": 92,
+          "kind": "gsap",
+          "method": "set",
+          "target": {
+            "matchCount": 5,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div.partners_logo_target",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 5,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div.partners_logo_target",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0,
+            "ease": "[function anonymous]",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0,
+              "ease": "[function anonymous]",
+              "overwrite": false,
+              "repeat": 0,
+              "yPercent": 30
+            },
+            "repeat": 0
+          }
+        },
+        {
+          "at": 4044.2,
+          "duration": 0.25,
+          "id": 93,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(2) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(2) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.25,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0.25,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0.25,
+              "ease": "ease-secondary",
+              "onComplete": "[function onComplete]",
+              "overwrite": false,
+              "yPercent": -30
+            }
+          }
+        },
+        {
+          "at": 4044.7,
+          "duration": 0.65,
+          "id": 94,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(2) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(2) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0.1,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0.1,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": false,
+              "yPercent": 0
+            }
+          }
+        },
+        {
+          "at": 4193.4,
+          "duration": 0,
+          "id": 95,
+          "kind": "gsap",
+          "method": "set",
+          "target": {
+            "matchCount": 5,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div.partners_logo_target",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 5,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div.partners_logo_target",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0,
+            "ease": "[function anonymous]",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0,
+              "ease": "[function anonymous]",
+              "overwrite": false,
+              "repeat": 0,
+              "yPercent": 30
+            },
+            "repeat": 0
+          }
+        },
+        {
+          "at": 4194.4,
+          "duration": 0.25,
+          "id": 96,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(3) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(3) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.25,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0.25,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0.25,
+              "ease": "ease-secondary",
+              "onComplete": "[function onComplete]",
+              "overwrite": false,
+              "yPercent": -30
+            }
+          }
+        },
+        {
+          "at": 4194.9,
+          "duration": 0.65,
+          "id": 97,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(3) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(3) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0.1,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0.1,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": false,
+              "yPercent": 0
+            }
+          }
+        },
+        {
+          "at": 4343.4,
+          "duration": 0,
+          "id": 98,
+          "kind": "gsap",
+          "method": "set",
+          "target": {
+            "matchCount": 5,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div.partners_logo_target",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 5,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div.partners_logo_target",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0,
+            "ease": "[function anonymous]",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0,
+              "ease": "[function anonymous]",
+              "overwrite": false,
+              "repeat": 0,
+              "yPercent": 30
+            },
+            "repeat": 0
+          }
+        },
+        {
+          "at": 4344.2,
+          "duration": 0.25,
+          "id": 99,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(4) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(4) > div.partners_logo > div.partners_logo_target:nth-of-type(2)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.25,
+          "vars": {
+            "autoAlpha": 0,
+            "delay": 0,
+            "duration": 0.25,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 0,
+              "delay": 0,
+              "duration": 0.25,
+              "ease": "ease-secondary",
+              "onComplete": "[function onComplete]",
+              "overwrite": false,
+              "yPercent": -30
+            }
+          }
+        },
+        {
+          "at": 4345,
+          "duration": 0.65,
+          "id": 100,
+          "kind": "gsap",
+          "method": "to",
+          "target": {
+            "matchCount": 6,
+            "shortSelector": "div.partners_logo_target",
+            "text": null,
+            "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(4) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+            "visibleMatchCount": 5
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "matchCount": 6,
+              "shortSelector": "div.partners_logo_target",
+              "text": null,
+              "uniqueSelector": "div[role=\"listitem\"]:nth-of-type(4) > div.partners_logo > div.partners_logo_target:nth-of-type(3)",
+              "visibleMatchCount": 5
+            }
+          ],
+          "totalDuration": 0.65,
+          "vars": {
+            "autoAlpha": 1,
+            "delay": 0.1,
+            "duration": 0.65,
+            "ease": "ease-secondary",
+            "props": {
+              "autoAlpha": 1,
+              "delay": 0.1,
+              "duration": 0.65,
+              "ease": "ease-secondary",
+              "overwrite": false,
+              "yPercent": 0
+            }
+          }
+        }
+      ],
+      "installed": true
+    }
+  },
+  "findings": [
+    {
+      "animation": {
+        "duration": "0.5s",
+        "iteration": "infinite",
+        "name": "spriteFrames",
+        "timing": "steps(4)"
+      },
+      "backgroundSize": "1440px 400.05px",
+      "fps": 8,
+      "frameCount": 4,
+      "framePositions": [
+        "-720px 0px",
+        "-1080px 0px",
+        "0px 0px",
+        "-360px 0px"
+      ],
+      "from": "-720px 0px",
+      "leadProperty": "backgroundPosition",
+      "locator": {
+        "matchCount": 2,
+        "shortSelector": "div.hero_contact_top-left.u-sprite",
+        "text": null,
+        "uniqueSelector": "div.hero_contact_top-left.u-sprite.u-sprite-blink:nth-of-type(1)",
+        "visibleMatchCount": 2
+      },
+      "properties": {
+        "backgroundPosition": {
+          "animation": {
+            "duration": "0.5s",
+            "iteration": "infinite",
+            "name": "spriteFrames",
+            "timing": "steps(4)"
+          },
+          "backgroundSize": "1440px 400.05px",
+          "fps": 8,
+          "framePositions": [
+            "-720px 0px",
+            "-1080px 0px",
+            "0px 0px",
+            "-360px 0px"
+          ],
+          "from": "-720px 0px",
+          "rawFrames": [
+            {
+              "t": 0,
+              "v": "-720px 0px"
+            },
+            {
+              "t": 80.3,
+              "v": "-1080px 0px"
+            },
+            {
+              "t": 178,
+              "v": "0px 0px"
+            },
+            {
+              "t": 311.4,
+              "v": "-360px 0px"
+            }
+          ],
+          "spriteSheet": "https://cdn.prod.website-files.com/6870db6428fa0046e4e9dc88/688c6054482d26fd015b4f44_Top%20left.avif",
+          "technique": "CSS sprite-sheet: 4 frames stepped via background-position",
+          "timeline": [
+            {
+              "t": 0,
+              "v": "-720px 0px"
+            },
+            {
+              "t": 80.3,
+              "v": "-1080px 0px"
+            },
+            {
+              "t": 178,
+              "v": "0px 0px"
+            },
+            {
+              "t": 311.4,
+              "v": "-360px 0px"
+            }
+          ],
+          "timing": {
+            "duration": "0.5s",
+            "iteration": "infinite",
+            "name": "spriteFrames",
+            "timing": "steps(4)"
+          },
+          "to": "-360px 0px",
+          "type": "css-sprite"
+        }
+      },
+      "selector": "div.hero_contact_top-left.u-sprite",
+      "spriteSheet": "https://cdn.prod.website-files.com/6870db6428fa0046e4e9dc88/688c6054482d26fd015b4f44_Top%20left.avif",
+      "technique": "CSS sprite-sheet: 4 frames stepped via background-position",
+      "timeline": [
+        {
+          "t": 0,
+          "v": "-720px 0px"
+        },
+        {
+          "t": 80.3,
+          "v": "-1080px 0px"
+        },
+        {
+          "t": 178,
+          "v": "0px 0px"
+        },
+        {
+          "t": 311.4,
+          "v": "-360px 0px"
+        }
+      ],
+      "timing": {
+        "duration": "0.5s",
+        "iteration": "infinite",
+        "name": "spriteFrames",
+        "timing": "steps(4)"
+      },
+      "to": "-360px 0px",
+      "type": "css-sprite"
+    },
+    {
+      "animation": {
+        "duration": "0.5s",
+        "iteration": "infinite",
+        "name": "spriteFrames",
+        "timing": "steps(4)"
+      },
+      "backgroundSize": "1440px 400.05px",
+      "fps": 8,
+      "frameCount": 4,
+      "framePositions": [
+        "-720px 0px",
+        "-1080px 0px",
+        "0px 0px",
+        "-360px 0px"
+      ],
+      "from": "-720px 0px",
+      "leadProperty": "backgroundPosition",
+      "locator": {
+        "matchCount": 2,
+        "shortSelector": "div.hero_contact_top-left.u-sprite",
+        "text": null,
+        "uniqueSelector": "div.hero_contact_top-left.u-sprite.u-sprite-blink:nth-of-type(2)",
+        "visibleMatchCount": 2
+      },
+      "properties": {
+        "backgroundPosition": {
+          "animation": {
+            "duration": "0.5s",
+            "iteration": "infinite",
+            "name": "spriteFrames",
+            "timing": "steps(4)"
+          },
+          "backgroundSize": "1440px 400.05px",
+          "fps": 8,
+          "framePositions": [
+            "-720px 0px",
+            "-1080px 0px",
+            "0px 0px",
+            "-360px 0px"
+          ],
+          "from": "-720px 0px",
+          "rawFrames": [
+            {
+              "t": 0,
+              "v": "-720px 0px"
+            },
+            {
+              "t": 80.6,
+              "v": "-1080px 0px"
+            },
+            {
+              "t": 178,
+              "v": "0px 0px"
+            },
+            {
+              "t": 311.4,
+              "v": "-360px 0px"
+            }
+          ],
+          "spriteSheet": "https://cdn.prod.website-files.com/6870db6428fa0046e4e9dc88/688c6054482d26fd015b4f44_Top%20left.avif",
+          "technique": "CSS sprite-sheet: 4 frames stepped via background-position",
+          "timeline": [
+            {
+              "t": 0,
+              "v": "-720px 0px"
+            },
+            {
+              "t": 80.6,
+              "v": "-1080px 0px"
+            },
+            {
+              "t": 178,
+              "v": "0px 0px"
+            },
+            {
+              "t": 311.4,
+              "v": "-360px 0px"
+            }
+          ],
+          "timing": {
+            "duration": "0.5s",
+            "iteration": "infinite",
+            "name": "spriteFrames",
+            "timing": "steps(4)"
+          },
+          "to": "-360px 0px",
+          "type": "css-sprite"
+        }
+      },
+      "selector": "div.hero_contact_top-left.u-sprite",
+      "spriteSheet": "https://cdn.prod.website-files.com/6870db6428fa0046e4e9dc88/688c6054482d26fd015b4f44_Top%20left.avif",
+      "technique": "CSS sprite-sheet: 4 frames stepped via background-position",
+      "timeline": [
+        {
+          "t": 0,
+          "v": "-720px 0px"
+        },
+        {
+          "t": 80.6,
+          "v": "-1080px 0px"
+        },
+        {
+          "t": 178,
+          "v": "0px 0px"
+        },
+        {
+          "t": 311.4,
+          "v": "-360px 0px"
+        }
+      ],
+      "timing": {
+        "duration": "0.5s",
+        "iteration": "infinite",
+        "name": "spriteFrames",
+        "timing": "steps(4)"
+      },
+      "to": "-360px 0px",
+      "type": "css-sprite"
+    }
+  ],
+  "meta": {
+    "captureSource": "scroll-3-div-g-cta-collection",
+    "capturedFrom": "capture-animation.js",
+    "durationMs": 545.4,
+    "elementsMoved": 2,
+    "instrumentation": {
+      "customEase": true,
+      "gsap": true
+    },
+    "libraries": [
+      "GSAP",
+      "ScrollTrigger",
+      "Lenis",
+      "Webflow",
+      "jQuery"
+    ],
+    "mode": "scan",
+    "rootLocator": {
+      "matchCount": 1,
+      "shortSelector": "div.g_cta_content",
+      "text": "LET’S PAINT SOMETHING UNFORGETTABLE Let’s talk strategy, locations, and how a mural can...",
+      "uniqueSelector": "div.g_cta_content",
+      "visibleMatchCount": 1
+    },
+    "rootSelector": "div.g_cta_content",
+    "sampledProperties": [
+      "transform",
+      "opacity",
+      "filter",
+      "clipPath",
+      "backgroundSize",
+      "backgroundPosition",
+      "backgroundColor",
+      "color",
+      "height",
+      "width"
+    ],
+    "sampledPseudoElements": [
+      "::before",
+      "::after"
+    ],
+    "source": "https://mammothmurals.com/",
+    "terminationReason": "settled",
+    "trigger": "scroll"
+  },
+  "stagger": null,
+  "summary": "2 layers animate together: div.hero_contact_top-left.u-sprite [CSS sprite-sheet: 4 frames stepped via background-position]; div.hero_contact_top-left.u-sprite [CSS sprite-sheet: 4 frames stepped via background-position] — 0.5s ."
+}

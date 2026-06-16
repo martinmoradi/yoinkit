@@ -1,0 +1,16 @@
+{
+  "diagnosis": "The close button has a self hover transition but is hidden until the Vimeo lightbox is opened. Click the stable Open Video control first, wait for the modal, then capture the original close-button hover.",
+  "rootCause": "hidden_not_visible",
+  "confidence": 0.82,
+  "action": {
+    "kind": "precondition_action",
+    "actions": [
+      "click button.g_video_button",
+      "wait 500"
+    ]
+  },
+  "successCriterion": {
+    "expect": "moved"
+  },
+  "abortCriterion": "If the close button remains hidden or measures empty after opening the lightbox, treat this as needing a human-specific modal recipe."
+}

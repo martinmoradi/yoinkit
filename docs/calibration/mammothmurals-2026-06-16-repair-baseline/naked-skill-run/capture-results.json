@@ -1,0 +1,849 @@
+{
+  "capturedAt": "2026-06-16T02:45:19.531Z",
+  "count": 18,
+  "results": [
+    {
+      "id": "split-reveal-0-div-menu-links-text-u-text-style-display",
+      "type": "scroll-reveal",
+      "status": "error",
+      "timelineRef": null,
+      "summary": "capture failed before a timeline could be saved",
+      "findings": 0,
+      "stop": "error",
+      "error": "Preflight failed for scrollintoview div.menu_links_text.u-text-style-display: selector matched no visible elements",
+      "cause": "hidden_not_visible",
+      "causeSignals": {
+        "found": true,
+        "visible": false,
+        "zeroBox": true,
+        "hoverSelfAnimatable": false,
+        "hoverPseudoAnimatable": false,
+        "pseudoHasTransition": false
+      },
+      "page": {
+        "strategy": "reuse-page",
+        "group": "main-page-after-intro"
+      },
+      "origin": "first-try",
+      "repairInput": "repair/split-reveal-0-div-menu-links-text-u-text-style-display.attempt-1.input.json",
+      "repair": {
+        "attempted": true,
+        "failureCause": "hidden_not_visible",
+        "attempts": [
+          {
+            "action": "terminal_give_up",
+            "params": {
+              "terminalCause": "genuinely_absent",
+              "rationale": "The failed selector resolves only to hidden menu-link split text, and the nearby context reports no self, pseudo, child, or scroll-trigger animation to recapture. The visible navbar uses a different button pattern, so retrying this hidden split target would chase motion that has drifted away from the mapped element."
+            },
+            "confidence": 0.86,
+            "resultStatus": null,
+            "resultCause": null
+          }
+        ],
+        "winningAction": null,
+        "outcome": "terminal",
+        "terminalCause": "genuinely_absent"
+      },
+      "terminalDiagnosis": "The failed selector resolves only to hidden menu-link split text, and the nearby context reports no self, pseudo, child, or scroll-trigger animation to recapture. The visible navbar uses a different button pattern, so retrying this hidden split target would chase motion that has drifted away from the mapped element."
+    },
+    {
+      "id": "split-reveal-1-div-g-link-span-w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88",
+      "type": "scroll-reveal",
+      "status": "empty",
+      "timelineRef": "timelines/split-reveal-1-div-g-link-span-w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88.json",
+      "summary": "no animation captured",
+      "findings": 0,
+      "stop": "stopped",
+      "cause": "occlusion",
+      "causeSignals": {
+        "found": true,
+        "visible": true,
+        "zeroBox": false,
+        "occludedBy": "div.g_btn_text.u-weight-bold.u-text-transform-uppercase",
+        "hoverSelfAnimatable": false,
+        "hoverPseudoAnimatable": false,
+        "pseudoHasTransition": false
+      },
+      "preflight": {
+        "matchCount": 5,
+        "message": "selector is present",
+        "selector": "div.g_link_span.w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88",
+        "status": "ok",
+        "visibleMatchCount": 3
+      },
+      "page": {
+        "strategy": "reuse-page",
+        "opened": false,
+        "group": "main-page-after-intro",
+        "seededBy": null
+      },
+      "origin": "first-try",
+      "repairInput": "repair/split-reveal-1-div-g-link-span-w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88.attempt-1.input.json",
+      "repair": {
+        "attempted": true,
+        "failureCause": "occlusion",
+        "attempts": [
+          {
+            "action": "terminal_give_up",
+            "params": {
+              "terminalCause": "genuinely_absent",
+              "rationale": "The failed selector is a split-reveal/hover candidate, but the repair context shows no self, pseudo, child, or scroll-trigger animation at or under the target. The reported occlusion appears incidental, so retrying with another nearby trigger would likely burn a capture on drifted-away motion."
+            },
+            "confidence": 0.86,
+            "resultStatus": null,
+            "resultCause": null
+          }
+        ],
+        "winningAction": null,
+        "outcome": "terminal",
+        "terminalCause": "genuinely_absent"
+      },
+      "terminalDiagnosis": "The failed selector is a split-reveal/hover candidate, but the repair context shows no self, pseudo, child, or scroll-trigger animation at or under the target. The reported occlusion appears incidental, so retrying with another nearby trigger would likely burn a capture on drifted-away motion."
+    },
+    {
+      "id": "split-reveal-2-div-navbar-home-link-text-u-text-style-display",
+      "type": "scroll-reveal",
+      "status": "empty",
+      "timelineRef": "timelines/split-reveal-2-div-navbar-home-link-text-u-text-style-display.json",
+      "summary": "no animation captured",
+      "findings": 0,
+      "stop": "manualDump",
+      "cause": "inert_representative",
+      "causeSignals": {
+        "found": true,
+        "visible": true,
+        "zeroBox": false,
+        "hoverSelfAnimatable": false,
+        "hoverPseudoAnimatable": false,
+        "pseudoHasTransition": false
+      },
+      "preflight": {
+        "matchCount": 1,
+        "message": "selector is present",
+        "selector": "div.navbar_home_link_text.u-text-style-display",
+        "status": "ok",
+        "visibleMatchCount": 1
+      },
+      "page": {
+        "strategy": "reuse-page",
+        "opened": false,
+        "group": "main-page-after-intro",
+        "seededBy": null
+      },
+      "origin": "first-try",
+      "repairInput": "repair/split-reveal-2-div-navbar-home-link-text-u-text-style-display.attempt-1.input.json",
+      "repair": {
+        "attempted": true,
+        "failureCause": "inert_representative",
+        "attempts": [
+          {
+            "action": "terminal_give_up",
+            "params": {
+              "terminalCause": "genuinely_absent",
+              "rationale": "The matched navbar wordmark text is visible and uncovered, but the repair context reports no self, pseudo, child, or scroll-trigger animation at or under it. This looks like a split-reveal target that drifted away from any real motion, so retrying with a nearby trigger would be a guess."
+            },
+            "confidence": 0.88,
+            "resultStatus": null,
+            "resultCause": null
+          }
+        ],
+        "winningAction": null,
+        "outcome": "terminal",
+        "terminalCause": "genuinely_absent"
+      },
+      "terminalDiagnosis": "The matched navbar wordmark text is visible and uncovered, but the repair context reports no self, pseudo, child, or scroll-trigger animation at or under it. This looks like a split-reveal target that drifted away from any real motion, so retrying with a nearby trigger would be a guess."
+    },
+    {
+      "id": "split-reveal-3-h1-hero-home-heading-u-text-style-display",
+      "type": "scroll-reveal",
+      "status": "empty",
+      "timelineRef": "timelines/split-reveal-3-h1-hero-home-heading-u-text-style-display.json",
+      "summary": "no animation captured",
+      "findings": 0,
+      "stop": "manualDump",
+      "cause": "inert_representative",
+      "causeSignals": {
+        "found": true,
+        "visible": true,
+        "zeroBox": false,
+        "hoverSelfAnimatable": false,
+        "hoverPseudoAnimatable": false,
+        "pseudoHasTransition": false
+      },
+      "preflight": {
+        "matchCount": 1,
+        "message": "selector is present",
+        "selector": "h1.hero_home_heading.u-text-style-display",
+        "status": "ok",
+        "visibleMatchCount": 1
+      },
+      "page": {
+        "strategy": "reuse-page",
+        "opened": false,
+        "group": "main-page-after-intro",
+        "seededBy": null
+      },
+      "origin": "first-try",
+      "repairInput": "repair/split-reveal-3-h1-hero-home-heading-u-text-style-display.attempt-1.input.json",
+      "repair": {
+        "attempted": true,
+        "failureCause": "inert_representative",
+        "attempts": [
+          {
+            "action": "terminal_give_up",
+            "params": {
+              "terminalCause": "genuinely_absent",
+              "rationale": "The visible hero H1 is already in its settled page state, and repairContext reports no self, pseudo, child, or ScrollTrigger animation at or under it. The nearby clickable affordances are unrelated nav/reel controls, so there is no corrected selector or precondition that would make this capture measurable."
+            },
+            "confidence": 0.84,
+            "resultStatus": null,
+            "resultCause": null
+          }
+        ],
+        "winningAction": null,
+        "outcome": "terminal",
+        "terminalCause": "genuinely_absent"
+      },
+      "terminalDiagnosis": "The visible hero H1 is already in its settled page state, and repairContext reports no self, pseudo, child, or ScrollTrigger animation at or under it. The nearby clickable affordances are unrelated nav/reel controls, so there is no corrected selector or precondition that would make this capture measurable."
+    },
+    {
+      "id": "split-reveal-4-p-hero-home-p-u-text-style-large",
+      "type": "scroll-reveal",
+      "status": "empty",
+      "timelineRef": "timelines/split-reveal-4-p-hero-home-p-u-text-style-large.json",
+      "summary": "no animation captured",
+      "findings": 0,
+      "stop": "manualDump",
+      "cause": "inert_representative",
+      "causeSignals": {
+        "found": true,
+        "visible": true,
+        "zeroBox": false,
+        "hoverSelfAnimatable": false,
+        "hoverPseudoAnimatable": false,
+        "pseudoHasTransition": false
+      },
+      "preflight": {
+        "matchCount": 1,
+        "message": "selector is present",
+        "selector": "p.hero_home_p.u-text-style-large",
+        "status": "ok",
+        "visibleMatchCount": 1
+      },
+      "page": {
+        "strategy": "reuse-page",
+        "opened": false,
+        "group": "main-page-after-intro",
+        "seededBy": null
+      },
+      "origin": "first-try",
+      "repairInput": "repair/split-reveal-4-p-hero-home-p-u-text-style-large.attempt-1.input.json",
+      "repair": {
+        "attempted": true,
+        "failureCause": "inert_representative",
+        "attempts": [
+          {
+            "action": "terminal_give_up",
+            "params": {
+              "terminalCause": "genuinely_absent",
+              "rationale": "The paragraph is already visible and uncovered, but the repair context shows no animatable self, pseudo, child, or scroll-trigger binding at or under this target. Nearby clickable elements are unrelated affordances, so retrying with another trigger would be a guess rather than a repair."
+            },
+            "confidence": 0.88,
+            "resultStatus": null,
+            "resultCause": null
+          }
+        ],
+        "winningAction": null,
+        "outcome": "terminal",
+        "terminalCause": "genuinely_absent"
+      },
+      "terminalDiagnosis": "The paragraph is already visible and uncovered, but the repair context shows no animatable self, pseudo, child, or scroll-trigger binding at or under this target. Nearby clickable elements are unrelated affordances, so retrying with another trigger would be a guess rather than a repair."
+    },
+    {
+      "id": "split-reveal-5-div-g-link-span-w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f",
+      "type": "scroll-reveal",
+      "status": "empty",
+      "timelineRef": "timelines/split-reveal-5-div-g-link-span-w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f.json",
+      "summary": "no animation captured",
+      "findings": 0,
+      "stop": "manualDump",
+      "cause": "inert_representative",
+      "causeSignals": {
+        "found": true,
+        "visible": true,
+        "zeroBox": false,
+        "hoverSelfAnimatable": false,
+        "hoverPseudoAnimatable": false,
+        "pseudoHasTransition": false
+      },
+      "preflight": {
+        "matchCount": 5,
+        "message": "selector is present",
+        "selector": "div.g_link_span.w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f",
+        "status": "ok",
+        "visibleMatchCount": 5
+      },
+      "page": {
+        "strategy": "reuse-page",
+        "opened": false,
+        "group": "main-page-after-intro",
+        "seededBy": null
+      },
+      "origin": "first-try",
+      "repairInput": "repair/split-reveal-5-div-g-link-span-w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f.attempt-1.input.json",
+      "repair": {
+        "attempted": true,
+        "failureCause": "inert_representative",
+        "attempts": [
+          {
+            "action": "terminal_give_up",
+            "params": {
+              "terminalCause": "genuinely_absent",
+              "rationale": "All five matches are visible and uncovered, but repairContext reports no self, pseudo, child, or scroll-trigger animation at or under this footer link span. There is no alternate animating instance or precondition trigger to name, so this capture should stop as genuinely absent."
+            },
+            "confidence": 0.9,
+            "resultStatus": null,
+            "resultCause": null
+          }
+        ],
+        "winningAction": null,
+        "outcome": "terminal",
+        "terminalCause": "genuinely_absent"
+      },
+      "terminalDiagnosis": "All five matches are visible and uncovered, but repairContext reports no self, pseudo, child, or scroll-trigger animation at or under this footer link span. There is no alternate animating instance or precondition trigger to name, so this capture should stop as genuinely absent."
+    },
+    {
+      "id": "loop-0-div-partners-home-wrap",
+      "type": "manual",
+      "status": "check",
+      "timelineRef": "timelines/loop-0-div-partners-home-wrap.json",
+      "summary": "Staggered 7-item animation (e.g. split text): each item transform change, ~250.4ms apart, 1.3s (measured) unknown (rAF/JS) — verify.",
+      "findings": 7,
+      "stop": "manualDump",
+      "preflight": {
+        "matchCount": 1,
+        "message": "selector is present",
+        "selector": "div.partners_home_wrap",
+        "status": "ok",
+        "visibleMatchCount": 1
+      },
+      "page": {
+        "strategy": "reuse-page",
+        "opened": false,
+        "group": "main-page-after-intro",
+        "seededBy": null
+      },
+      "origin": "first-try"
+    },
+    {
+      "id": "scroll-3-div-g-cta-collection",
+      "type": "scroll-reveal",
+      "status": "ok",
+      "timelineRef": "timelines/scroll-3-div-g-cta-collection.json",
+      "summary": "2 layers animate together: div.hero_contact_top-left.u-sprite [CSS sprite-sheet: 4 frames stepped via background-position]; div.hero_contact_top-left.u-sprite [CSS sprite-sheet: 4 frames stepped via background-position] — 0.5s .",
+      "findings": 2,
+      "stop": "settled",
+      "preflight": {
+        "matchCount": 1,
+        "message": "selector is present",
+        "selector": "div.g_cta_content",
+        "status": "ok",
+        "visibleMatchCount": 1
+      },
+      "page": {
+        "strategy": "reuse-page",
+        "opened": true,
+        "group": "main-page-after-intro",
+        "seededBy": null,
+        "repairRecapture": true
+      },
+      "origin": "after-repair",
+      "repairInput": "repair/scroll-3-div-g-cta-collection.attempt-1.input.json",
+      "repair": {
+        "attempted": true,
+        "failureCause": "inert_representative",
+        "attempts": [
+          {
+            "action": "retarget_selector",
+            "params": {
+              "kind": "retarget_selector",
+              "selector": "div.g_cta_content"
+            },
+            "confidence": 0.68,
+            "resultStatus": "ok",
+            "resultCause": null
+          }
+        ],
+        "winningAction": "retarget_selector",
+        "outcome": "ok-after-repair",
+        "terminalCause": null
+      }
+    },
+    {
+      "id": "scroll-7-div-work-home-cover",
+      "type": "scroll-reveal",
+      "status": "ok",
+      "timelineRef": "timelines/scroll-7-div-work-home-cover.json",
+      "summary": "2 layers animate together: img.work_home_image.u-ratio-3-2 [opacity: 1 -> 0]; img.work_home_image.u-ratio-3-2 [opacity: 0 -> 1] — 0.31s (measured) unknown (rAF/JS) — verify.",
+      "findings": 2,
+      "stop": "settled",
+      "preflight": {
+        "matchCount": 1,
+        "message": "selector is present",
+        "selector": "div.work_home_cover",
+        "status": "ok",
+        "visibleMatchCount": 1
+      },
+      "page": {
+        "strategy": "reuse-page",
+        "opened": false,
+        "group": "main-page-after-intro",
+        "seededBy": null
+      },
+      "origin": "first-try"
+    },
+    {
+      "id": "accordion-click",
+      "type": "click",
+      "status": "check",
+      "timelineRef": "timelines/accordion-click.json",
+      "summary": "Staggered 12-item animation (e.g. split text): each item x -211.09->-241.99px, ~13.9ms apart, 0.38s (measured) unknown (rAF/JS) — verify.",
+      "findings": 32,
+      "stop": "manualDump",
+      "preflight": [
+        {
+          "matchCount": 10,
+          "message": "selector is present",
+          "selector": "button.accordion_css_item_top",
+          "status": "ok",
+          "visibleMatchCount": 10
+        },
+        {
+          "chosen": "button.accordion_css_item_top",
+          "coveredBy": null,
+          "matchCount": 10,
+          "message": "selector appears hittable",
+          "point": {
+            "x": 888,
+            "y": 401
+          },
+          "rect": {
+            "height": 57,
+            "width": 694,
+            "x": 542,
+            "y": 372
+          },
+          "selector": "button.accordion_css_item_top",
+          "status": "ok",
+          "visibleMatchCount": 10
+        }
+      ],
+      "page": {
+        "strategy": "fresh",
+        "opened": true,
+        "group": null,
+        "seededBy": null
+      },
+      "origin": "first-try"
+    },
+    {
+      "id": "css-hover-div-vimeo-lightbox-btn",
+      "type": "hover",
+      "status": "error",
+      "timelineRef": null,
+      "summary": "capture failed before a timeline could be saved",
+      "findings": 0,
+      "stop": "error",
+      "error": "Preflight failed for hover div.vimeo-lightbox__btn: selector matched no visible elements",
+      "cause": "hidden_not_visible",
+      "causeSignals": {
+        "found": true,
+        "visible": false,
+        "zeroBox": false,
+        "hoverSelfAnimatable": false,
+        "hoverPseudoAnimatable": false,
+        "pseudoHasTransition": false
+      },
+      "page": {
+        "strategy": "reuse-page",
+        "group": "main-page-after-intro"
+      },
+      "origin": "first-try",
+      "repairInput": "repair/css-hover-div-vimeo-lightbox-btn.attempt-1.input.json",
+      "repair": {
+        "attempted": true,
+        "failureCause": "hidden_not_visible",
+        "attempts": [
+          {
+            "action": "precondition_action",
+            "params": {
+              "kind": "precondition_action",
+              "actions": [
+                "click button.g_video_button",
+                "wait 500"
+              ]
+            },
+            "confidence": 0.76,
+            "resultStatus": "error",
+            "resultCause": "occlusion"
+          },
+          {
+            "action": "precondition_action",
+            "params": {
+              "kind": "precondition_action",
+              "actions": [
+                "click button.g_video_button",
+                "wait 500",
+                {
+                  "eval": "document.querySelectorAll('div.vimeo-lightbox__btn svg, div.vimeo-lightbox__btn path').forEach(el => { el.style.pointerEvents = 'none'; });"
+                },
+                "wait 100"
+              ]
+            },
+            "confidence": 0.72,
+            "resultStatus": "error",
+            "resultCause": "occlusion"
+          }
+        ],
+        "winningAction": null,
+        "outcome": "unrepaired",
+        "terminalCause": null
+      }
+    },
+    {
+      "id": "css-hover-button-vimeo-lightbox-close",
+      "type": "hover",
+      "status": "ok",
+      "timelineRef": "timelines/css-hover-button-vimeo-lightbox-close.json",
+      "summary": "One element animates: button.vimeo-lightbox__close [scale 1->0.95, rotate 0->-90deg + opacity] — 0.5s cubic-bezier(0.625, 0.05, 0, 1).",
+      "findings": 1,
+      "stop": "settled",
+      "page": {
+        "strategy": "fresh",
+        "opened": true,
+        "group": null,
+        "seededBy": null,
+        "repairRecapture": true
+      },
+      "origin": "after-repair",
+      "repairInput": "repair/css-hover-button-vimeo-lightbox-close.attempt-1.input.json",
+      "repair": {
+        "attempted": true,
+        "failureCause": "hidden_not_visible",
+        "attempts": [
+          {
+            "action": "precondition_action",
+            "params": {
+              "kind": "precondition_action",
+              "actions": [
+                "click button.g_video_button",
+                "wait 500"
+              ]
+            },
+            "confidence": 0.82,
+            "resultStatus": "ok",
+            "resultCause": null
+          }
+        ],
+        "winningAction": "precondition_action",
+        "outcome": "ok-after-repair",
+        "terminalCause": null
+      },
+      "preflight": [
+        {
+          "matchCount": 1,
+          "message": "selector is present",
+          "selector": "button.vimeo-lightbox__close",
+          "status": "ok",
+          "visibleMatchCount": 1
+        },
+        {
+          "chosen": "button.vimeo-lightbox__close",
+          "coveredBy": null,
+          "matchCount": 1,
+          "message": "selector appears hittable",
+          "point": {
+            "x": 1207,
+            "y": 58
+          },
+          "rect": {
+            "height": 53,
+            "width": 53,
+            "x": 1181,
+            "y": 32
+          },
+          "selector": "button.vimeo-lightbox__close",
+          "status": "ok",
+          "visibleMatchCount": 1
+        }
+      ]
+    },
+    {
+      "id": "work-card-hover",
+      "type": "hover",
+      "status": "ok",
+      "timelineRef": "timelines/work-card-hover.json",
+      "summary": "Staggered 5-item animation (e.g. split text): each item scale 1.1->1, ~16.9ms apart, 0.65s cubic-bezier(0.16, 1, 0.3, 1).",
+      "findings": 6,
+      "stop": "settled",
+      "preflight": [
+        {
+          "matchCount": 6,
+          "message": "selector is present",
+          "selector": "a.work_home_item_link.w-inline-block",
+          "status": "ok",
+          "visibleMatchCount": 6
+        },
+        {
+          "chosen": "a.work_home_item_link.w-inline-block",
+          "coveredBy": null,
+          "matchCount": 6,
+          "message": "selector appears hittable",
+          "point": {
+            "x": 327,
+            "y": 400
+          },
+          "rect": {
+            "height": 447,
+            "width": 595,
+            "x": 30,
+            "y": 176
+          },
+          "selector": "a.work_home_item_link.w-inline-block",
+          "status": "ok",
+          "visibleMatchCount": 6
+        }
+      ],
+      "page": {
+        "strategy": "reuse-page",
+        "opened": false,
+        "group": "main-page-after-intro",
+        "seededBy": null
+      },
+      "origin": "first-try"
+    },
+    {
+      "id": "wordmark-hover",
+      "type": "hover",
+      "status": "ok",
+      "timelineRef": "timelines/wordmark-hover.json",
+      "summary": "Staggered 13-item animation (e.g. split text): each item y 0->-31.1px, ~3.7ms apart, 0.28s (measured) unknown (rAF/JS) — verify.",
+      "findings": 13,
+      "stop": "settled",
+      "preflight": [
+        {
+          "matchCount": 1,
+          "message": "selector is present",
+          "selector": "a.navbar_home_link_wordmark.w-inline-block",
+          "status": "ok",
+          "visibleMatchCount": 1
+        },
+        {
+          "chosen": "a.navbar_home_link_wordmark.w-inline-block.w--current",
+          "coveredBy": null,
+          "matchCount": 1,
+          "message": "selector appears hittable",
+          "point": {
+            "x": 110,
+            "y": 52
+          },
+          "rect": {
+            "height": 40,
+            "width": 161,
+            "x": 30,
+            "y": 32
+          },
+          "selector": "a.navbar_home_link_wordmark.w-inline-block",
+          "status": "ok",
+          "visibleMatchCount": 1
+        }
+      ],
+      "page": {
+        "strategy": "reuse-page",
+        "opened": false,
+        "group": "main-page-after-intro",
+        "seededBy": null
+      },
+      "origin": "first-try"
+    },
+    {
+      "id": "primary-button-hover",
+      "type": "hover",
+      "status": "ok",
+      "timelineRef": "timelines/primary-button-hover.json",
+      "summary": "2 layers animate together: span.navbar_btn_container [scale 1->0]; span.navbar_btn_container [y 44.02->0px, rotateX -34.4->0deg, rotateY -19.1->0deg, rotateZ 23.1->0deg] — 0.45s cubic-bezier(0.31, 0.75, 0.22, 1).",
+      "findings": 2,
+      "stop": "settled",
+      "preflight": [
+        {
+          "matchCount": 4,
+          "message": "selector is present",
+          "selector": "a.navbar_btn_default.w-inline-block",
+          "status": "ok",
+          "visibleMatchCount": 4
+        },
+        {
+          "chosen": "a.navbar_btn_default.is-overlap.w-inline-block",
+          "coveredBy": null,
+          "matchCount": 4,
+          "message": "selector appears hittable",
+          "point": {
+            "x": 536,
+            "y": 52
+          },
+          "rect": {
+            "height": 44,
+            "width": 74,
+            "x": 500,
+            "y": 30
+          },
+          "selector": "a.navbar_btn_default.w-inline-block",
+          "status": "ok",
+          "visibleMatchCount": 4
+        }
+      ],
+      "page": {
+        "strategy": "reuse-page",
+        "opened": false,
+        "group": "main-page-after-intro",
+        "seededBy": null
+      },
+      "origin": "first-try"
+    },
+    {
+      "id": "services-cta-hover",
+      "type": "hover",
+      "status": "check",
+      "timelineRef": "timelines/services-cta-hover.json",
+      "summary": "Staggered 6-item animation (e.g. split text): each item x -11.52->0px, ~60ms apart, 0.45s cubic-bezier(0.31, 0.75, 0.22, 1).",
+      "findings": 20,
+      "stop": "manualDump",
+      "preflight": [
+        {
+          "matchCount": 1,
+          "message": "selector is present",
+          "selector": "a.services_home_cta.w-inline-block",
+          "status": "ok",
+          "visibleMatchCount": 1
+        },
+        {
+          "chosen": "a.services_home_cta.w-inline-block",
+          "coveredBy": null,
+          "matchCount": 1,
+          "message": "selector appears hittable",
+          "point": {
+            "x": 633,
+            "y": 400
+          },
+          "rect": {
+            "height": 58,
+            "width": 704,
+            "x": 281,
+            "y": 371
+          },
+          "selector": "a.services_home_cta.w-inline-block",
+          "status": "ok",
+          "visibleMatchCount": 1
+        }
+      ],
+      "page": {
+        "strategy": "reuse-page",
+        "opened": false,
+        "group": "main-page-after-intro",
+        "seededBy": null
+      },
+      "origin": "first-try"
+    },
+    {
+      "id": "nav-link-hover",
+      "type": "hover",
+      "status": "ok",
+      "timelineRef": "timelines/nav-link-hover.json",
+      "summary": "2 layers animate together: span.navbar_btn_container [scale 1->0]; span.navbar_btn_container [y 44.02->0px, rotateX -34.4->0deg, rotateY -19.1->0deg, rotateZ 23.1->0deg] — 0.45s cubic-bezier(0.31, 0.75, 0.22, 1).",
+      "findings": 2,
+      "stop": "settled",
+      "preflight": [
+        {
+          "matchCount": 3,
+          "message": "selector is present",
+          "selector": "li.navbar_links_li",
+          "status": "ok",
+          "visibleMatchCount": 3
+        },
+        {
+          "chosen": "li.navbar_links_li",
+          "coveredBy": null,
+          "matchCount": 3,
+          "message": "selector appears hittable",
+          "point": {
+            "x": 536,
+            "y": 52
+          },
+          "rect": {
+            "height": 44,
+            "width": 74,
+            "x": 500,
+            "y": 30
+          },
+          "selector": "li.navbar_links_li",
+          "status": "ok",
+          "visibleMatchCount": 3
+        }
+      ],
+      "page": {
+        "strategy": "reuse-page",
+        "opened": false,
+        "group": "main-page-after-intro",
+        "seededBy": null
+      },
+      "origin": "first-try"
+    },
+    {
+      "id": "link-hover",
+      "type": "hover",
+      "status": "error",
+      "timelineRef": null,
+      "summary": "capture failed before a timeline could be saved",
+      "findings": 0,
+      "stop": "error",
+      "error": "Preflight failed for hover a.g_link_text.u-text-style-small: selector center is covered by div.g_btn_container",
+      "cause": "occlusion",
+      "causeSignals": {
+        "found": true,
+        "visible": true,
+        "zeroBox": false,
+        "occludedBy": "div.g_btn_container",
+        "hoverSelfAnimatable": false,
+        "hoverPseudoAnimatable": false,
+        "pseudoHasTransition": false
+      },
+      "page": {
+        "strategy": "reuse-page",
+        "group": "main-page-after-intro"
+      },
+      "origin": "first-try",
+      "repairInput": "repair/link-hover.attempt-1.input.json",
+      "repair": {
+        "attempted": true,
+        "failureCause": "occlusion",
+        "attempts": [
+          {
+            "action": "terminal_give_up",
+            "params": {
+              "terminalCause": "genuinely_absent",
+              "rationale": "The footer link representative is either hidden or covered, and the repair context reports no self, pseudo, child, or scroll-trigger animation around the matched links. This looks like a deduped hover target with no measurable motion left to recover."
+            },
+            "confidence": 0.84,
+            "resultStatus": null,
+            "resultCause": null
+          }
+        ],
+        "winningAction": null,
+        "outcome": "terminal",
+        "terminalCause": "genuinely_absent"
+      },
+      "terminalDiagnosis": "The footer link representative is either hidden or covered, and the repair context reports no self, pseudo, child, or scroll-trigger animation around the matched links. This looks like a deduped hover target with no measurable motion left to recover."
+    }
+  ]
+}

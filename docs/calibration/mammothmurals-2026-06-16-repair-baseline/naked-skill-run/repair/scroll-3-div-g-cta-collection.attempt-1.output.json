@@ -1,0 +1,13 @@
+{
+  "diagnosis": "The collection wrapper is visible and scroll-trigger bound, but it captured as an inert representative while the adjacent CTA content is the likely reveal surface. Retargeting to the visible CTA content lets the engine re-measure the moving layer instead of the wrapper.",
+  "rootCause": "inert_representative",
+  "confidence": 0.68,
+  "action": {
+    "kind": "retarget_selector",
+    "selector": "div.g_cta_content"
+  },
+  "successCriterion": {
+    "expect": "moved"
+  },
+  "abortCriterion": "If retargeting to the CTA content still measures empty, stop instead of guessing another nearby button."
+}

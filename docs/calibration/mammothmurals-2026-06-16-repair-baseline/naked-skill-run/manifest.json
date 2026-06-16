@@ -1,0 +1,201 @@
+{
+  "url": "https://mammothmurals.com/",
+  "viewport": [
+    1280,
+    800
+  ],
+  "crossOriginIframe": null,
+  "captureStrategy": "reuse-page",
+  "captureGroups": {
+    "main-page-after-intro": {
+      "resetScroll": true,
+      "reason": "Reusable settled page for non-stateful hover, scroll, and manual captures."
+    }
+  },
+  "initialWaitMs": 1500,
+  "captureInitialWaitMs": 1500,
+  "generatedBy": "bin/motion-decompile plan",
+  "generatedAt": "2026-06-16T02:44:23.842Z",
+  "captures": [
+    {
+      "id": "split-reveal-0-div-menu-links-text-u-text-style-display",
+      "type": "scroll-reveal",
+      "label": "Menu links text u text style display split reveal",
+      "root": "div.menu_links_text.u-text-style-display",
+      "action": "scrollintoview div.menu_links_text.u-text-style-display",
+      "group": "main-page-after-intro",
+      "waitMs": 1800,
+      "reason": "Split reveal host detected on a ScrollTrigger page; use timed scroll capture: settle, arm, scroll into view, wait, dump."
+    },
+    {
+      "id": "split-reveal-1-div-g-link-span-w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88",
+      "type": "scroll-reveal",
+      "label": "G link span w variant 369ea92e 73c1 eb0f a4f5 c2f13436fe88 split reveal",
+      "root": "div.g_link_span.w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88",
+      "action": "scrollintoview div.g_link_span.w-variant-369ea92e-73c1-eb0f-a4f5-c2f13436fe88",
+      "group": "main-page-after-intro",
+      "waitMs": 1800,
+      "reason": "Split reveal host detected on a ScrollTrigger page; use timed scroll capture: settle, arm, scroll into view, wait, dump."
+    },
+    {
+      "id": "split-reveal-2-div-navbar-home-link-text-u-text-style-display",
+      "type": "scroll-reveal",
+      "label": "Navbar home link text u text style display split reveal",
+      "root": "div.navbar_home_link_text.u-text-style-display",
+      "action": "scrollintoview div.navbar_home_link_text.u-text-style-display",
+      "group": "main-page-after-intro",
+      "waitMs": 1800,
+      "reason": "Split reveal host detected on a ScrollTrigger page; use timed scroll capture: settle, arm, scroll into view, wait, dump."
+    },
+    {
+      "id": "split-reveal-3-h1-hero-home-heading-u-text-style-display",
+      "type": "scroll-reveal",
+      "label": "H1 hero home heading u text style display split reveal",
+      "root": "h1.hero_home_heading.u-text-style-display",
+      "action": "scrollintoview h1.hero_home_heading.u-text-style-display",
+      "group": "main-page-after-intro",
+      "waitMs": 1800,
+      "reason": "Split reveal host detected on a ScrollTrigger page; use timed scroll capture: settle, arm, scroll into view, wait, dump."
+    },
+    {
+      "id": "split-reveal-4-p-hero-home-p-u-text-style-large",
+      "type": "scroll-reveal",
+      "label": "Hero home p u text style large split reveal",
+      "root": "p.hero_home_p.u-text-style-large",
+      "action": "scrollintoview p.hero_home_p.u-text-style-large",
+      "group": "main-page-after-intro",
+      "waitMs": 1800,
+      "reason": "Split reveal host detected on a ScrollTrigger page; use timed scroll capture: settle, arm, scroll into view, wait, dump."
+    },
+    {
+      "id": "split-reveal-5-div-g-link-span-w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f",
+      "type": "scroll-reveal",
+      "label": "G link span w variant 5fe9a928 0778 5944 e7ee adbb3998d51f split reveal",
+      "root": "div.g_link_span.w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f",
+      "action": "scrollintoview div.g_link_span.w-variant-5fe9a928-0778-5944-e7ee-adbb3998d51f",
+      "group": "main-page-after-intro",
+      "waitMs": 1800,
+      "reason": "Split reveal host detected on a ScrollTrigger page; use timed scroll capture: settle, arm, scroll into view, wait, dump."
+    },
+    {
+      "id": "loop-0-div-partners-home-wrap",
+      "type": "manual",
+      "label": "Partners home wrap in-view loop",
+      "root": "div.partners_home_wrap",
+      "group": "main-page-after-intro",
+      "waitMs": 1600,
+      "reason": "ScrollTrigger 0 gates an in-view loop/marquee. Scroll into view first, then capture with a manual scan."
+    },
+    {
+      "id": "scroll-3-div-g-cta-collection",
+      "type": "scroll-reveal",
+      "label": "G cta collection scroll callback reveal",
+      "root": "div.g_cta_collection",
+      "action": "scrollintoview div.g_cta_collection",
+      "group": "main-page-after-intro",
+      "waitMs": 1600,
+      "reason": "ScrollTrigger 3 has callbacks (onEnter) but no bound tween in the registry."
+    },
+    {
+      "id": "scroll-7-div-work-home-cover",
+      "type": "scroll-reveal",
+      "label": "Work home cover scroll callback reveal",
+      "root": "div.work_home_cover",
+      "action": "scrollintoview div.work_home_cover",
+      "group": "main-page-after-intro",
+      "waitMs": 1600,
+      "reason": "ScrollTrigger 7 has callbacks (onEnter, onLeave, onEnterBack, onLeaveBack) but no bound tween in the registry."
+    },
+    {
+      "id": "accordion-click",
+      "type": "click",
+      "label": "Accordion open/close",
+      "root": "div.accordion_css_item_contain",
+      "action": "click button.accordion_css_item_top",
+      "scrollTarget": "button.accordion_css_item_top",
+      "fresh": true,
+      "waitMs": 900,
+      "reason": "Accordion or FAQ selectors were present in the map. Stateful click is isolated by default; add resetAction + reusePage:true if batching is safe."
+    },
+    {
+      "id": "css-hover-div-vimeo-lightbox-btn",
+      "type": "hover",
+      "label": "Vimeo lightbox btn CSS hover",
+      "root": "div.vimeo-lightbox__btn",
+      "action": "hover div.vimeo-lightbox__btn",
+      "group": "main-page-after-intro",
+      "waitMs": 950,
+      "reason": "Representative CSS hover group: opacity 0.3s linear."
+    },
+    {
+      "id": "css-hover-button-vimeo-lightbox-close",
+      "type": "hover",
+      "label": "Vimeo lightbox close CSS hover",
+      "root": "button.vimeo-lightbox__close",
+      "action": "hover button.vimeo-lightbox__close",
+      "group": "main-page-after-intro",
+      "waitMs": 1150,
+      "reason": "Representative CSS hover group: all 0.5s cubic-bezier(0.625, 0.05, 0, 1)."
+    },
+    {
+      "id": "work-card-hover",
+      "type": "hover",
+      "label": "Work home item link w inline block hover",
+      "root": "a.work_home_item_link.w-inline-block",
+      "action": "hover a.work_home_item_link.w-inline-block",
+      "group": "main-page-after-intro",
+      "waitMs": 1300,
+      "reason": "Representative hover candidate for work-card-hover; deduped from 64 mapped hover candidate(s)."
+    },
+    {
+      "id": "wordmark-hover",
+      "type": "hover",
+      "label": "Navbar home link wordmark w inline block hover",
+      "root": "a.navbar_home_link_wordmark.w-inline-block",
+      "action": "hover a.navbar_home_link_wordmark.w-inline-block",
+      "group": "main-page-after-intro",
+      "waitMs": 1300,
+      "reason": "Representative hover candidate for wordmark-hover; deduped from 64 mapped hover candidate(s)."
+    },
+    {
+      "id": "primary-button-hover",
+      "type": "hover",
+      "label": "Navbar btn default w inline block hover",
+      "root": "a.navbar_btn_default.w-inline-block",
+      "action": "hover a.navbar_btn_default.w-inline-block",
+      "group": "main-page-after-intro",
+      "waitMs": 1300,
+      "reason": "Representative hover candidate for primary-button-hover; deduped from 64 mapped hover candidate(s)."
+    },
+    {
+      "id": "services-cta-hover",
+      "type": "hover",
+      "label": "Services home cta w inline block hover",
+      "root": "a.services_home_cta.w-inline-block",
+      "action": "hover a.services_home_cta.w-inline-block",
+      "group": "main-page-after-intro",
+      "waitMs": 1300,
+      "reason": "Representative hover candidate for services-cta-hover; deduped from 64 mapped hover candidate(s)."
+    },
+    {
+      "id": "nav-link-hover",
+      "type": "hover",
+      "label": "Navbar links li hover",
+      "root": "li.navbar_links_li",
+      "action": "hover li.navbar_links_li",
+      "group": "main-page-after-intro",
+      "waitMs": 1300,
+      "reason": "Representative hover candidate for nav-link-hover; deduped from 64 mapped hover candidate(s)."
+    },
+    {
+      "id": "link-hover",
+      "type": "hover",
+      "label": "G link text u text style small hover",
+      "root": "a.g_link_text.u-text-style-small",
+      "action": "hover a.g_link_text.u-text-style-small",
+      "group": "main-page-after-intro",
+      "waitMs": 1300,
+      "reason": "Representative hover candidate for link-hover; deduped from 64 mapped hover candidate(s)."
+    }
+  ]
+}

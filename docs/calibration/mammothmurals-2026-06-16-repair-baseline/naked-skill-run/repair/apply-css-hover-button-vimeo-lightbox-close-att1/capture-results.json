@@ -1,0 +1,50 @@
+{
+  "capturedAt": "2026-06-16T02:51:03.442Z",
+  "count": 1,
+  "results": [
+    {
+      "id": "css-hover-button-vimeo-lightbox-close",
+      "type": "hover",
+      "status": "ok",
+      "timelineRef": "timelines/css-hover-button-vimeo-lightbox-close.json",
+      "summary": "One element animates: button.vimeo-lightbox__close [scale 1->0.95, rotate 0->-90deg + opacity] — 0.5s cubic-bezier(0.625, 0.05, 0, 1).",
+      "findings": 1,
+      "stop": "settled",
+      "preflight": [
+        {
+          "matchCount": 1,
+          "message": "selector is present",
+          "selector": "button.vimeo-lightbox__close",
+          "status": "ok",
+          "visibleMatchCount": 1
+        },
+        {
+          "chosen": "button.vimeo-lightbox__close",
+          "coveredBy": null,
+          "matchCount": 1,
+          "message": "selector appears hittable",
+          "point": {
+            "x": 1207,
+            "y": 58
+          },
+          "rect": {
+            "height": 53,
+            "width": 53,
+            "x": 1181,
+            "y": 32
+          },
+          "selector": "button.vimeo-lightbox__close",
+          "status": "ok",
+          "visibleMatchCount": 1
+        }
+      ],
+      "page": {
+        "strategy": "fresh",
+        "opened": true,
+        "group": null,
+        "seededBy": null
+      },
+      "origin": "first-try"
+    }
+  ]
+}

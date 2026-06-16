@@ -1,0 +1,20 @@
+
+[repair-step apply scroll-3-div-g-cta-collection att1] retarget_selector
+Saved 1 timeline(s) under /home/martin/src/perso/motion-decompiler/runs/mammothmurals.com/2026-06-16-run/repair/apply-scroll-3-div-g-cta-collection-att1/timelines
+Capture results: 1
+
+
+[repair-step apply css-hover-div-vimeo-lightbox-btn att1] precondition_action
+Saved 0 timeline(s) under /home/martin/src/perso/motion-decompiler/runs/mammothmurals.com/2026-06-16-run/repair/apply-css-hover-div-vimeo-lightbox-btn-att1/timelines
+Capture results: 1
+
+
+[repair-step apply css-hover-button-vimeo-lightbox-close att1] precondition_action
+Saved 1 timeline(s) under /home/martin/src/perso/motion-decompiler/runs/mammothmurals.com/2026-06-16-run/repair/apply-css-hover-button-vimeo-lightbox-close-att1/timelines
+Capture results: 1
+
+
+[repair-step apply css-hover-div-vimeo-lightbox-btn att2] precondition_action
+Saved 0 timeline(s) under /home/martin/src/perso/motion-decompiler/runs/mammothmurals.com/2026-06-16-run/repair/apply-css-hover-div-vimeo-lightbox-btn-att2/timelines
+Capture results: 1
+
