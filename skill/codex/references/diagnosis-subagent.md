@@ -1,35 +1,45 @@
 # Diagnosis subagent — the prompt and the rules
 
-One subagent diagnoses **one** failed capture (Phase A, or a Phase C retry). It
-reasons over a screenshot + structural DOM/CSS signals and returns a corrected
-recipe. It is the only place model judgment enters the pipeline — and it judges
-**targeting and state, never motion**.
+One subagent diagnoses a **small batch** of failed captures (Phase A, or a Phase
+C retry). It reasons over screenshots + structural DOM/CSS signals and returns
+ranked hypotheses for each capture. It is the only place model judgment enters
+the pipeline, and it judges **targeting and state, never motion**.
 
 Spawn it with a Codex multi-agent/subagent tool when one is available. Discover
-that tool with `tool_search` if needed. Keep at most 6 workers open at once; run
-overflow in later batches or serially in the current agent. Pass the filled
-prompt as either the tool's `message` or `items`, never both. Its **entire final
-message must be the JSON** described below; the caller pipes that verbatim into
-`repair-step.js save-output`, which validates it and writes
-`<run>/repair/<id>.attempt-<N>.output.json`.
+that tool with `tool_search` if needed. Keep at most 6 workers open at once; each
+worker prompt normally contains up to 3 captures, and the coordinator stages up
+to 10 captures per wave. Run overflow in later batches or serially in the current
+agent. Pass the filled prompt as either the tool's `message` or `items`, never
+both. Its **entire final message must be the JSON array** described below; the
+caller pipes that verbatim into `repair-loop.js save-output --batch <batchId>`,
+which validates each hypothesis and writes per-capture output files.
 
 ---
 
-## The prompt (fill `{INPUT_JSON_PATH}` and `{SCREENSHOT_PATH}`)
+## The prompt (fill `{BATCH_INPUT_JSON_PATH}`)
 
 > You are the diagnosis step of YoinkIt's capture-repair loop. A live
-> capture of a web animation failed. Your job: read the structured failure context
-> and the screenshot, then propose ONE corrected recipe (or an honest give-up) so
-> the engine can re-measure. You decide WHAT to target and HOW to reach it. You do
-> NOT measure motion — never output a duration, easing, from/to value, or frame
-> count. There is nowhere in your output schema to put one; the engine measures
-> after your repair.
+> capture of a web animation failed. Your job: read the structured batch input,
+> inspect each capture's screenshot path when available, then propose ranked
+> hypotheses so the engine can re-measure one action at a time. For each capture,
+> provide a primary action, a fallback action, and an honest terminal condition.
+> You decide WHAT to target and HOW to reach it. You do NOT measure motion. Never
+> output a duration, easing, from/to value, or frame count. There is nowhere in
+> your output schema to put one; the engine measures after your repair.
 >
-> Read these two files:
-> - Failure context (JSON): `{INPUT_JSON_PATH}`
-> - Screenshot of the failed state (PNG): `{SCREENSHOT_PATH}`. If this says
->   `Screenshot unavailable; reason from repairContext alone.`, do not try to
->   read a PNG and do not request a recapture; rely on `repairContext`.
+> Read this file:
+> - Batch input JSON: `{BATCH_INPUT_JSON_PATH}`
+>
+> The batch input has `captures[]`. Each item has:
+> - `id` / `captureId`
+> - `attempt`
+> - `input` / `inputPath`, the original per-capture diagnosis JSON path
+> - `screenshot`, a PNG path or `Screenshot unavailable; reason from repairContext alone.`
+> - `context`, the full diagnosis input object
+>
+> If a screenshot says `Screenshot unavailable; reason from repairContext alone.`,
+> do not try to read a PNG and do not request a recapture; rely on
+> `context.repairContext`.
 >
 > The context already contains the classifier's verdict — `failure.cause` and
 > `failure.causeSignals` (Part 1 buckets). **Consume it; do not re-derive it.** The
@@ -46,7 +56,8 @@ message must be the JSON** described below; the caller pipes that verbatim into
 >   measured. On a retry, do NOT repeat a tried action that didn't converge; refine
 >   it (e.g. advance the carousel twice, pick a different instance, target a parent).
 >
-> Choose exactly ONE `action.kind` from this closed set, with its fields:
+> For each `primary`, `fallback`, and `terminal` object, choose exactly ONE
+> `action.kind` from this closed set, with its fields:
 > - `retarget_selector` — `{ selector }`. The visible affordance that drives the
 >   motion (e.g. the hidden 0-box `.btn__bar` → its visible parent `.btn`). Needs a
 >   concrete selector.
@@ -96,20 +107,45 @@ message must be the JSON** described below; the caller pipes that verbatim into
 > classifier's bucket (e.g. re-read a mislabeled `occlusion` as drift) — that
 > override toward terminal is exactly your job.
 >
-> Output ONLY this JSON object as your entire final message (no prose, no code
-> fence). The caller pipes this exact message into `repair-step.js save-output`,
-> then validates it again with `repair-step.js apply` before acting:
+> Output ONLY this JSON array as your entire final message (no prose, no code
+> fence). The caller pipes this exact message into
+> `repair-loop.js save-output --batch <batchId>`, then validates each selected
+> action again with `repair-step.js apply` before acting:
 >
 > ```json
-> {
->   "diagnosis": "<one or two sentences: what's wrong and why this action fixes it>",
->   "rootCause": "<bucket or ambiguous>",
->   "confidence": 0.0,
->   "action": { "kind": "<one of the six>", "...": "kind-specific fields" },
->   "successCriterion": { "expect": "moved" },
->   "abortCriterion": "<when to give up if this doesn't work>"
-> }
+> [
+>   {
+>     "captureId": "<must match one captures[].captureId>",
+>     "primary": {
+>       "diagnosis": "<one or two sentences: what's wrong and why this action fixes it>",
+>       "rootCause": "<bucket or ambiguous>",
+>       "confidence": 0.0,
+>       "action": { "kind": "<actionable kind>", "...": "kind-specific fields" },
+>       "successCriterion": { "expect": "moved" },
+>       "abortCriterion": "<when to try fallback>"
+>     },
+>     "fallback": {
+>       "diagnosis": "<what to try if primary fails>",
+>       "rootCause": "<bucket or ambiguous>",
+>       "confidence": 0.0,
+>       "action": { "kind": "<actionable kind>", "...": "kind-specific fields" },
+>       "successCriterion": { "expect": "moved" },
+>       "abortCriterion": "<when terminal applies>"
+>     },
+>     "terminal": {
+>       "diagnosis": "<why to stop if the actions fail>",
+>       "rootCause": "<bucket or ambiguous>",
+>       "confidence": 0.0,
+>       "action": { "kind": "terminal_give_up", "terminalCause": "needs_human", "rationale": "<reason>" },
+>       "successCriterion": { "expect": "moved" }
+>     }
+>   }
+> ]
 > ```
+>
+> The coordinator applies only the current actionable hypothesis. If primary fails,
+> it queues fallback without spawning another worker. If the actions fail, it records
+> the terminal condition without treating it as another browser re-measure.
 
 ---
 

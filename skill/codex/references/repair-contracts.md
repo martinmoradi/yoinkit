@@ -26,6 +26,26 @@ hand-write them, but you read them to drive the loop and to brief the subagent.
 
 ## §3 — repair output (the subagent returns this; `repair-step.js` validates it)
 
+The coordinator asks diagnosis workers for a small batch. The worker returns a
+JSON array keyed by `captureId`; each item contains ranked hypotheses:
+
+```jsonc
+[
+  {
+    "captureId": "cap-1",
+    "primary": { /* §3 repair object, actionable */ },
+    "fallback": { /* §3 repair object, actionable */ },
+    "terminal": { /* §3 repair object with terminal_give_up */ }
+  }
+]
+```
+
+`primary` is applied first. If the engine says it did not converge, the
+coordinator queues `fallback` without spawning another worker. `terminal` is
+recorded after action hypotheses fail; it is not a third browser re-measure.
+
+Each hypothesis is still the same repair object:
+
 ```jsonc
 {
   "diagnosis": "<why this fixes it>",

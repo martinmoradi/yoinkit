@@ -27,9 +27,11 @@ self-drives a real headed browser via `bin/capture-browser`.
 
 For repair diagnosis, use a Codex multi-agent/subagent tool when one is available
 (discover it with `tool_search` if needed), launching at most 6 diagnosis
-workers at once. Queue overflow in later batches, or run the same diagnosis
-prompt serially in the current agent if no subagent tool is available. Always
-save the same output JSON files before applying repairs.
+workers at once. The coordinator batches up to 10 capture inputs per wave, with
+3 captures per worker, so 10 repair inputs should produce about 4 worker prompts.
+Queue overflow in later batches, or run the same diagnosis prompts serially in
+the current agent if no subagent tool is available. Always save the same output
+JSON files before applying repairs.
 
 ## The one rule that shapes everything: script measures, agent judges
 
@@ -126,15 +128,16 @@ bun skill/codex/scripts/repair-loop.js init \
 bun skill/codex/scripts/repair-loop.js next-prompts --run <run>
 ```
 
-For each prompt path printed by `next-prompts`, spawn one local Codex
+For each batch printed by `next-prompts`, spawn one local Codex
 multi-agent/subagent worker when available (at most 6 at once), or run the same
-prompt serially in the current agent. Each worker returns strictly the §3 JSON
-output. Save each final JSON message through the coordinator:
+prompts serially in the current agent. Each worker returns strictly a JSON array
+with one item per `captureId`, each containing `primary`, `fallback`, and
+`terminal` hypotheses. Save each final JSON message through the coordinator:
 
 ```bash
 printf '%s\n' "$SUBAGENT_FINAL_JSON" | \
   bun skill/codex/scripts/repair-loop.js save-output \
-    --run <run> --id <id> --attempt <attempt>
+    --run <run> --batch <batchId>
 ```
 
 Then apply everything that is ready:
@@ -151,7 +154,9 @@ bun skill/codex/scripts/repair-loop.js summary --run <run>
 ```
 
 `repair-loop.js` enforces `budget=min(2×repairableCount, 24)`,
-`maxRetries=2`, repeated-identical terminalization, and prompt batching. It
+`maxRetries=2`, repeated-identical terminalization, and batched prompts. It
+applies only one ranked hypothesis at a time: primary first, fallback next if the
+engine says primary did not converge, then the terminal condition as a stop. It
 delegates validation, repair application, re-measurement, and `capture-results`
 provenance to `repair-step.js`, so the engine's status is never overridden.
 
