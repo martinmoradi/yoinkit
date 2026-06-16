@@ -14,15 +14,17 @@
  * (d) budget + maxRetries ceilings, (e) provider absent -> inert.
  */
 
-const assert = require('assert');
+const { afterEach, expect, test } = require('bun:test');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { spawnSync } = require('child_process');
 
 const m = require('../bin/yoinkit');
 const STUB = path.join(__dirname, 'fixtures', 'repair-stub-provider.js');
 const RUNTIME = process.execPath;
 const STUB_CMD = `${RUNTIME} ${STUB}`;
+const tempDirs = new Set();
 
 const CONFIG = {
   maxRetries: 2,
@@ -31,18 +33,37 @@ const CONFIG = {
   repairableCauses: ['occlusion', 'hidden_not_visible', 'inert_representative'],
 };
 
+afterEach(() => {
+  for (const dir of tempDirs) {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+  tempDirs.clear();
+});
+
+function mkTempDir(prefix) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+  tempDirs.add(dir);
+  return dir;
+}
+
 function mkBudget(total) {
   let spent = 0;
   return { total, spend: () => { spent += 1; }, remaining: () => total - spent };
 }
 
-// A run dir on disk so writeInput/the stub round-trip through real files.
-const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'repair-loop-test-'));
+function ok(name, condition) {
+  try {
+    expect(Boolean(condition)).toBe(true);
+  } catch (error) {
+    error.message = `${name}\n${error.message}`;
+    throw error;
+  }
+}
 
 // Build an env whose provider is the REAL stub command and whose recapture is a
 // canned engine result. `repairContext` is what the test injects into the input
 // the stub reads, so the test controls which stub branch fires.
-function makeEnv({ repairContext, recapture }) {
+function makeEnv({ repairContext, recapture, runDir = mkTempDir('repair-loop-test-') }) {
   const writes = [];
   return {
     env: {
@@ -59,17 +80,11 @@ function makeEnv({ repairContext, recapture }) {
       recapture,
     },
     writes,
+    runDir,
   };
 }
 
-let passed = 0;
-function ok(name, cond) {
-  assert.ok(cond, name);
-  passed += 1;
-}
-
-// ── (a) precondition_action -> ok_after_repair + M1 fresh isolation ──────────
-{
+test('precondition_action converges after repair and applies fresh isolation', () => {
   let freshArg = null;
   let recaptureCalls = 0;
   const { env } = makeEnv({
@@ -82,8 +97,8 @@ function ok(name, cond) {
       recaptureCalls += 1;
       freshArg = fresh;
       // M1: a stateful repair must arrive with fresh:true on the cloned capture.
-      assert.strictEqual(cloned.fresh, true, 'cloned capture carries fresh:true');
-      assert.ok(Array.isArray(cloned.beforeAction) && /click/.test(String(cloned.beforeAction[0])), 'precondition prepended as beforeAction');
+      expect(cloned.fresh).toBe(true);
+      ok('precondition prepended as beforeAction', Array.isArray(cloned.beforeAction) && /click/.test(String(cloned.beforeAction[0])));
       return { id, type, status: 'ok', findings: 2, movedSelectors: ['div.carousel__arrow--prev'] };
     },
   });
@@ -99,10 +114,9 @@ function ok(name, cond) {
   ok('(a) winning action precondition_action', out.repair.winningAction === 'precondition_action');
   ok('(a) M1 fresh isolation applied to re-run', freshArg === true);
   ok('(a) exactly one recapture', recaptureCalls === 1);
-}
+});
 
-// ── (b) drift -> terminal_give_up(genuinely_absent), no wasted retries ───────
-{
+test('drift shape terminals as genuinely_absent without burning recapture retries', () => {
   let recaptureCalls = 0;
   const budget = mkBudget(24);
   const { env } = makeEnv({
@@ -120,10 +134,9 @@ function ok(name, cond) {
   ok('(b) status stays engine empty', out.result.status === 'empty');
   ok('(b) no recapture burned', recaptureCalls === 0);
   ok('(b) exactly one budget unit spent', budget.remaining() === 23);
-}
+});
 
-// ── (c) invalid provider output -> fail-safe terminal(provider_error) ────────
-{
+test('invalid provider output fail-safes to terminal(provider_error)', () => {
   let recaptureCalls = 0;
   const { env } = makeEnv({
     repairContext: { animatableHere: { childAnimated: true }, candidateTriggers: [], matches: [{ occludedBy: '.x' }] },
@@ -138,10 +151,9 @@ function ok(name, cond) {
   ok('(c) outcome terminal', out.repair.outcome === 'terminal');
   ok('(c) terminalCause provider_error', out.repair.terminalCause === 'provider_error');
   ok('(c) no recapture on garbage', recaptureCalls === 0);
-}
+});
 
-// ── (d) budget + maxRetries ceilings ─────────────────────────────────────────
-{
+test('budget, maxRetries, repeated-identical, and absolute ceilings are enforced', () => {
   // budget exhausted up front -> zero attempts.
   const { env } = makeEnv({
     repairContext: { animatableHere: { childAnimated: true }, candidateTriggers: [{ selector: '.next' }], matches: [{ occludedBy: '.x' }] },
@@ -183,8 +195,9 @@ function ok(name, cond) {
     action: { kind: 'use_other_instance', selector: '.alt' }, successCriterion: { expect: 'moved' },
   });
   const out3 = m.runRepairLoop(env3, {
-    capture: { root: '.t' }, type: 'hover', id: 'repeated', url: 'u', viewport: [1, 1], map: {},
-    result: { status: 'empty', cause: 'occlusion' }, config: CONFIG, budget: mkBudget(24), failSelector: '.t',
+    capture: { root: '.t' }, type: 'hover', id: 'repeated', url: 'u', viewport: [1, 1],
+    map: {}, result: { status: 'empty', cause: 'occlusion' }, config: CONFIG,
+    budget: mkBudget(24), failSelector: '.t',
   });
   ok('(d) repeated-identical -> terminal', out3.repair.outcome === 'terminal');
   ok('(d) repeated-identical genuinely_inert', out3.repair.terminalCause === 'genuinely_inert');
@@ -192,19 +205,17 @@ function ok(name, cond) {
   // absolute ceiling constant is enforced (design §11).
   ok('(d) absolute budget ceiling is 24', m.REPAIR_DEFAULTS.budgetCeiling === 24);
   ok('(d) budget multiplier is 2', m.REPAIR_DEFAULTS.budgetMultiplier === 2);
-}
+});
 
-// ── (e) provider absent -> loop is inert (byte-identical soft-fail) ──────────
-{
+test('provider absent keeps repair loop inert unless explicitly armed', () => {
   ok('(e) no command -> repairConfig null', m.repairConfig({}, {}) === null);
   ok('(e) no command (manifest repair block w/o command) -> null', m.repairConfig({ repair: { maxRetries: 3 } }, {}) === null);
   const cfg = m.repairConfig({}, { repairCmd: STUB_CMD });
   ok('(e) --repair-cmd arms the loop', cfg && cfg.command === STUB_CMD);
   ok('(e) default repairable causes are the narrow three', JSON.stringify(cfg.repairableCauses) === JSON.stringify(m.DEFAULT_REPAIRABLE_CAUSES));
-}
+});
 
-// ── validation + apply unit coverage (defense-in-depth) ──────────────────────
-{
+test('repair output validation and applyRepair edge cases are enforced', () => {
   // Helper: a well-formed output around a given action (valid confidence etc.).
   const out = (action, extra = {}) => Object.assign({ diagnosis: 'd', rootCause: 'occlusion', confidence: 0.8, action, successCriterion: { expect: 'moved' } }, extra);
 
@@ -242,10 +253,9 @@ function ok(name, cond) {
   ok('apply: no dead repairNth field', m.applyRepair({ root: '.t' }, 'hover', { kind: 'retarget_selector', selector: '.p', nth: 3 }).repairNth === undefined);
   ok('isStateful: precondition true', m.isStatefulRepairKind('precondition_action') === true);
   ok('isStateful: use_other_instance false', m.isStatefulRepairKind('use_other_instance') === false);
-}
+});
 
-// ── MF1: meetsSuccess parsed-selector matching edge cases ────────────────────
-{
+test('meetsSuccess uses parsed-selector matching for edge cases', () => {
   const moved = (sels, onSelector, expect = 'moved') => m.meetsSuccess({ status: 'ok', movedSelectors: sels }, { expect, onSelector });
   ok('meetsSuccess: ok meets moved (no onSelector)', m.meetsSuccess({ status: 'ok' }, { expect: 'moved' }) === true);
   ok('meetsSuccess: empty fails', m.meetsSuccess({ status: 'empty' }, { expect: 'moved' }) === false);
@@ -274,10 +284,9 @@ function ok(name, cond) {
   ok('parse: rightmost compound', JSON.stringify(m.parseSimpleSelector('div.wrap > a.link.btn')) === JSON.stringify({ tag: 'a', id: null, classes: ['link', 'btn'] }));
   ok('selectorSatisfies: subset classes', m.selectorSatisfies('a.link.btn', 'a.link') === true);
   ok('selectorSatisfies: degenerate criterion false', m.selectorSatisfies('a.link', '>') === false);
-}
+});
 
-// ── MF3: a successful repair retains its ORIGINAL failure bucket ─────────────
-{
+test('successful repair retains original failure bucket and recapture page provenance', () => {
   const env = makeEnv({
     repairContext: { animatableHere: { childAnimated: true }, candidateTriggers: [{ selector: '.next' }], matches: [{ occludedBy: '.o' }] },
     recapture: (cloned, type, id) => ({ id, type, status: 'ok', findings: 1, movedSelectors: ['.target'], page: { strategy: 'fresh', opened: true, isolated: true } }),
@@ -291,11 +300,10 @@ function ok(name, cond) {
   ok('MF3: successful repair result has null/absent cause but bucket preserved', out.repair.outcome === 'ok-after-repair' && out.repair.failureCause === 'occlusion');
   // MF5: the loop keeps the recapture's OWN page provenance, not the failure's.
   ok('MF5: recapture page provenance preserved (isolated fresh)', out.result.page && out.result.page.isolated === true && out.result.page.opened === true);
-}
+});
 
-// ── calib-metrics buckets repair att/ok from failureCause (MF3) ──────────────
-{
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'repair-metrics-'));
+test('calib-metrics buckets repaired captures by original failureCause', () => {
+  const dir = mkTempDir('repair-metrics-');
   fs.writeFileSync(path.join(dir, 'capture-results.json'), JSON.stringify({
     capturedAt: '2026-06-15T00:00:00.000Z', count: 3, results: [
       { id: 'win', type: 'hover', status: 'ok', origin: 'after-repair', findings: 2,
@@ -306,7 +314,7 @@ function ok(name, cond) {
         repair: { attempted: true, failureCause: 'inert_representative', attempts: [{ action: 'terminal_give_up' }], winningAction: null, outcome: 'terminal', terminalCause: 'genuinely_inert' } },
     ],
   }));
-  const r = require('child_process').spawnSync(RUNTIME, [path.join(__dirname, '..', 'bin', 'calib-metrics'), dir, '--site', 'm'], { encoding: 'utf8' });
+  const r = spawnSync(RUNTIME, [path.join(__dirname, '..', 'bin', 'calib-metrics'), dir, '--site', 'm'], { encoding: 'utf8' });
   const metrics = JSON.parse(fs.readFileSync(path.join(dir, 'metrics.json'), 'utf8'));
   ok('metrics: command succeeded', r.status === 0);
   ok('metrics: win bucketed under occlusion (not "other")', metrics.repair.by_bucket.occlusion && metrics.repair.by_bucket.occlusion.ok === 1);
@@ -316,25 +324,24 @@ function ok(name, cond) {
   ok('metrics: check_after_repair split', metrics.captures.check_after_repair === 1 && metrics.captures.check_first_try === 0);
   ok('metrics stdout: canonical usable scoreboard', r.stdout.includes('usable scoreboard: first_try=0 (ok=0 check=0); after_repair=2 (ok=1 check=1)'));
   ok('metrics stdout: no old ok/check repair split line', !r.stdout.includes('  ok: first_try='));
-  fs.rmSync(dir, { recursive: true, force: true });
-}
+});
 
-// ── SF8: terminal + low-confidence attempts DO consume budget ────────────────
-{
+test('terminal and low-confidence attempts consume repair budget', () => {
   const budget = mkBudget(24);
   const env = makeEnv({
     repairContext: { animatableHere: {}, candidateTriggers: [], matches: [{ occludedBy: null }] },
     recapture: () => { throw new Error('no recapture for terminal'); },
   }).env;
   m.runRepairLoop(env, {
-    capture: { root: '.t' }, type: 'hover', id: 'term-budget', url: 'u', viewport: [1, 1], map: {},
-    result: { status: 'empty', cause: 'occlusion' }, config: CONFIG, budget, failSelector: '.t',
+    capture: { root: '.t' }, type: 'hover', id: 'term-budget', url: 'u', viewport: [1, 1],
+    map: {}, result: { status: 'empty', cause: 'occlusion' }, config: CONFIG,
+    budget, failSelector: '.t',
   });
   ok('SF8: a terminal attempt spends one budget unit', budget.remaining() === 23);
-}
+});
 
-// ── external-command transport proof (no browser, no model) ──────────────────
-{
+test('external-command provider transport parses printed output paths safely', () => {
+  const runDir = mkTempDir('repair-loop-transport-');
   const inputFile = path.join(runDir, 'transport.attempt-1.input.json');
   fs.writeFileSync(inputFile, JSON.stringify({
     captureId: 'transport', repairContext: { animatableHere: {}, candidateTriggers: [], matches: [{ occludedBy: null }] },
@@ -355,10 +362,9 @@ function ok(name, cond) {
   ].join('\n'));
   const noisy = m.invokeRepairProvider(`${RUNTIME} ${noisyStub}`, inputFile, null);
   ok('SF7: output path found despite trailing diagnostics', noisy && noisy.action && noisy.action.kind === 'retarget_selector');
-}
+});
 
-// ── --repair-dump gating predicate (browser-free) ────────────────────────────
-{
+test('repair dump gating predicate honors flag, status, and explicit cause filters', () => {
   const causes = m.DEFAULT_REPAIRABLE_CAUSES;
   const r = (status, cause) => ({ status, cause });
   // Off by default: no dump when the flag is not set, even for a repairable fail.
@@ -381,7 +387,4 @@ function ok(name, cond) {
   ok('dumpCauses: default is the narrow three', JSON.stringify(m.repairDumpCauses({})) === JSON.stringify(m.DEFAULT_REPAIRABLE_CAUSES));
   ok('dumpCauses: explicit list honored', JSON.stringify(m.repairDumpCauses({ repairCauses: ['occlusion'] })) === JSON.stringify(['occlusion']));
   ok('dumpCauses: junk causes filtered, falls back to default', JSON.stringify(m.repairDumpCauses({ repairCauses: ['made_up'] })) === JSON.stringify(m.DEFAULT_REPAIRABLE_CAUSES));
-}
-
-fs.rmSync(runDir, { recursive: true, force: true });
-console.log(`repair-loop.test.js: ${passed} checks passed`);
+});

@@ -15,7 +15,7 @@
  *   (D) cmdTerminal coerces an unknown --cause to needs_human.
  */
 
-const assert = require('assert');
+const { afterEach, expect, test } = require('bun:test');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -23,10 +23,15 @@ const { spawnSync } = require('child_process');
 
 const SCRIPT = path.join(__dirname, '..', 'skill', 'codex', 'scripts', 'repair-step.js');
 const FAKE = path.join(__dirname, 'fixtures', 'fake-yoinkit-tool.js');
+const tempDirs = new Set();
 fs.chmodSync(FAKE, 0o755);
 
-let passed = 0;
-function ok(name, cond) { assert.ok(cond, name); passed += 1; }
+afterEach(() => {
+  for (const dir of tempDirs) {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+  tempDirs.clear();
+});
 
 function writeJson(file, data) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -36,6 +41,7 @@ function readJson(file) { return JSON.parse(fs.readFileSync(file, 'utf8')); }
 
 function mkRun(resultRow) {
   const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'repair-step-test-'));
+  tempDirs.add(runDir);
   writeJson(path.join(runDir, 'capture-results.json'), { capturedAt: 'x', count: 1, results: [resultRow] });
   return runDir;
 }
@@ -48,9 +54,7 @@ function runStep(sub, args, env = {}) {
   return { stdout: r.stdout, verdict: JSON.parse(r.stdout.trim().split('\n').filter(Boolean).pop()) };
 }
 
-// ── (A)+(B) converged apply: row reflects engine recapture, stale fields gone,
-//            timeline read via engine.timelineRef + promoted. ────────────────
-{
+test('apply converges, clears stale failure fields, and promotes timelineRef', () => {
   const runDir = mkRun({
     id: 'work-card-hover', type: 'hover', status: 'empty',
     cause: 'occlusion', causeSignals: { occludedBy: '.cover' }, error: 'boom',
@@ -70,34 +74,32 @@ function runStep(sub, args, env = {}) {
     { run: runDir, manifest: manifestFile, index: 0, id: 'work-card-hover', output: outputFile, attempt: 1 },
     { FAKE_ENGINE_STATUS: 'ok', FAKE_MOVED: 'a.card-visible', FAKE_TIMELINE_REF: 'timelines/sub-weird-name.json' });
 
-  ok('(A) verdict converged', verdict.converged === true && verdict.measured === true);
+  expect(verdict.converged).toBe(true);
+  expect(verdict.measured).toBe(true);
   const row = readJson(path.join(runDir, 'capture-results.json')).results[0];
-  ok('(A) status is engine ok', row.status === 'ok');
-  ok('(A) origin after-repair', row.origin === 'after-repair');
-  ok('(A) stale cause cleared', !('cause' in row) || row.cause == null);
-  ok('(A) stale causeSignals cleared', !('causeSignals' in row) || row.causeSignals == null);
-  ok('(A) stale error cleared', !('error' in row) || row.error == null);
-  ok('(A) stale preflight cleared', !('preflight' in row) || row.preflight == null);
-  ok('(A) stale pageState cleared', !('pageState' in row) || row.pageState == null);
-  ok('(A) stale lowConfidenceDiagnosis cleared', !('lowConfidenceDiagnosis' in row));
-  ok('(A) stop from recapture (null)', row.stop === null);
-  ok('(A) summary from recapture', row.summary === 'fake recapture summary');
-  ok('(A) findings from timeline', row.findings === 1);
-  ok('(A) page provenance from recapture', row.page && row.page.engine === true && row.page.repairRecapture === true);
-  ok('(A) repair block preserves original failureCause', row.repair.failureCause === 'occlusion');
-  ok('(A) repair outcome ok-after-repair', row.repair.outcome === 'ok-after-repair');
-  ok('(A) winningAction retarget_selector', row.repair.winningAction === 'retarget_selector');
-  ok('(A) one attempt recorded', row.repair.attempts.length === 1);
-  ok('(A) terminalCause null on success', row.repair.terminalCause === null);
-  // (B) the timeline was read (via engine.timelineRef) and promoted to the id name.
-  ok('(B) timelineRef promoted to id path', row.timelineRef === path.join('timelines', 'work-card-hover.json'));
-  ok('(B) promoted timeline file exists', fs.existsSync(path.join(runDir, 'timelines', 'work-card-hover.json')));
-  fs.rmSync(runDir, { recursive: true, force: true });
-}
+  expect(row.status).toBe('ok');
+  expect(row.origin).toBe('after-repair');
+  expect(!('cause' in row) || row.cause == null).toBe(true);
+  expect(!('causeSignals' in row) || row.causeSignals == null).toBe(true);
+  expect(!('error' in row) || row.error == null).toBe(true);
+  expect(!('preflight' in row) || row.preflight == null).toBe(true);
+  expect(!('pageState' in row) || row.pageState == null).toBe(true);
+  expect('lowConfidenceDiagnosis' in row).toBe(false);
+  expect(row.stop).toBe(null);
+  expect(row.summary).toBe('fake recapture summary');
+  expect(row.findings).toBe(1);
+  expect(row.page && row.page.engine).toBe(true);
+  expect(row.page && row.page.repairRecapture).toBe(true);
+  expect(row.repair.failureCause).toBe('occlusion');
+  expect(row.repair.outcome).toBe('ok-after-repair');
+  expect(row.repair.winningAction).toBe('retarget_selector');
+  expect(row.repair.attempts).toHaveLength(1);
+  expect(row.repair.terminalCause).toBe(null);
+  expect(row.timelineRef).toBe(path.join('timelines', 'work-card-hover.json'));
+  expect(fs.existsSync(path.join(runDir, 'timelines', 'work-card-hover.json'))).toBe(true);
+});
 
-// ── (C) group setup prepended ahead of the repair precondition, in the field
-//        executeRecipe runs (setupAction when the capture already has one). ───
-{
+test('apply prepends group setup ahead of repair precondition in setupAction', () => {
   const runDir = mkRun({ id: 'cap', type: 'hover', status: 'empty', cause: 'occlusion', findings: 0 });
   const manifestFile = path.join(runDir, 'manifest.json');
   writeJson(manifestFile, {
@@ -115,30 +117,26 @@ function runStep(sub, args, env = {}) {
   const cloned = subManifest.captures[0];
   // applyRepair put the precondition into setupAction (the capture had one), so
   // prependGroupSetup must prepend the group setup to setupAction, not beforeAction.
-  ok('(C) group setup runs first in setupAction', cloned.setupAction[0] === 'click .dismiss-intro');
-  ok('(C) precondition follows group setup', cloned.setupAction.indexOf('click .opener') > 0);
-  ok('(C) original capture setup preserved last', cloned.setupAction[cloned.setupAction.length - 1] === 'eval window.x=1');
-  ok('(C) group setup NOT misplaced into beforeAction', !(cloned.beforeAction || []).includes('click .dismiss-intro'));
-  ok('(C) fresh:true for stateful precondition', cloned.fresh === true);
-  ok('(C) cloned id forced to the run id', cloned.id === 'cap');
-  fs.rmSync(runDir, { recursive: true, force: true });
-}
+  expect(cloned.setupAction[0]).toBe('click .dismiss-intro');
+  expect(cloned.setupAction.indexOf('click .opener') > 0).toBe(true);
+  expect(cloned.setupAction[cloned.setupAction.length - 1]).toBe('eval window.x=1');
+  expect((cloned.beforeAction || []).includes('click .dismiss-intro')).toBe(false);
+  expect(cloned.fresh).toBe(true);
+  expect(cloned.id).toBe('cap');
+});
 
-// ── (D) cmdTerminal validates --cause against the closed vocabulary ──────────
-{
+test('terminal coerces unknown causes to needs_human', () => {
   const runDir = mkRun({ id: 'x', type: 'hover', status: 'empty', cause: 'occlusion', findings: 0 });
   const { verdict } = runStep('terminal', { run: runDir, id: 'x', cause: 'totally_bogus', attempt: 1 });
   const row = readJson(path.join(runDir, 'capture-results.json')).results[0];
-  ok('(D) unknown cause coerced to needs_human', row.repair.terminalCause === 'needs_human');
-  ok('(D) verdict reports coerced cause', verdict.terminalCause === 'needs_human');
-  ok('(D) outcome terminal', row.repair.outcome === 'terminal');
-  fs.rmSync(runDir, { recursive: true, force: true });
+  expect(row.repair.terminalCause).toBe('needs_human');
+  expect(verdict.terminalCause).toBe('needs_human');
+  expect(row.repair.outcome).toBe('terminal');
+});
 
-  const runDir2 = mkRun({ id: 'y', type: 'hover', status: 'empty', cause: 'occlusion', findings: 0 });
-  runStep('terminal', { run: runDir2, id: 'y', cause: 'genuinely_inert', attempt: 1 });
-  const row2 = readJson(path.join(runDir2, 'capture-results.json')).results[0];
-  ok('(D) valid cause passes through', row2.repair.terminalCause === 'genuinely_inert');
-  fs.rmSync(runDir2, { recursive: true, force: true });
-}
-
-console.log(`repair-step.test.js: ${passed} checks passed`);
+test('terminal preserves valid causes', () => {
+  const runDir = mkRun({ id: 'y', type: 'hover', status: 'empty', cause: 'occlusion', findings: 0 });
+  runStep('terminal', { run: runDir, id: 'y', cause: 'genuinely_inert', attempt: 1 });
+  const row = readJson(path.join(runDir, 'capture-results.json')).results[0];
+  expect(row.repair.terminalCause).toBe('genuinely_inert');
+});
