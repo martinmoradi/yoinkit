@@ -11,7 +11,7 @@ output and not automated fixtures.
 ## Contents
 
 - `initial-animations.json` - top-level animation output from the first run.
-- `decompile-run-prompt.md` - the prompt used to drive the run.
+- `yoink-run-prompt.md` - the prompt used to drive the run.
 - `AGENT-RUN-AUDIT.md` - audit notes from comparing blind-run outputs.
 - `claude/` - Claude-generated map, captures, timelines, and assessment.
 - `codex/` - Codex-generated map, captures, timelines, and assessment.

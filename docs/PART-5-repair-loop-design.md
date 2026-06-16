@@ -39,7 +39,7 @@ the spec, that change is wrong.
 
 The hook is a single, well-bounded point already present in the capture stage.
 
-`runCapture()` (`bin/motion-decompile:1002-1157`) iterates captures. For each
+`runCapture()` (`bin/yoinkit:1002-1157`) iterates captures. For each
 one it runs the recipe, builds `result` via `timelineResult()` (which sets
 `status` ∈ `ok|check|empty|error` from the engine), then calls **`attachCause()`**
 (`:969-997`) which runs the live `failureProbe` and stamps `result.cause` from
@@ -95,7 +95,7 @@ Key properties of the hook:
 
 The engine and planner are deliberately **dependency-free and framework/driver-
 agnostic** (`CLAUDE.md`). Embedding an LLM SDK + API key + network assumption in
-`bin/motion-decompile` would break all three. So the loop follows the same
+`bin/yoinkit` would break all three. So the loop follows the same
 pattern as `runBrowser` (which shells out to whatever driver is configured): the
 repair provider is an **external command (or in-harness callback)** that the
 tool invokes with a diagnosis-input file and reads a repair-response file back
@@ -572,7 +572,7 @@ strategy:
    silently corrupts every subsequent capture that reuses the page.
 
 The codebase already has the discipline for exactly this: stateful clicks are
-isolated by default (see `bin/motion-decompile:1807`, `:890`, and the
+isolated by default (see `bin/yoinkit:1807`, `:890`, and the
 `resetAction` teardown at `:1112`). **Any repair that mutates page state
 (`precondition_action`, and `scroll_into_view`/`use_other_instance` where it
 changes scroll/UI state) must force a fresh/isolated page for its re-run, so it

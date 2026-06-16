@@ -3,8 +3,8 @@
 /*
  * repair-step.js coverage — browser-free, model-free.
  *
- * Drives skill/codex/scripts/repair-step.js as a subprocess with MOTION_DECOMPILE_BIN
- * pointed at a fake tool (tests/fixtures/fake-decompile-tool.js) that re-exports
+ * Drives skill/codex/scripts/repair-step.js as a subprocess with YOINKIT_BIN
+ * pointed at a fake tool (tests/fixtures/fake-yoinkit-tool.js) that re-exports
  * the real helpers but fakes the ENGINE capture. Proves the deterministic bridge
  * matches the in-tool loop contract:
  *   (A) a converged apply rewrites the row from the engine recapture and CLEARS
@@ -22,7 +22,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const SCRIPT = path.join(__dirname, '..', 'skill', 'codex', 'scripts', 'repair-step.js');
-const FAKE = path.join(__dirname, 'fixtures', 'fake-decompile-tool.js');
+const FAKE = path.join(__dirname, 'fixtures', 'fake-yoinkit-tool.js');
 fs.chmodSync(FAKE, 0o755);
 
 let passed = 0;
@@ -43,7 +43,7 @@ function mkRun(resultRow) {
 function runStep(sub, args, env = {}) {
   const argv = [SCRIPT, sub];
   for (const [k, v] of Object.entries(args)) { argv.push(`--${k}`); if (v !== true) argv.push(String(v)); }
-  const r = spawnSync('node', argv, { encoding: 'utf8', env: Object.assign({}, process.env, { MOTION_DECOMPILE_BIN: FAKE }, env) });
+  const r = spawnSync('node', argv, { encoding: 'utf8', env: Object.assign({}, process.env, { YOINKIT_BIN: FAKE }, env) });
   if (r.status !== 0) throw new Error(`repair-step ${sub} exited ${r.status}: ${r.stderr}`);
   return { stdout: r.stdout, verdict: JSON.parse(r.stdout.trim().split('\n').filter(Boolean).pop()) };
 }

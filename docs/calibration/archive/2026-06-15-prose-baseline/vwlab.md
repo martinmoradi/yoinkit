@@ -1,7 +1,7 @@
 # Calibration: vwlab.io/pages/report
 
-Full scout + decompile pass on a non-Mammoth site, to test whether
-motion-decompiler generalizes beyond mammothmurals.com. No source files were
+Full scout + yoink pass on a non-Mammoth site, to test whether
+YoinkIt generalizes beyond mammothmurals.com. No source files were
 tuned for this site.
 
 - **Date:** 2026-06-15
@@ -38,7 +38,7 @@ and the run continued to completion (assembler + report still produced). This is
 exactly the soft-fail behavior the calibration was meant to exercise, and it held
 even when **every** capture failed. The whole run never hard-failed.
 
-## The headline finding: the tool decompiled the wrong document
+## The headline finding: the tool yoinked the wrong document
 
 `vwlab.io/pages/report` is **not the report**. It is a thin Shopify "embed
 shell" page (`body.page.embed.is-popup`, title "Report | VWLAB") whose only real
@@ -122,7 +122,7 @@ wrong document. The single most useful output would have been a flag: "primary
 content is a cross-origin iframe (report-vwlab.netlify.app); point the tool
 there."
 
-**Actionable next step:** re-run motion-decompiler directly against
+**Actionable next step:** re-run YoinkIt directly against
 `https://report-vwlab.netlify.app` (same-origin to itself, real content), which
 is where this site's character actually lives.
 
@@ -132,7 +132,7 @@ is where this site's character actually lives.
 
 - **No cross-origin iframe detection.** The engine maps and captures only the top
   document. On any embed-shell architecture (Shopify/Webflow page iframing a
-  separate app, Framer/Notion embeds, etc.) it will silently decompile the
+  separate app, Framer/Notion embeds, etc.) it will silently yoink the
   wrapper and report the wrong thing. At minimum the map should detect a dominant
   iframe (here: a 1280x800 `iframe.embed-page` that is ~100% of the viewport) and
   either re-target it (if same-origin) or report it as the real content surface
@@ -144,7 +144,7 @@ is where this site's character actually lives.
 - **"scroll target" mislabel on hover captures.** The preflight error reads
   "Preflight failed for *scroll target* `<sel>`" for hover captures. The CLI
   scrolls a hover root into view and preflights it with a hardcoded label
-  `'scroll target'` (`bin/motion-decompile:816`), so every hover/click failure is
+  `'scroll target'` (`bin/yoinkit:816`), so every hover/click failure is
   mislabeled as a scroll failure. Cosmetic but misleading in reports.
 - **Readiness probe says "no blockers" on an empty shell.** page-state reported
   2 readiness samples and "No loader, challenge, or rate-limit blockers" while the
@@ -180,7 +180,7 @@ snapshot:
 
 ```
  M README.md           (pre-existing, not mine)
- M bin/motion-decompile (pre-existing, not mine)
+ M bin/yoinkit (pre-existing, not mine)
  M tests/run-smoke.sh   (pre-existing, not mine)
 ?? calibration-reports/ (this report)
 ?? prompt.md            (pre-existing)

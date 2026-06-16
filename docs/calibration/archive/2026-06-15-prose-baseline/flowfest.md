@@ -1,7 +1,7 @@
 # Calibration: flowfest.co.uk
 
-Full scout + decompile pass on a non-Mammoth site, to test whether
-motion-decompiler generalizes beyond mammothmurals.com. No source files were
+Full scout + yoink pass on a non-Mammoth site, to test whether
+YoinkIt generalizes beyond mammothmurals.com. No source files were
 tuned for this site.
 
 - **Date:** 2026-06-15
@@ -189,7 +189,7 @@ session-start snapshot:
 
 ```
  M README.md          (pre-existing, not mine)
- M bin/motion-decompile (pre-existing, not mine)
+ M bin/yoinkit (pre-existing, not mine)
  M tests/run-smoke.sh  (pre-existing, not mine)
 ?? calibration-reports/ (this report)
 ?? prompt.md           (pre-existing)

@@ -12,14 +12,14 @@
 # is no way to drop the snippet straight in from a script — hence clipboard.
 #
 # The engine is installed by ./install.sh to:
-#   ~/.local/share/motion-decompiler/capture-animation.js
+#   ~/.local/share/yoinkit/capture-animation.js
 set -euo pipefail
 
-ENGINE="${XDG_DATA_HOME:-$HOME/.local/share}/motion-decompiler/capture-animation.js"
+ENGINE="${XDG_DATA_HOME:-$HOME/.local/share}/yoinkit/capture-animation.js"
 
 if [[ ! -f "$ENGINE" ]]; then
     echo "capture-snippet: engine not found at $ENGINE" >&2
-    echo "Run ./install.sh from the motion-decompiler repo first." >&2
+    echo "Run ./install.sh from the YoinkIt repo first." >&2
     exit 1
 fi
 

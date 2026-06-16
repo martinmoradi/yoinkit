@@ -1,5 +1,5 @@
 /* ============================================================================
- * capture-animation.js  —  web animation decompiler (Chrome DevTools Snippet)
+ * capture-animation.js  —  web animation yoinker (Chrome DevTools Snippet)
  * ----------------------------------------------------------------------------
  * Reads what an animation ACTUALLY does by sampling computed style over time,
  * regardless of how it is driven (CSS transition/keyframes, GSAP rAF inline
@@ -1059,7 +1059,7 @@
   // the shell, not the content, and capture quietly fails. Detect when a single
   // iframe dominates the viewport so the pipeline can re-target a same-origin
   // frame, or surface the real URL for a cross-origin one, instead of silently
-  // decompiling shell chrome. Structural thresholds only — no host allow-list.
+  // yoinking shell chrome. Structural thresholds only — no host allow-list.
   const IFRAME_AREA_RATIO = 0.6;          // iframe must cover >= 60% of viewport
   const THIN_DOC_HEIGHT_RATIO = 1.15;     // scrollHeight <= innerHeight * this
   const THIN_DOC_MIN_TEXT = 400;          // ...with little real text...

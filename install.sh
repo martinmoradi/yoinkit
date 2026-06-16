@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-# install.sh — set up the DevTools-snippet fallback for motion-decompiler.
+# install.sh — set up the DevTools-snippet fallback for YoinkIt.
 #
 # The PRIMARY way to use this tool is the unpacked extension in extension/,
 # which injects window.__cap on every page automatically (see README). You only
 # need this script if you want the `capture-snippet` clipboard fallback for
 # pasting the engine into Chrome DevTools > Sources > Snippets.
 #
-# It copies the engine to ~/.local/share/motion-decompiler/ and installs the
+# It copies the engine to ~/.local/share/yoinkit/ and installs the
 # `capture-snippet` helper into ~/.local/bin/.
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/motion-decompiler"
+DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/yoinkit"
 BIN_DIR="$HOME/.local/bin"
 
 mkdir -p "$DATA_DIR" "$BIN_DIR"

@@ -1,13 +1,15 @@
-# motion-decompiler
+# YoinkIt
 
-**A web-animation decompiler.** It reads what an animation *actually does* by
+For educationally yoinking the good stuff.
+
+**A web-animation yoinker.** It reads what an animation *actually does* by
 sampling computed style every frame — regardless of how it is driven: CSS
 transitions/keyframes, GSAP inline transforms on `requestAnimationFrame`, or CSS
 sprite `steps()`. The built-in DevTools **Animations** panel only sees CSS/WAAPI
 animations, so it shows nothing for GSAP- or canvas-driven motion; this sees
 everything because it reads the rendered result.
 
-The output is a **spec, not code**: detected libraries, a one-line plain-English
+The output is **yoinked motion, not code**: detected libraries, a one-line plain-English
 `summary` of the whole animation, and a `findings` array - each animating layer
 with its measured timing/easing and a frame-by-frame timeline. Capturing is the
 tool's job; **writing the recreation is the LLM's job** - hand the spec to a
@@ -29,7 +31,7 @@ class:
 ./bin/capture-browser set viewport 1280 800
 ```
 
-`bin/capture-browser` defaults `AGENT_BROWSER_SESSION=decompile`, injects
+`bin/capture-browser` defaults `AGENT_BROWSER_SESSION=yoink`, injects
 `--args "--class=claude-mcp"` only on `open` commands for the floating
 second-monitor rule, and passes `--confirm-actions "" --confirm-interactive false`
 every time. Agents should save JSON from `window.__capLast` /
@@ -38,7 +40,7 @@ every time. Agents should save JSON from `window.__capLast` /
 
 ## Repeatable local pipeline CLI
 
-`bin/motion-decompile` is the first small orchestration layer around
+`bin/yoinkit` is the first small orchestration layer around
 `bin/capture-browser`. It creates run folders, opens the target with the engine
 injected, saves `__cap.map()`, runs manifest-defined captures, stores timeline
 JSON, assembles `animations.json`, renders `animations.md`, and writes a compact
@@ -49,37 +51,37 @@ rate limiter before map and capture phases.
 The recommended flow is two commands:
 
 ```bash
-RUN="$(./bin/motion-decompile scout https://mammothmurals.com/ | awk '/^Run:/ {print $2}')"
-./bin/motion-decompile decompile "$RUN"
+RUN="$(./bin/yoinkit scout https://mammothmurals.com/ | awk '/^Run:/ {print $2}')"
+./bin/yoinkit yoink "$RUN"
 ```
 
 `scout` creates the run folder, maps the page, and proposes a capture manifest.
 Review `capture-plan.md` / `manifest.proposed.json`, edit selectors if needed,
-then `decompile <run-dir>` runs those captures, assembles the animation spec,
+then `yoink <run-dir>` runs those captures, assembles the yoinked motion spec,
 and writes the report.
 
 For a fully automatic pass, accepting the proposed plan without review:
 
 ```bash
-./bin/motion-decompile decompile https://mammothmurals.com/
+./bin/yoinkit yoink https://mammothmurals.com/
 ```
 
 The lower-level commands remain available when you want to step through or rerun
 one phase:
 
 ```bash
-./bin/motion-decompile init https://mammothmurals.com/
-./bin/motion-decompile map runs/mammothmurals.com/2026-06-15-run
-./bin/motion-decompile plan runs/mammothmurals.com/2026-06-15-run
-./bin/motion-decompile capture runs/mammothmurals.com/2026-06-15-run manifest.proposed.json
-./bin/motion-decompile assemble runs/mammothmurals.com/2026-06-15-run
-./bin/motion-decompile report runs/mammothmurals.com/2026-06-15-run
+./bin/yoinkit init https://mammothmurals.com/
+./bin/yoinkit map runs/mammothmurals.com/2026-06-15-run
+./bin/yoinkit plan runs/mammothmurals.com/2026-06-15-run
+./bin/yoinkit capture runs/mammothmurals.com/2026-06-15-run manifest.proposed.json
+./bin/yoinkit assemble runs/mammothmurals.com/2026-06-15-run
+./bin/yoinkit report runs/mammothmurals.com/2026-06-15-run
 ```
 
 You can also run all phases from a hand-authored manifest:
 
 ```bash
-./bin/motion-decompile run manifest.json
+./bin/yoinkit run manifest.json
 ```
 
 Artifacts are written under `runs/<domain>/<date>-<slug>/`:
@@ -323,7 +325,7 @@ window.__capAutoBoot = { selectors: ['h1', '[class*=split]'], ms: 4000 }
 - `extension/background.js` — service worker; toolbar click toggles the picker.
 - `extension/icons/` — toolbar/extension icons (generated from `icon.svg`).
 - `bin/capture-snippet.sh` — clipboard helper for the DevTools-snippet fallback.
-- `install.sh` — installs the engine to `~/.local/share/motion-decompiler/` and
+- `install.sh` — installs the engine to `~/.local/share/yoinkit/` and
   `capture-snippet` to `~/.local/bin/`.
 
 ## License

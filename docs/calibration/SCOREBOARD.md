@@ -1,7 +1,7 @@
-# motion-decompiler calibration scoreboard
+# YoinkIt calibration scoreboard
 
 Run date: 2026-06-15 (post Parts 1-4 re-baseline)
-Methodology: identical for all 4 sites — `decompile <url>` (scout -> capture the
+Methodology: identical for all 4 sites — `yoink <url>` (scout -> capture the
 full planner-proposed manifest, no curation), soft-fail expected, real headed
 browser via `bin/capture-browser` (unique `AGENT_BROWSER_SESSION` per site). No
 engine, planner, or test source was tuned for this run (`git status` clean of
@@ -129,7 +129,7 @@ permanent two-port smoke fixture. Pending PM sign-off; not changed unilaterally.
 ## Repair-loop sub-table (Part 7 — first repair-enabled run, 2026-06-16)
 
 The capture-repair loop (`docs/PART-5-repair-loop-design.md`) ran ON for the first
-time via the `/motion-decompiler` skill's agent-driven repair stage (parallel
+time via the `/yoinkit` skill's agent-driven repair stage (parallel
 diagnosis subagents → engine re-measure), across the three repair-bearing sites.
 Full narrative + the honest "distinct new" read in
 `docs/calibration/2026-06-16-skill-repair-validation.md`. **`ok_first_try` is the

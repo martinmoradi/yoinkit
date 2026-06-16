@@ -3,7 +3,7 @@
 /*
  * calib-metrics — mechanical metrics extractor for the calibration harness.
  *
- * Input:  a motion-decompile run directory.
+ * Input:  a yoinkit run directory.
  * Output: <run_dir>/metrics.json in the fixed calibration schema, and a short
  *         human summary on stdout.
  *
@@ -44,7 +44,7 @@ function readJSON(p) {
 }
 function len(x) { return Array.isArray(x) ? x.length : 0; }
 
-// Fixed failure-cause vocabulary (kept in sync with bin/motion-decompile).
+// Fixed failure-cause vocabulary (kept in sync with bin/yoinkit).
 const FAILURE_CAUSES = [
   'occlusion', 'hidden_not_visible', 'inert_representative', 'pseudo_element',
   'wrong_trigger_boot_vs_scroll', 'wrong_document_iframe', 'vendor_animation', 'other',

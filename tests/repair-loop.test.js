@@ -19,7 +19,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const m = require('../bin/motion-decompile');
+const m = require('../bin/yoinkit');
 const STUB = path.join(__dirname, 'fixtures', 'repair-stub-provider.js');
 const STUB_CMD = `node ${STUB}`;
 

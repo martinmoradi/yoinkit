@@ -6,7 +6,7 @@
  * the budget); this script is the deterministic bridge that lets the ENGINE
  * re-measure a model-proposed repair. It NEVER measures motion or invents a
  * status — every duration/easing/from-to/status comes from the engine via
- * `bin/motion-decompile capture`. The model's §3 output is consumed for
+ * `bin/yoinkit capture`. The model's §3 output is consumed for
  * targeting only; success is machine-checked with the tool's own meetsSuccess.
  *
  * It reuses the tool's exported helpers verbatim (applyRepair, validateRepairOutput,
@@ -42,13 +42,13 @@ const { spawnSync } = require('child_process');
 // into ~/.codex/skills; the skill is repo-bound and run from the repo root). ──
 function findTool() {
   const candidates = [
-    process.env.MOTION_DECOMPILE_BIN,
-    path.join(process.cwd(), 'bin', 'motion-decompile'),
-    path.resolve(__dirname, '..', '..', '..', 'bin', 'motion-decompile'),
+    process.env.YOINKIT_BIN,
+    path.join(process.cwd(), 'bin', 'yoinkit'),
+    path.resolve(__dirname, '..', '..', '..', 'bin', 'yoinkit'),
   ].filter(Boolean);
   const found = candidates.find(p => { try { return fs.statSync(p).isFile(); } catch (e) { return false; } });
   if (!found) {
-    fail('cannot locate bin/motion-decompile — run from the motion-decompiler repo root or set MOTION_DECOMPILE_BIN');
+    fail('cannot locate bin/yoinkit — run from the YoinkIt repo root or set YOINKIT_BIN');
   }
   return found;
 }

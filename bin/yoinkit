@@ -18,19 +18,19 @@ const DEFAULT_OPEN_DELAY_MS = 750;
 let lastOpenAt = 0;
 
 function usage() {
-  console.log(`motion-decompile
+  console.log(`yoinkit
 
 Usage:
-  bin/motion-decompile scout <url> [--viewport 1280x800] [--slug name] [--runs-dir runs] [--max-hover-captures 10] [--keep-open] [--ready-timeout-ms 8000] [--capture-strategy reuse-page]
-  bin/motion-decompile decompile <url> [--viewport 1280x800] [--slug name] [--runs-dir runs] [--max-hover-captures 10] [--keep-open] [--ready-timeout-ms 8000] [--capture-strategy reuse-page]
-  bin/motion-decompile decompile <run-dir> [manifest.json] [--keep-open] [--ready-timeout-ms 8000] [--capture-strategy reuse-page]
-  bin/motion-decompile init <url> [--viewport 1280x800] [--slug name] [--runs-dir runs] [--no-open]
-  bin/motion-decompile map <run-dir>
-  bin/motion-decompile plan <run-dir> [--out manifest.proposed.json] [--max-hover-captures 10]
-  bin/motion-decompile capture <run-dir> [manifest.json] [--ready-timeout-ms 8000] [--capture-strategy reuse-page]
-  bin/motion-decompile assemble <run-dir>
-  bin/motion-decompile report <run-dir>
-  bin/motion-decompile run <manifest.json> [--slug name] [--runs-dir runs] [--keep-open] [--ready-timeout-ms 8000] [--capture-strategy reuse-page]
+  bin/yoinkit scout <url> [--viewport 1280x800] [--slug name] [--runs-dir runs] [--max-hover-captures 10] [--keep-open] [--ready-timeout-ms 8000] [--capture-strategy reuse-page]
+  bin/yoinkit yoink <url> [--viewport 1280x800] [--slug name] [--runs-dir runs] [--max-hover-captures 10] [--keep-open] [--ready-timeout-ms 8000] [--capture-strategy reuse-page]
+  bin/yoinkit yoink <run-dir> [manifest.json] [--keep-open] [--ready-timeout-ms 8000] [--capture-strategy reuse-page]
+  bin/yoinkit init <url> [--viewport 1280x800] [--slug name] [--runs-dir runs] [--no-open]
+  bin/yoinkit map <run-dir>
+  bin/yoinkit plan <run-dir> [--out manifest.proposed.json] [--max-hover-captures 10]
+  bin/yoinkit capture <run-dir> [manifest.json] [--ready-timeout-ms 8000] [--capture-strategy reuse-page]
+  bin/yoinkit assemble <run-dir>
+  bin/yoinkit report <run-dir>
+  bin/yoinkit run <manifest.json> [--slug name] [--runs-dir runs] [--keep-open] [--ready-timeout-ms 8000] [--capture-strategy reuse-page]
 
 Readiness/rate-limit options:
   --ready-timeout-ms N   wait this long for real page content before mapping/capturing
@@ -169,7 +169,7 @@ function ensureRunDir(runDir) {
   fs.mkdirSync(path.join(runDir, 'timelines'), { recursive: true });
   const log = path.join(runDir, 'run-log.md');
   if (!fs.existsSync(log)) {
-    fs.writeFileSync(log, `# motion-decompile run log\n\nStarted: ${new Date().toISOString()}\n\n`);
+    fs.writeFileSync(log, `# yoinkit run log\n\nStarted: ${new Date().toISOString()}\n\n`);
   }
 }
 
@@ -1525,7 +1525,7 @@ function bootInitFile(capture, id) {
   if (capture.ms != null) boot.ms = capture.ms;
   if (capture.max != null) boot.max = capture.max;
   if (!boot.ms) boot.ms = capture.waitMs ? Math.max(100, Number(capture.waitMs) - 300) : 4000;
-  const file = path.join(os.tmpdir(), `motion-decompile-boot-${process.pid}-${id}.js`);
+  const file = path.join(os.tmpdir(), `yoinkit-boot-${process.pid}-${id}.js`);
   fs.writeFileSync(file, `window.__capAutoBoot = ${JSON.stringify(boot, null, 2)};\n`);
   return { file, boot };
 }
@@ -1674,7 +1674,7 @@ function runMap(runDir, manifest, flags = {}) {
     map = evalJson('(() => window.__cap.map())()', runDir);
     map.retargetedFrom = { url: from, src: dom.src, areaRatio: dom.areaRatio };
   } else if (dom && dom.present !== false && dom.src) {
-    appendLog(runDir, `\nDominant cross-origin iframe (${pctText(dom.areaRatio)} of viewport): primary content is ${dom.src}. Re-run motion-decompile against that URL.\n`);
+    appendLog(runDir, `\nDominant cross-origin iframe (${pctText(dom.areaRatio)} of viewport): primary content is ${dom.src}. Re-run yoinkit against that URL.\n`);
   }
 
   writeJson(path.join(runDir, 'map.json'), map);
@@ -2017,7 +2017,7 @@ function runCapture(runDir, manifest, manifestFile, flags = {}) {
   return results;
 }
 
-function manifestPathForDecompile(runDir, manifestArg) {
+function manifestPathForYoink(runDir, manifestArg) {
   if (manifestArg) {
     let file = path.resolve(manifestArg);
     if (!fs.existsSync(file) && !path.isAbsolute(manifestArg)) file = path.join(runDir, manifestArg);
@@ -2063,14 +2063,14 @@ function scoutUrl(url, flags = {}) {
   }
 }
 
-function decompileRunDir(runDir, manifestArg, flags = {}) {
+function yoinkRunDir(runDir, manifestArg, flags = {}) {
   ensureRunDir(runDir);
-  const manifestFile = manifestPathForDecompile(runDir, manifestArg);
+  const manifestFile = manifestPathForYoink(runDir, manifestArg);
   const manifest = readJson(manifestFile);
   if (!manifest.url) throw new Error(`Manifest needs a url: ${manifestFile}`);
   try {
     writeJson(path.join(runDir, 'manifest.json'), manifest);
-    appendLog(runDir, `Decompiling from ${manifestFile}`);
+    appendLog(runDir, `Yoinking from ${manifestFile}`);
     const results = runCapture(runDir, manifest, manifestFile, flags);
     const spec = assembleSpec(runDir);
     buildReport(runDir);
@@ -2080,7 +2080,7 @@ function decompileRunDir(runDir, manifestArg, flags = {}) {
   }
 }
 
-function decompileUrl(url, flags = {}) {
+function yoinkUrl(url, flags = {}) {
   const scout = scoutUrl(url, flags);
   const manifestFile = path.join(scout.runDir, 'manifest.proposed.json');
   const manifest = readJson(manifestFile);
@@ -2592,7 +2592,7 @@ function planFromMap(runDir, flags = {}) {
   if (crossOriginIframe) {
     state.skipped.push({
       id: 'cross-origin-iframe',
-      reason: `Primary content is a cross-origin iframe (${pctText(crossOriginIframe.areaRatio)} of viewport): ${crossOriginIframe.src}. Promoted captures below target the embed shell only; re-run motion-decompile against that URL for the real animations.`,
+      reason: `Primary content is a cross-origin iframe (${pctText(crossOriginIframe.areaRatio)} of viewport): ${crossOriginIframe.src}. Promoted captures below target the embed shell only; re-run yoinkit against that URL for the real animations.`,
     });
   }
 
@@ -2728,7 +2728,7 @@ function planFromMap(runDir, flags = {}) {
     }, manifest.captureGroups || {}),
     initialWaitMs: manifest.initialWaitMs || 1500,
     captureInitialWaitMs: manifest.captureInitialWaitMs || 1500,
-    generatedBy: 'bin/motion-decompile plan',
+    generatedBy: 'bin/yoinkit plan',
     generatedAt: new Date().toISOString(),
     captures: state.captures,
   });
@@ -2796,7 +2796,7 @@ function renderCapturePlanMarkdown(manifest, plan) {
   }
   lines.push('## Next');
   lines.push('');
-  lines.push(`Run \`./bin/motion-decompile capture <run-dir> ${reportText(plan.manifest)}\` after reviewing selectors.`);
+  lines.push(`Run \`./bin/yoinkit capture <run-dir> ${reportText(plan.manifest)}\` after reviewing selectors.`);
   lines.push('');
   return lines.join('\n');
 }
@@ -3153,7 +3153,7 @@ function assembleSpec(runDir) {
       capturedAt: today(),
       viewport: normalizeViewport(manifest),
       stack,
-      method: manifest.method || 'Generated by bin/motion-decompile from map.json and timelines/*.json.',
+      method: manifest.method || 'Generated by bin/yoinkit from map.json and timelines/*.json.',
       notes: manifest.notes || 'Autogenerated first-pass spec. Entries marked unknown - verify need a targeted capture or human review before recreation.',
     },
     tokens: manifest.tokens || {},
@@ -3409,7 +3409,7 @@ function buildReport(runDir) {
     .map(result => `- **${reportText(result.id)}**${result.cause ? ` [cause: ${reportText(result.cause)}]` : ''}: ${reportText(result.error || result.summary || 'Capture failed')}`);
 
   const lines = [];
-  lines.push('# Motion Decompile Report');
+  lines.push('# Yoinked Motion Report');
   lines.push('');
   lines.push(`Generated: ${new Date().toISOString()}`);
   if (manifest.url) lines.push(`URL: ${manifest.url}`);
@@ -3424,7 +3424,7 @@ function buildReport(runDir) {
     lines.push('## Primary content');
     lines.push('');
     if (dom && dom.present !== false && dom.src && !(dom.sameOrigin && dom.accessible)) {
-      lines.push(`> **Primary content is a cross-origin iframe: ${reportText(dom.src)}** (${pctText(dom.areaRatio)} of the viewport). The mapped document is only the embed/shell chrome, so every promoted capture targets the shell, not the real animations. Re-run \`motion-decompile\` against that URL to decompile the actual content.`);
+      lines.push(`> **Primary content is a cross-origin iframe: ${reportText(dom.src)}** (${pctText(dom.areaRatio)} of the viewport). The mapped document is only the embed/shell chrome, so every promoted capture targets the shell, not the real animations. Re-run \`yoinkit\` against that URL to yoink the actual content.`);
       lines.push('');
     } else if (retargeted) {
       lines.push(`> A dominant same-origin iframe (${pctText(retargeted.areaRatio)} of the viewport) was detected; the run was re-targeted from ${reportText(retargeted.url)} to its content document at **${reportText(retargeted.src)}**.`);
@@ -3518,7 +3518,7 @@ function buildReport(runDir) {
   lines.push('## Notes');
   lines.push('');
   if (assembled) lines.push('- `animations.json` is the canonical assembled spec; `animations.md` is rendered from it.');
-  else lines.push('- Run `bin/motion-decompile assemble <run-dir>` to create `animations.json` and `animations.md`.');
+  else lines.push('- Run `bin/yoinkit assemble <run-dir>` to create `animations.json` and `animations.md`.');
   lines.push('- Capture reliability still depends on selectors resolving in a real visible browser.');
   lines.push('');
 
@@ -3641,14 +3641,14 @@ function scoutCommand(argv) {
   console.log(`Map: ${(map.libs || []).join(', ') || 'no libraries'}; ${(map.hoverCandidates || []).length} hover candidates`);
   console.log(`Proposed captures: ${plan.manifest.captures.length}`);
   console.log(`Plan: ${path.join(runDir, 'capture-plan.md')}`);
-  console.log(`Next: ./bin/motion-decompile decompile ${quote(runDir)}`);
+  console.log(`Next: ./bin/yoinkit yoink ${quote(runDir)}`);
 }
 
 function isLikelyUrl(value) {
   return /^https?:\/\//i.test(String(value || ''));
 }
 
-function decompileCommand(argv) {
+function yoinkCommand(argv) {
   const { flags, positionals } = parseFlags(argv);
   if (flags.help || positionals.length < 1 || positionals.length > 2) {
     usage();
@@ -3656,7 +3656,7 @@ function decompileCommand(argv) {
   }
   let result;
   if (positionals.length === 1 && isLikelyUrl(positionals[0])) {
-    result = decompileUrl(positionals[0], flags);
+    result = yoinkUrl(positionals[0], flags);
     console.log(`Run: ${result.runDir}`);
     console.log(`Proposed captures: ${result.plan.manifest.captures.length}`);
   } else if (positionals.length === 1 && fs.existsSync(path.resolve(positionals[0])) && fs.statSync(path.resolve(positionals[0])).isFile()) {
@@ -3664,7 +3664,7 @@ function decompileCommand(argv) {
     console.log(`Run: ${result.runDir}`);
   } else {
     const runDir = path.resolve(positionals[0]);
-    result = decompileRunDir(runDir, positionals[1], flags);
+    result = yoinkRunDir(runDir, positionals[1], flags);
     console.log(`Run: ${result.runDir}`);
     console.log(`Manifest: ${result.manifestFile}`);
   }
@@ -3683,7 +3683,7 @@ function main() {
   }
 
   if (command === 'scout') scoutCommand(rest);
-  else if (command === 'decompile') decompileCommand(rest);
+  else if (command === 'yoink') yoinkCommand(rest);
   else if (command === 'init') initCommand(rest);
   else if (command === 'map') mapCommand(rest);
   else if (command === 'plan') planCommand(rest);
@@ -3698,7 +3698,7 @@ if (require.main === module) {
   try {
     main();
   } catch (error) {
-    console.error(`motion-decompile: ${error.message}`);
+    console.error(`yoinkit: ${error.message}`);
     process.exit(1);
   }
 } else {

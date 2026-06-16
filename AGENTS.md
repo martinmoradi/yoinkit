@@ -1,10 +1,10 @@
-# motion-decompiler — agent guide
+# YoinkIt — agent guide
 
-This file is for agents working **on** this repo. End users *decompiling a site*
+This file is for agents working **on** this repo. End users *yoinking a site*
 use the Codex skill in `skill/codex/` (read its `SKILL.md`); this guide is about
 the tool itself.
 
-motion-decompiler captures what a web animation *actually does* (by sampling
+YoinkIt captures what a web animation *actually does* (by sampling
 computed style per frame) and emits an **agent-ready spec, not code**. A coding
 agent then writes the recreation from that spec.
 
@@ -50,7 +50,7 @@ Consequences the pipeline is built around:
 
 ## agent-browser defaults for this repo
 
-This is Martin's trusted local machine. For motion-decompiler capture runs, use
+This is Martin's trusted local machine. For YoinkIt capture runs, use
 the repo wrapper instead of raw `agent-browser`:
 
 ```bash
@@ -58,7 +58,7 @@ the repo wrapper instead of raw `agent-browser`:
 ./bin/capture-browser set viewport 1280 800
 ```
 
-The wrapper defaults `AGENT_BROWSER_SESSION=decompile`, injects
+The wrapper defaults `AGENT_BROWSER_SESSION=yoink`, injects
 `--args "--class=claude-mcp"` only on `open` commands for Martin's
 Hyprland floating/pinned placement, and passes
 `--confirm-actions "" --confirm-interactive false` on every command so one-off

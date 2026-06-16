@@ -1,7 +1,7 @@
 # Archived: pre-improvement prose calibration reports (2026-06-15)
 
 These four hand-written prose reports (ashleybrookecs, enerblock, flowfest, vwlab)
-were the first-pass calibration of motion-decompiler against non-Mammoth sites.
+were the first-pass calibration of YoinkIt against non-Mammoth sites.
 They are narrative, not comparable: each has its own structure and no fixed
 metric schema. They are superseded by the standing calibration harness
 (`bin/calib-metrics` + `docs/calibration/<date>/<site>.md` + `SCOREBOARD.md`),

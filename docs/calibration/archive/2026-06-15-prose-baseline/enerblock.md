@@ -3,11 +3,11 @@
 - **Date:** 2026-06-15
 - **Target:** https://enerblock.net/en/
 - **Browser session:** `motion-claude-enerblock` (repo wrapper `bin/capture-browser`, headed)
-- **Purpose:** Does motion-decompiler generalize beyond mammothmurals.com? Treated as product calibration. No source tuning for this site.
+- **Purpose:** Does YoinkIt generalize beyond mammothmurals.com? Treated as product calibration. No source tuning for this site.
 
 ## Headline
 
-The pipeline generalized well. Scout detected the real stack (GSAP + ScrollTrigger + Lenis), proposed a sane 4-capture manifest, and the full decompile ran to completion (exit 0) even though 2 of 4 live captures failed. Failures were recorded as `status:"error"` / `status:"empty"` with human-readable reasons, and the run kept going — exactly the soft-fail behavior we want. The assembled spec (`animations.md`) is genuinely useful: it merges the live captures with the 8 ScrollTrigger registry tweens and the split-reveal host into one agent-ready document with confidence labels.
+The pipeline generalized well. Scout detected the real stack (GSAP + ScrollTrigger + Lenis), proposed a sane 4-capture manifest, and the full yoink ran to completion (exit 0) even though 2 of 4 live captures failed. Failures were recorded as `status:"error"` / `status:"empty"` with human-readable reasons, and the run kept going — exactly the soft-fail behavior we want. The assembled spec (`animations.md`) is genuinely useful: it merges the live captures with the 8 ScrollTrigger registry tweens and the split-reveal host into one agent-ready document with confidence labels.
 
 No hard failure. Nothing to "stop and report" on.
 
@@ -87,7 +87,7 @@ Net: strong for the scroll/parallax system and the one good hover; partial for b
 
 ## Signs the planner is overfit to Mammoth
 
-**Confirmed present, but inert for this site.** Grepping `bin/motion-decompile` (read-only) shows hardcoded Mammoth/Webflow class literals baked into the scoring/dedup heuristics:
+**Confirmed present, but inert for this site.** Grepping `bin/yoinkit` (read-only) shows hardcoded Mammoth/Webflow class literals baked into the scoring/dedup heuristics:
 - `work-card-hover` rule: `/work.*(item|card|cover|link)|work_home/` → priority 10 (line ~1170).
 - Dedup penalties for `w-inline-block|g_btn_main|services_home_cta|work_home_item_link|navbar_btn_default` (line ~1186).
 - Mammoth-specific overlay dedup `work_home_(cover_deco|link_overlay|link_clip|aside_arrow|link_cover)` (lines ~1207–1208).
@@ -102,10 +102,10 @@ For enerblock **none of these matched** any selector, so they neither helped nor
 `git status --short` is identical to the start-of-run snapshot:
 ```
  M README.md
- M bin/motion-decompile
+ M bin/yoinkit
  M tests/run-smoke.sh
 ?? prompt.md
 ```
 Those three `M` files were already modified before this calibration began (pre-existing uncommitted CLI/readiness work — `--ready-timeout-ms`, `--capture-strategy`, etc.); I ran against the working-tree version as-is and did not touch them. `runs/` is gitignored, so the run artifacts don't appear. The only new file from this task is this report (`calibration-reports/enerblock.md`).
 
-Browser sessions: none left open (the decompile step closes with `capture-browser close --all`; a follow-up `close --all` confirmed "No active sessions").
+Browser sessions: none left open (the yoink step closes with `capture-browser close --all`; a follow-up `close --all` confirmed "No active sessions").

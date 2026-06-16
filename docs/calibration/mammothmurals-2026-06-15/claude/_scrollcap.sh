@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # usage: _scrollcap.sh "<css-sel>" <id> <above-scrollY> [waitms]
-export AGENT_BROWSER_SESSION=decompile
-cd /home/martin/src/perso/motion-decompiler/claude || exit 1
+export AGENT_BROWSER_SESSION=yoink
+cd /home/martin/src/perso/yoinkit/claude || exit 1
 SEL="$1"; ID="$2"; ABOVE="$3"; WAITMS="${4:-3500}"
 echo "--- $ID : $SEL (park@$ABOVE) ---"
 agent-browser eval "(function(){var y=$ABOVE;if(window.lenis)window.lenis.scrollTo(y,{immediate:true});else scrollTo(0,y);return 'parked@'+Math.round(window.scrollY)})()" 2>&1 | tail -1

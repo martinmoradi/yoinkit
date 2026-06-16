@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Unit tests for the assembler's spec-shaping helpers in bin/motion-decompile:
+/* Unit tests for the assembler's spec-shaping helpers in bin/yoinkit:
  *
  *  (a) vendor de-rank  — third-party/injected animations (Shop Pay, Intercom,
  *      consent banners, chat widgets) are tagged and kept OUT of the signature
@@ -22,7 +22,7 @@ const {
   vendorAnimationMatch,
   tagVendorAnimations,
   renderAnimationsMarkdown,
-} = require(path.join(__dirname, '..', 'bin', 'motion-decompile'));
+} = require(path.join(__dirname, '..', 'bin', 'yoinkit'));
 
 let passed = 0;
 function check(name, fn) {

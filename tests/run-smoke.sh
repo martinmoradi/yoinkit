@@ -19,11 +19,11 @@ PY
 )"
 URL="http://127.0.0.1:${PORT}/tests/fixtures/basic-motion.html"
 
-node --check "$ROOT/bin/motion-decompile" >/dev/null
+node --check "$ROOT/bin/yoinkit" >/dev/null
 node --check "$ROOT/bin/calib-metrics" >/dev/null
 node --check "$ROOT/extension/capture-animation.js" >/dev/null
 node --check "$ROOT/tests/fixtures/repair-stub-provider.js" >/dev/null
-node --check "$ROOT/tests/fixtures/fake-decompile-tool.js" >/dev/null
+node --check "$ROOT/tests/fixtures/fake-yoinkit-tool.js" >/dev/null
 node --check "$ROOT/skill/codex/scripts/repair-step.js" >/dev/null
 node --check "$ROOT/skill/codex/scripts/filter-manifest.js" >/dev/null
 node "$ROOT/tests/decode-transform.test.js" >/dev/null
@@ -34,8 +34,8 @@ node "$ROOT/tests/repair-loop.test.js" >/dev/null
 # repair-step.js apply/terminal bridge + filter-manifest selection (browser-free).
 node "$ROOT/tests/repair-step.test.js" >/dev/null
 node "$ROOT/tests/filter-manifest.test.js" >/dev/null
-"$ROOT/bin/motion-decompile" --help | grep -q 'scout <url>'
-"$ROOT/bin/motion-decompile" --help | grep -q 'decompile <run-dir>'
+"$ROOT/bin/yoinkit" --help | grep -q 'scout <url>'
+"$ROOT/bin/yoinkit" --help | grep -q 'yoink <run-dir>'
 
 cleanup() {
   "${AB[@]}" --session "$SESSION" close --all >/dev/null 2>&1 || true
@@ -509,7 +509,7 @@ cat >"$TMP_ASSEMBLE/timelines/empty-scroll.json" <<'JSON'
   "findings": []
 }
 JSON
-"$ROOT/bin/motion-decompile" plan "$TMP_ASSEMBLE" >/dev/null
+"$ROOT/bin/yoinkit" plan "$TMP_ASSEMBLE" >/dev/null
 jq -e '
   .url == "http://example.test/" and
   .captureStrategy == "reuse-page" and
@@ -574,7 +574,7 @@ cat >"$FLOW_PLAN/map.json" <<'JSON'
   "hoverCandidates": []
 }
 JSON
-"$ROOT/bin/motion-decompile" plan "$FLOW_PLAN" >/dev/null
+"$ROOT/bin/yoinkit" plan "$FLOW_PLAN" >/dev/null
 jq -e '
   all(.captures[]; .id != "boot-load-reveals" and .type != "boot") and
   any(.captures[]; .id == "split-reveal-0-div-speakers-grid-lines" and .type == "scroll-reveal" and .root == "div.speakers__grid-lines" and .action == "scrollintoview div.speakers__grid-lines") and
@@ -582,7 +582,7 @@ jq -e '
   any(.captures[]; .id == "accordion-click" and (.root | test("li\\.accordion-css__item")) and .action == "click div.accordion-css__item-top" and .scrollTarget == "div.accordion-css__item-top")
 ' "$FLOW_PLAN/manifest.proposed.json" >/dev/null
 
-"$ROOT/bin/motion-decompile" assemble "$TMP_ASSEMBLE" >/dev/null
+"$ROOT/bin/yoinkit" assemble "$TMP_ASSEMBLE" >/dev/null
 jq -e '
   .meta.url == "http://example.test/" and
   (.animations | length) >= 5 and
@@ -683,7 +683,7 @@ cat >"$LEAD_DIR/timelines/boot-load-reveals.json" <<'JSON'
   ]
 }
 JSON
-"$ROOT/bin/motion-decompile" assemble "$LEAD_DIR" >/dev/null
+"$ROOT/bin/yoinkit" assemble "$LEAD_DIR" >/dev/null
 jq -e '
   any(.animations[]; .id == "boot-load-reveals" and
     .lead.from.transform.y == 0 and
@@ -691,7 +691,7 @@ jq -e '
     (.notes | test("Ignored 1 text-fragment width/height reflow")))
 ' "$LEAD_DIR/animations.json" >/dev/null
 
-"$ROOT/bin/motion-decompile" report "$TMP_ASSEMBLE" >/dev/null
+"$ROOT/bin/yoinkit" report "$TMP_ASSEMBLE" >/dev/null
 grep -q 'Page State' "$TMP_ASSEMBLE/report.md"
 grep -q 'timeout-loading' "$TMP_ASSEMBLE/report.md"
 grep -q 'Empty Captures' "$TMP_ASSEMBLE/report.md"
@@ -770,7 +770,7 @@ cat >"$REUSE_MANIFEST" <<JSON
 JSON
 REUSE_OUT="$(
   AGENT_BROWSER_SESSION="motion-smoke-reuse-$$" \
-    "$ROOT/bin/motion-decompile" run "$REUSE_MANIFEST" \
+    "$ROOT/bin/yoinkit" run "$REUSE_MANIFEST" \
       --runs-dir "$TMP_ASSEMBLE/reuse-runs" \
       --slug reuse \
       --ready-timeout-ms 1500 \

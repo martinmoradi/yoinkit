@@ -1,9 +1,9 @@
 # RUN LOG
 
 - Start: 2026-06-15T01:15:39+02:00
-- Output dir: /home/martin/src/perso/motion-decompiler/mammothmurals-codex
+- Output dir: /home/martin/src/perso/yoinkit/mammothmurals-codex
 - Constraint: blind run; did not open docs/SPEC.md, *.animations folders, or *-baseline folders.
-- Browser: agent-browser headed session via AGENT_BROWSER_SESSION=decompile.
+- Browser: agent-browser headed session via AGENT_BROWSER_SESSION=yoink.
 
 ## Phase 0 - Setup
 
@@ -23,8 +23,8 @@
 
 - Rough time: about 9 minutes.
 - Browser launch that worked:
-  - `ENGINE=/home/martin/src/perso/motion-decompiler/extension/capture-animation.js`
-  - `export AGENT_BROWSER_SESSION=decompile`
+  - `ENGINE=/home/martin/src/perso/yoinkit/extension/capture-animation.js`
+  - `export AGENT_BROWSER_SESSION=yoink`
   - `agent-browser open https://mammothmurals.com/ --headed --args "--class=claude-mcp" --init-script "$ENGINE"`
   - `agent-browser set viewport 1280 800`
 - Save pattern that worked for map and timelines:

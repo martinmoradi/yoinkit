@@ -1,6 +1,6 @@
-# RUN-LOG — mammothmurals.com animation decompile
+# RUN-LOG — mammothmurals.com animation yoink
 
-Agent: Claude (Opus 4.8). Driver: agent-browser 0.27.3 (one headed session, `AGENT_BROWSER_SESSION=decompile`).
+Agent: Claude (Opus 4.8). Driver: agent-browser 0.27.3 (one headed session, `AGENT_BROWSER_SESSION=yoink`).
 Engine: `extension/capture-animation.js` injected via `--init-script`.
 
 ## Timeline

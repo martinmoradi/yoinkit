@@ -1,4 +1,4 @@
-# motion-decompiler — pipeline spec (pre-skill design of record)
+# YoinkIt — pipeline spec (pre-skill design of record)
 
 Status: design settled after a full end-to-end validation pass on
 `mammothmurals.com` (2026-06-14/15). This document is meant to be cross-checked
@@ -242,7 +242,7 @@ General shape: **position → arm → trigger → wait → dump**, all by select
 `--init-script` registers file content at `open` time: to pick up an edited
 engine, `close` then `open` (a `reload` re-runs the old content). On Martin's
 trusted local machine, use `./bin/capture-browser` for all capture commands.
-It defaults `AGENT_BROWSER_SESSION=decompile`, keeps the headed Chromium window
+It defaults `AGENT_BROWSER_SESSION=yoink`, keeps the headed Chromium window
 in the Hyprland floating/pinned rule by injecting
 `--args "--class=claude-mcp"` only on `open`, and passes
 `--confirm-actions "" --confirm-interactive false` on every call. Do not set
@@ -308,7 +308,7 @@ Claude-in-Chrome Chrome. DPR 1.
 
 ## 8. Local CLI skeleton
 
-`bin/motion-decompile` is the first repeatable local pipeline skeleton. It wraps
+`bin/yoinkit` is the first repeatable local pipeline skeleton. It wraps
 `bin/capture-browser`, keeps the engine injected from
 `extension/capture-animation.js`, writes inspectable run artifacts, and
 assembles the section 4 spec contract from `map.json` plus saved timelines.
@@ -316,36 +316,36 @@ assembles the section 4 spec contract from `map.json` plus saved timelines.
 Recommended flow:
 
 ```bash
-RUN="$(./bin/motion-decompile scout https://mammothmurals.com/ | awk '/^Run:/ {print $2}')"
-./bin/motion-decompile decompile "$RUN"
+RUN="$(./bin/yoinkit scout https://mammothmurals.com/ | awk '/^Run:/ {print $2}')"
+./bin/yoinkit yoink "$RUN"
 ```
 
 `scout` creates a run directory, saves `map.json`, writes
 `manifest.proposed.json`, renders `capture-plan.md`, and writes an initial
-report. `decompile <run-dir>` defaults to `manifest.proposed.json` when it
+report. `yoink <run-dir>` defaults to `manifest.proposed.json` when it
 exists, then runs capture, assemble, and report.
 
 Fully automatic flow, useful after the planner is trusted for a target:
 
 ```bash
-./bin/motion-decompile decompile https://mammothmurals.com/
+./bin/yoinkit yoink https://mammothmurals.com/
 ```
 
 Low-level commands:
 
 ```bash
-./bin/motion-decompile init https://mammothmurals.com/
-./bin/motion-decompile map runs/mammothmurals.com/2026-06-15-run
-./bin/motion-decompile plan runs/mammothmurals.com/2026-06-15-run
-./bin/motion-decompile capture runs/mammothmurals.com/2026-06-15-run manifest.proposed.json
-./bin/motion-decompile assemble runs/mammothmurals.com/2026-06-15-run
-./bin/motion-decompile report runs/mammothmurals.com/2026-06-15-run
+./bin/yoinkit init https://mammothmurals.com/
+./bin/yoinkit map runs/mammothmurals.com/2026-06-15-run
+./bin/yoinkit plan runs/mammothmurals.com/2026-06-15-run
+./bin/yoinkit capture runs/mammothmurals.com/2026-06-15-run manifest.proposed.json
+./bin/yoinkit assemble runs/mammothmurals.com/2026-06-15-run
+./bin/yoinkit report runs/mammothmurals.com/2026-06-15-run
 ```
 
 Single-command run from a hand-authored manifest:
 
 ```bash
-./bin/motion-decompile run manifest.json
+./bin/yoinkit run manifest.json
 ```
 
 Current artifact layout:

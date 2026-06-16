@@ -1,6 +1,6 @@
 # Skill repair-loop validation — 2026-06-16
 
-First real run of the `/motion-decompiler` skill with the **agent-driven repair
+First real run of the `/yoinkit` skill with the **agent-driven repair
 loop ON**, across the three repair-bearing calibration sites. This is the
 long-deferred measurement the roadmap flagged as Part 7's purpose: *is the repair
 loop worth its complexity?* The provider here is the skill's diagnosis subagents

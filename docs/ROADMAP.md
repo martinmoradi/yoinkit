@@ -1,4 +1,4 @@
-# motion-decompiler — execution roadmap
+# YoinkIt — execution roadmap
 
 This is a PM/CTO roadmap, not a spec. Each **Part** below is a self-contained
 prompt you drop into a **clean context** (a fresh agent). You run one part, the
@@ -41,18 +41,18 @@ measured-vs-verify honesty stay the source of truth. The intelligence goes into
 
 | # | Failure mode | Hit on | Kind | Owner | Part |
 |---|---|---|---|---|---|
-| A | Decompiled the wrong document (cross-origin iframe / embed shell) | vwlab (5/5 fail) | Deterministic | Engine/map | 1 |
+| A | Yoinked the wrong document (cross-origin iframe / embed shell) | vwlab (5/5 fail) | Deterministic | Engine/map | 1 |
 | B | Pseudo-element hovers invisible (`::after` underline = scaleX / bg-size) | flowfest, enerblock, ashley | Deterministic | Engine | 2 |
 | C | Split-reveal routed to boot, fires on scroll | flowfest (boot empty), ashley (boot latched onto reflow) | Deterministic | Planner | 4 |
 | D | Occluded / hidden-until-interaction / inert representative | all 4 | Partly det., partly LLM | Planner + repair | 4 + 5 |
 | E | Accordion clicks the body, not the header/icon | flowfest, residual Mammoth | Deterministic | Planner | 4 |
 | F | Vendor keyframes ranked as #1 signature (Shop Pay skeleton) | vwlab | Deterministic | Ranking | 3 |
-| — | Cosmetic: "scroll target" mislabel (`bin/motion-decompile:816`), drawSVG one-row-per-path, readiness false-positives | flowfest, vwlab | Deterministic | Trivial | 3 |
+| — | Cosmetic: "scroll target" mislabel (`bin/yoinkit:816`), drawSVG one-row-per-path, readiness false-positives | flowfest, vwlab | Deterministic | Trivial | 3 |
 
 Confirmed in code: iframe has **zero** mentions in engine or planner;
 pseudo-elements are **never** sampled (engine reads 9 properties off the element
 only, `capture-animation.js:478`, PROPS at lines 34-35); vendor filtering is
-**zero**. The planner (`bin/motion-decompile`, ~2294 lines) is larger than the
+**zero**. The planner (`bin/yoinkit`, ~2294 lines) is larger than the
 engine (~1306 lines), so most of today's "intelligence" is hand-coded heuristics.
 
 The **Mammoth overfit** is deliberately not on this roadmap. It is confirmed
@@ -198,7 +198,7 @@ Each behavior part ends by re-running the Part 0 harness and reporting the diff.
   only, zero change to what gets captured. Smoke green (21/21 + 2 node unit
   suites). Tree clean.
   - **(a) Vendor de-rank:** a maintainable `VENDOR_ANIMATION_DENYLIST` in
-    `bin/motion-decompile` (one `{ source, re }` row per vendor) matched against
+    `bin/yoinkit` (one `{ source, re }` row per vendor) matched against
     each animation's id/label/selector/keyframe-state. Seeded with Shop Pay /
     accelerated checkout, Intercom, Drift, Zendesk/Zopim, Tawk, Crisp, HubSpot,
     OneTrust, Cookiebot, Osano, CookieYes, reCAPTCHA, Stripe, Klaviyo, Calendly.
@@ -213,7 +213,7 @@ Each behavior part ends by re-running the Part 0 harness and reporting the diff.
     `×N` label, summed `layers`, and a note recording the grouping. flowfest:
     scroll-motion rows 29 -> 7; the 4 drawSVG triggers went 26 rows -> 4 grouped
     entries (×9 / ×9 / ×4 / ×4). Single-tween triggers stay byte-identical.
-  - **(c) label fix:** `bin/motion-decompile:1064` now passes the real action
+  - **(c) label fix:** `bin/yoinkit:1064` now passes the real action
     label, so a hover/click preflight failure reads "Preflight failed for
     hover/click ..." instead of the hardcoded "scroll target." Only enriches
     reason strings on FUTURE failed runs (bucketing already reads the structured
@@ -303,7 +303,7 @@ Each behavior part ends by re-running the Part 0 harness and reporting the diff.
   coverage). Built to the design with M1 folded in. **Off by default** (no
   `--repair-cmd` -> byte-identical soft-fail), so it landed on main dormant.
   Engine (`extension/capture-animation.js`) untouched -- the loop is orchestration
-  in `bin/motion-decompile` + `bin/calib-metrics` + tests only. 81 browser-free
+  in `bin/yoinkit` + `bin/calib-metrics` + tests only. 81 browser-free
   checks (deterministic stub provider, no model). Reviewed by two external models
   before merge.
   - **Proven (headed):** enerblock `arrow-row-hover` occlusion-error ->
@@ -326,7 +326,7 @@ Each behavior part ends by re-running the Part 0 harness and reporting the diff.
     the design's ~5-7 estimate is still a projection and the scoreboard repair
     sub-table is structural-only (zero real repairs recorded). The mechanics and
     safety are proven; the yield is unmeasured.
-- **Part 7 — done (repair shipped as the `/motion-decompiler` skill's repair
+- **Part 7 — done (repair shipped as the `/yoinkit` skill's repair
   stage, and MEASURED)** (skill branch / PR #2). **Pivot from the original Part 7
   plan:** instead of an LLM-backed `--repair-cmd` subprocess, the repair provider
   is the skill's **agent-driven diagnosis subagents** (Phase A parallel,
@@ -336,7 +336,7 @@ Each behavior part ends by re-running the Part 0 harness and reporting the diff.
   driver (stub-tested); `--repair-dump` (`b19b805`) decouples the §2 diagnosis so
   the skill can diagnose in parallel.
   - **The skill** (`5a635a0` + hardening `9eae8c5`/`9de2bd9`/`a876f0a`/`61bf2a8`/
-    `00d0640`): one direct-invoke `/motion-decompiler`, URL (whole page) or NL
+    `00d0640`): one direct-invoke `/yoinkit`, URL (whole page) or NL
     request (targeted). Thin orchestration over the CLI + the repair stage; engine
     stays the sole measurer.
   - **The measurement (the long-deferred Part 7 question, answered)** -- full run
@@ -351,7 +351,7 @@ Each behavior part ends by re-running the Part 0 harness and reporting the diff.
     honest terminal-verdict tail. All three guarantees held live (engine-measured
     wins, bounded drift terminal, M1 no-leak).
 - **The roadmap is complete.** Deterministic floor (Parts 1-4) -> repair design
-  (5) -> repair build (6) -> productized `/motion-decompiler` skill with the repair
+  (5) -> repair build (6) -> productized `/yoinkit` skill with the repair
   stage + measured value (7). Remaining are optional follow-ups, not roadmap
   blockers: (a) complete the vwlab->netlify swap in the MAIN scoreboard table (the
   netlify re-baseline run is already on disk:
@@ -371,9 +371,9 @@ every fix to regenerate the scoreboard. Script measures, agent judges.
 
 ```
 You are building and running the standing calibration harness for
-motion-decompiler at /home/martin/src/perso/motion-decompiler. Read CLAUDE.md
+YoinkIt at /home/martin/src/perso/yoinkit. Read CLAUDE.md
 first. This task MEASURES the tool; it must NOT tune or modify engine/planner
-source (extension/capture-animation.js, bin/motion-decompile). If you change any
+source (extension/capture-animation.js, bin/yoinkit). If you change any
 source file the run is invalid.
 
 GOAL: produce one comparable scoreboard across 4 sites so that, as fixes land,
@@ -404,7 +404,7 @@ THE STANDING SITE SET (do not change without telling the PM):
 
 PER-SITE PROCEDURE (identical for all 4, real headed browser per CLAUDE.md, use
 the repo wrapper bin/capture-browser, a unique AGENT_BROWSER_SESSION per site):
-  a. scout -> decompile, full planner-proposed manifest, no curation, soft-fail
+  a. scout -> yoink, full planner-proposed manifest, no curation, soft-fail
      expected (capture failures record status and the run continues).
   b. Run bin/calib-metrics on the run dir to produce <run_dir>/metrics.json in
      the fixed schema.
@@ -530,7 +530,7 @@ detect/flag/re-target, (2) the `cause` classifier, (3) the extractor reading
 `cause`.
 
 ```
-Work on motion-decompiler at /home/martin/src/perso/motion-decompiler. Read
+Work on YoinkIt at /home/martin/src/perso/yoinkit. Read
 CLAUDE.md first. This part makes failures self-describe their cause. With one
 exception (same-origin iframe re-target), it does NOT change capture behavior:
 pseudo-element sampling and trigger recipes are Parts 2 and 4. Here we only
@@ -613,7 +613,7 @@ regardless of the small-sample count. Those two captures should flip from empty
 to ok; that is the headline number to report.
 
 ```
-Work on motion-decompiler at /home/martin/src/perso/motion-decompiler. Read
+Work on YoinkIt at /home/martin/src/perso/yoinkit. Read
 CLAUDE.md and the header of extension/capture-animation.js first.
 
 Problem (evidence: flowfest link-hover, enerblock link--underline, ashley
@@ -662,7 +662,7 @@ scale-from-zero reveals Part 2 just unlocked (underlines, pop-ins), so a rebuild
 agent would add a rotation that is not there. Small, contained engine fix.
 
 ```
-Work on motion-decompiler at /home/martin/src/perso/motion-decompiler. Read
+Work on YoinkIt at /home/martin/src/perso/yoinkit. Read
 CLAUDE.md first. Single-file engine change: extension/capture-animation.js,
 function decodeTransform.
 
@@ -717,7 +717,7 @@ inspection: Shop Pay is no longer the #1 signature, drawSVG rows are grouped.
 Only the label-bug fix (c) feeds the Part 0 buckets.
 
 ```
-Work on motion-decompiler at /home/martin/src/perso/motion-decompiler. Read
+Work on YoinkIt at /home/martin/src/perso/yoinkit. Read
 CLAUDE.md first. These are independent low-risk fixes; do them as separate
 semantic commits.
 
@@ -736,7 +736,7 @@ Three issues, all from the calibration set:
     owning ScrollTrigger into a single entry with a count, instead of one row per
     path.
 
-(c) "scroll target" mislabel (vwlab, bin/motion-decompile:816): hover/click
+(c) "scroll target" mislabel (vwlab, bin/yoinkit:816): hover/click
     preflight failures are reported as "Preflight failed for scroll target ..."
     because the label is hardcoded. Pass the real action label (hover/click/
     scroll) so failure reasons are accurate. This also improves the Part 0
@@ -766,7 +766,7 @@ and fix (b) improves the ashley boot-reveal signal. Expect ~2 captures to flip
 to ok plus one quality fix.
 
 ```
-Work on motion-decompiler at /home/martin/src/perso/motion-decompiler. Read
+Work on YoinkIt at /home/martin/src/perso/yoinkit. Read
 CLAUDE.md first, especially the "timed-capture recipe" section.
 
 Three planner heuristic fixes from the calibration set:
@@ -817,7 +817,7 @@ residual the classifier marks ambiguous or that needs an open-ended repair
 classifier already does.
 
 ```
-Work on motion-decompiler at /home/martin/src/perso/motion-decompiler. Read
+Work on YoinkIt at /home/martin/src/perso/yoinkit. Read
 CLAUDE.md and the driver-model section. This task produces a DESIGN, not an
 implementation. Do not change capture behavior yet.
 
@@ -836,7 +836,7 @@ engine's per-frame sampling and its measured-vs-verify honesty stay the source o
 truth. Do not let the design route measurement through the model.
 
 Produce a short design doc (docs/ or plans/) covering:
-- Where the loop hooks into bin/motion-decompile (the capture stage, after a
+- Where the loop hooks into bin/yoinkit (the capture stage, after a
   capture returns empty/error).
 - The diagnosis input contract (failure reason, screenshot, map subtree, the
   recipe that failed) and the structured output contract (diagnosis bucket +
@@ -872,7 +872,7 @@ design, and the honest "what is not yet proven" note.
 ## Part 7 — Real repair provider + measure the loop (needs browser + a model)
 
 > **SUPERSEDED (kept for history).** Part 7 shipped differently: the repair
-> provider is the `/motion-decompiler` skill's agent-driven diagnosis subagents,
+> provider is the `/yoinkit` skill's agent-driven diagnosis subagents,
 > not an LLM-backed `--repair-cmd` subprocess (no API key; uses local
 > Opus/subagents; fits the skill-driven model). The measurement was done that way
 > and is recorded in the Status log + `2026-06-16-skill-repair-validation.md`. The
@@ -888,7 +888,7 @@ artifact, and two Part 6 build findings (`expect: moved` default,
 `animatableHere` terminal weighting) are baked in as hard requirements.
 
 ```
-Work on motion-decompiler at /home/martin/src/perso/motion-decompiler. Read
+Work on YoinkIt at /home/martin/src/perso/yoinkit. Read
 CLAUDE.md first, then docs/PART-5-repair-loop-design.md IN FULL (the loop's
 contracts: §2 input, §3 output/action enum, §5 provider command contract, §6
 accounting, §11 PM decisions), then the Status log in docs/ROADMAP.md (Part 6
@@ -898,9 +898,9 @@ default). This part builds the REAL provider and MEASURES what the loop buys.
 ARCHITECTURE GUARDRAIL (do not violate):
 - The provider is an EXTERNAL COMMAND at the adapter boundary (design §5). Put it
   in scripts/ (e.g. scripts/repair-provider.*) or the skill, NOT inside
-  bin/motion-decompile, bin/calib-metrics, or extension/capture-animation.js. The
+  bin/yoinkit, bin/calib-metrics, or extension/capture-animation.js. The
   tool core and engine stay dependency-free and unchanged. If you find yourself
-  editing the engine or the loop in bin/motion-decompile, stop and report why.
+  editing the engine or the loop in bin/yoinkit, stop and report why.
 - Off by default stays off by default: a plain run with no --repair-cmd is
   byte-identical to today, and tests/run-smoke.sh keeps using the deterministic
   stub provider (do not point smoke at the real model).

@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Animation Capture (__cap)",
+  "name": "YoinkIt (__cap)",
   "version": "1.2.0",
-  "description": "Click the toolbar button, pick an element, and get an agent-ready spec of its animation (console + clipboard). Also exposes window.__cap on every page.",
+  "description": "Click the toolbar button, pick an element, and get yoinked motion for its animation (console + clipboard). Also exposes window.__cap on every page.",
   "action": {
-    "default_title": "Capture animation — click, then pick an element",
+    "default_title": "Yoink animation — click, then pick an element",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",

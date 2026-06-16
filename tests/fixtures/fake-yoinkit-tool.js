@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 /*
- * Test double for bin/motion-decompile, used by repair-step.test.js.
+ * Test double for bin/yoinkit, used by repair-step.test.js.
  *
  *  - When REQUIRED (require.main !== module) it re-exports the REAL tool's
  *    helpers (validateRepairOutput, applyRepair, meetsSuccess, …) so repair-step's
@@ -19,7 +19,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const realBin = path.resolve(__dirname, '..', '..', 'bin', 'motion-decompile');
+const realBin = path.resolve(__dirname, '..', '..', 'bin', 'yoinkit');
 
 if (require.main !== module) {
   module.exports = require(realBin);

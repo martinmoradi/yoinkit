@@ -1,32 +1,32 @@
 ---
-name: motion-decompiler
+name: yoinkit
 description: >-
-  Decompile what a live web page's animations ACTUALLY do — sampled per frame by
+  Yoink what a live web page's animations ACTUALLY do — sampled per frame by
   the engine and emitted as an agent-ready SPEC (libraries, per-layer
   timing/easing, frame timelines), never code. Run ONLY when the user explicitly
-  invokes /motion-decompiler, with either a URL (decompile the whole page) or a
-  request about a specific page's motion (decompile the targeted animation). This
+  invokes /yoinkit, with either a URL (yoink the whole page) or a
+  request about a specific page's motion (yoink the targeted animation). This
   is a heavy, real-browser-driving pipeline: do NOT trigger it for general
   questions about CSS or animation, how to animate something, GSAP/ScrollTrigger
   usage, recommending a library, or reviewing existing animation code — none of
-  those are decompilation requests. No auto-trigger from keywords; explicit
-  /motion-decompiler invocation only.
+  those are yoinking requests. No auto-trigger from keywords; explicit
+  /yoinkit invocation only.
 compatibility: >-
-  Run from the motion-decompiler repo root. Needs node and agent-browser
+  Run from the YoinkIt repo root. Needs node and agent-browser
   (the tool self-drives a real headed browser via bin/capture-browser). Repair
   diagnosis uses parallel subagents (the Agent tool).
 ---
 
-# motion-decompiler
+# YoinkIt
 
-Decompile a live page's motion into an **agent-ready spec** — libraries, a
+Yoink a live page's motion into **yoinked motion**, an agent-ready spec — libraries, a
 summary, per-layer timing/easing, and per-frame timelines — that a *coding* agent
 later rebuilds from. The spec is the product; this skill never emits recreation
 code.
 
 ## The one rule that shapes everything: script measures, agent judges
 
-`extension/capture-animation.js` (via `bin/motion-decompile`) is the **sole
+`extension/capture-animation.js` (via `bin/yoinkit`) is the **sole
 measurement instrument**. Every duration, easing, from/to value, frame count, and
 `ok/check/empty/error` status comes from the engine's per-frame sampling — never
 from a model.
@@ -45,9 +45,9 @@ headless compositor may not advance transitions. The tool already opens headed v
 
 ## Input routing (do this first)
 
-Look at what the user passed to `/motion-decompiler`:
+Look at what the user passed to `/yoinkit`:
 
-- **A URL** (e.g. `https://example.com/`) → **whole-page** scope. Decompile every
+- **A URL** (e.g. `https://example.com/`) → **whole-page** scope. Yoink every
   animation the planner proposes.
 - **A natural-language request about a page** (e.g. "help me understand the hero
   animation on example.com", "what's the card hover on acme.dev/work") →
@@ -64,7 +64,7 @@ run dir. Heavy artifacts land under `runs/` (gitignored) — never commit them.
 ### 1–3. Map + plan (structure, stack, selectors, proposed captures)
 
 ```bash
-./bin/motion-decompile scout "<url>" --viewport 1280x800
+./bin/yoinkit scout "<url>" --viewport 1280x800
 ```
 
 This writes `map.json` (libraries, ScrollTriggers, hover candidates, split
@@ -90,7 +90,7 @@ reveals), `manifest.proposed.json` (the proposed capture manifest), and
 ### 4. Capture (real headed browser) + dump diagnosis inputs
 
 ```bash
-./bin/motion-decompile capture <run> <run>/manifest.proposed.json --repair-dump
+./bin/yoinkit capture <run> <run>/manifest.proposed.json --repair-dump
 ```
 
 (Use `manifest.targeted.json` for a targeted run.) The engine samples each
@@ -137,11 +137,11 @@ status is never overridden — provenance only records *how* it was reached.
 ### 6. Assemble + report
 
 ```bash
-./bin/motion-decompile assemble <run>
-./bin/motion-decompile report <run>
+./bin/yoinkit assemble <run>
+./bin/yoinkit report <run>
 ```
 
-`assemble` builds `animations.json` + `animations.md` (the spec); `report` builds
+`assemble` builds `animations.json` + `animations.md` (the yoinked motion spec); `report` builds
 `report.md`. The repaired timelines were promoted into `<run>/timelines/`, so they
 flow into the spec automatically.
 
@@ -149,7 +149,7 @@ flow into the spec automatically.
 
 Point them at the spec and report, and surface the repair provenance honestly:
 
-- The spec: `<run>/animations.json` and the readable `<run>/animations.md`.
+- The yoinked motion spec: `<run>/animations.json` and the readable `<run>/animations.md`.
 - The report: `<run>/report.md`.
 - A short summary distinguishing **captured first-try** vs **captured
   after-repair** vs **honest terminal** (nothing to capture / needs a human), with

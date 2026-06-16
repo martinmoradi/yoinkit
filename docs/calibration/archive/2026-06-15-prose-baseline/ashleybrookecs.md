@@ -2,7 +2,7 @@
 
 Date: 2026-06-15
 Target: https://ashleybrookecs.com/
-Goal: test whether motion-decompiler generalizes beyond mammothmurals.com, without tuning source for this site.
+Goal: test whether YoinkIt generalizes beyond mammothmurals.com, without tuning source for this site.
 Mode: full planner-proposed manifest, no curation, soft-fail expected on bad selectors.
 
 ## Result summary
@@ -91,13 +91,13 @@ Site-specific weirdness:
 No functional overfit was observed on this site. All 10 proposed captures were derived from ashleybrookecs's own selectors (Webflow CMS classes like `clients_logos_cms_list_wrapper`, `services_home_heading_word_wrap`, `nav-link__label`). No Mammoth token appears in any run artifact (grep for `mammoth|g_faq|faq_item|work_home_item` over the run dir returns nothing).
 
 Residual Mammoth-specific traces remain in the planner source only, and all stayed dormant:
-- `bin/motion-decompile:44-45` - usage doc examples still use Mammoth selectors (`a.work_home_item_link`, `div.g_faq_item.w-dyn-item`). Cosmetic.
-- `bin/motion-decompile:1186` - a hover-scoring penalty regex hardcodes Mammoth class tokens (`g_btn_main`, `work_home_item_link`, `navbar_btn_default`, `services_home_cta`) alongside the generic `w-inline-block`. Only the generic `w-inline-block` touched this run (it penalized the link-hover candidate), and it did not change the outcome. The Mammoth-named tokens did not match. Note ashleybrookecs also has `services_home_*` classes, so a sibling Webflow site could brush against `services_home_cta`; here it did not.
-- `bin/motion-decompile:1208` - a work-card heuristic keyed on `work_home_item_link`. Dormant (no such selector here).
+- `bin/yoinkit:44-45` - usage doc examples still use Mammoth selectors (`a.work_home_item_link`, `div.g_faq_item.w-dyn-item`). Cosmetic.
+- `bin/yoinkit:1186` - a hover-scoring penalty regex hardcodes Mammoth class tokens (`g_btn_main`, `work_home_item_link`, `navbar_btn_default`, `services_home_cta`) alongside the generic `w-inline-block`. Only the generic `w-inline-block` touched this run (it penalized the link-hover candidate), and it did not change the outcome. The Mammoth-named tokens did not match. Note ashleybrookecs also has `services_home_*` classes, so a sibling Webflow site could brush against `services_home_cta`; here it did not.
+- `bin/yoinkit:1208` - a work-card heuristic keyed on `work_home_item_link`. Dormant (no such selector here).
 - The accordion/FAQ path (lines 1222-1391) is now generic: it infers the accordion root from real selectors via `/accordion|faq/i`. This site has neither, so it stayed dormant and no accordion capture was proposed. This confirms the earlier Mammoth accordion-root hardcode (g_faq_item) is fixed; only dormant regexes and the doc example remain.
 
 Net: the planner generalized. The only overfit is dead weight (denylist tokens and a doc example), not behavior that distorted this run.
 
 ## Source files modified
 
-None by me. The working tree already carried pre-existing uncommitted modifications at session start (`README.md`, `bin/motion-decompile`, `tests/run-smoke.sh`) - that is the "latest CLI" with the readiness/soft-fail changes, and I ran it as-is. `git diff --stat` after the run is byte-identical to session start. New untracked paths are only outputs: this report, and the gitignored `runs/` directory.
+None by me. The working tree already carried pre-existing uncommitted modifications at session start (`README.md`, `bin/yoinkit`, `tests/run-smoke.sh`) - that is the "latest CLI" with the readiness/soft-fail changes, and I ran it as-is. `git diff --stat` after the run is byte-identical to session start. New untracked paths are only outputs: this report, and the gitignored `runs/` directory.

@@ -15,7 +15,7 @@ must be the JSON** described below; save that verbatim to
 
 ## The prompt (fill `{INPUT_JSON_PATH}` and `{SCREENSHOT_PATH}`)
 
-> You are the diagnosis step of motion-decompiler's capture-repair loop. A live
+> You are the diagnosis step of YoinkIt's capture-repair loop. A live
 > capture of a web animation failed. Your job: read the structured failure context
 > and the screenshot, then propose ONE corrected recipe (or an honest give-up) so
 > the engine can re-measure. You decide WHAT to target and HOW to reach it. You do

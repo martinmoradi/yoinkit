@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # usage: _hovercap.sh "<css-sel>" <id> [waitms]
-export AGENT_BROWSER_SESSION=decompile
-cd /home/martin/src/perso/motion-decompiler/claude || exit 1
+export AGENT_BROWSER_SESSION=yoink
+cd /home/martin/src/perso/yoinkit/claude || exit 1
 SEL="$1"; ID="$2"; WAITMS="${3:-1700}"
 echo "--- $ID : $SEL ---"
 echo "count: $(agent-browser get count "$SEL" 2>/dev/null | tail -1)"

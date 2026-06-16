@@ -2,14 +2,14 @@
 
 Date: 2026-06-15
 
-Subject: two blind executions of `decompile-run-prompt.md` against `https://mammothmurals.com/`.
+Subject: two blind executions of `yoink-run-prompt.md` against `https://mammothmurals.com/`.
 
 Compared outputs:
 
 - Claude Opus 4.8: `claude/`
 - GPT-5.5 Codex: `mammothmurals-codex/`
 
-I treated this as both a task-compliance audit and a product audit for this repo. The question is not only "who wrote a better animation report?" but also "which run better exposes what `motion-decompiler` should become?"
+I treated this as both a task-compliance audit and a product audit for this repo. The question is not only "who wrote a better animation report?" but also "which run better exposes what `YoinkIt` should become?"
 
 ## Verdict
 
@@ -467,7 +467,7 @@ If I were evolving this repo, I would make three changes first:
 
 Then I would add the boot/load recorder, visible-match selector resolution, and mobile pass.
 
-The deeper product direction is clear: `motion-decompiler` should combine black-box behavioral sampling with opportunistic white-box framework evidence. The blind runs prove that sampling alone gets the shape, but GSAP inspection gets the truth that matters for a recreation agent: target state, named ease, duration, stagger, and callback intent.
+The deeper product direction is clear: `YoinkIt` should combine black-box behavioral sampling with opportunistic white-box framework evidence. The blind runs prove that sampling alone gets the shape, but GSAP inspection gets the truth that matters for a recreation agent: target state, named ease, duration, stagger, and callback intent.
 
 ## Final Ranking
 

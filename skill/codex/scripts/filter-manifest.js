@@ -2,7 +2,7 @@
 'use strict';
 /*
  * filter-manifest.js — narrow a proposed manifest to the captures a TARGETED
- * /motion-decompiler request asked about, preserving every top-level field
+ * /yoinkit request asked about, preserving every top-level field
  * (url, viewport, captureStrategy, captureGroups, wait settings) so the filtered
  * manifest captures identically — just fewer animations.
  *

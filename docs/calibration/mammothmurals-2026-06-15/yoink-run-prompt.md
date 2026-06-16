@@ -1,4 +1,4 @@
-# Task: decompile a landing page's animations into an agent-ready spec
+# Task: yoink a landing page's animations into an agent-ready spec
 
 You are an autonomous agent with shell access on a Linux machine. Your job is to
 **measure what every animation on a web page actually does** and emit a
@@ -36,16 +36,16 @@ Drive **by selector only**. Never use screenshot coordinates.
 
 A single JS file exposes `window.__cap` when injected into the page. Inject it
 with `--init-script`. Engine path (absolute):
-`/home/martin/src/perso/motion-decompiler/extension/capture-animation.js`
+`/home/martin/src/perso/yoinkit/extension/capture-animation.js`
 (reading the engine source for its API is fine; it is method, not answers.)
 
-Launch with the repo wrapper. It keeps the `decompile` session, disables
+Launch with the repo wrapper. It keeps the `yoink` session, disables
 agent-browser confirmations on every call, and sets the `claude-mcp` Chromium
 class so Hyprland parks the window on Martin's second monitor. Keep this wrapper.
 
 ```bash
-ENGINE=/home/martin/src/perso/motion-decompiler/extension/capture-animation.js
-AB=/home/martin/src/perso/motion-decompiler/bin/capture-browser
+ENGINE=/home/martin/src/perso/yoinkit/extension/capture-animation.js
+AB=/home/martin/src/perso/yoinkit/bin/capture-browser
 "$AB" close --all
 "$AB" open https://mammothmurals.com/ --headed --init-script "$ENGINE"
 "$AB" set viewport 1280 800

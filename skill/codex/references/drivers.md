@@ -3,11 +3,11 @@
 ## For this repo, the tool drives the browser itself
 
 You don't open or drive a browser by hand for the normal pipeline. Every browser
-step in `bin/motion-decompile` (map, capture, the repair re-measure, the
+step in `bin/yoinkit` (map, capture, the repair re-measure, the
 `--repair-dump` screenshot + probe) shells out to the repo wrapper
 `bin/capture-browser`, which:
 
-- runs `agent-browser` with `AGENT_BROWSER_SESSION=decompile`,
+- runs `agent-browser` with `AGENT_BROWSER_SESSION=yoink`,
 - opens **headed** (`open … --headed`) with the engine injected as an init script,
 - adds `--class=claude-mcp` on `open` so Hyprland pins the window to the second
   monitor, and
