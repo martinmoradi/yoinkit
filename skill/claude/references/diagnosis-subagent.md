@@ -5,11 +5,12 @@ reasons over a screenshot + structural DOM/CSS signals and returns a corrected
 recipe. It is the only place model judgment enters the pipeline — and it judges
 **targeting and state, never motion**.
 
-Spawn it with the Agent tool (a general-purpose / Explore-class agent with file
-read access — `Read` renders the PNG screenshot visually). Fill the two
-placeholders and pass the whole block as the prompt. Its **entire final message
-must be the JSON** described below; save that verbatim to
-`<run>/repair/<id>.attempt-<N>.output.json`.
+Spawn it with the Agent/subagent tool (a general-purpose / Explore-class agent
+with file read access; `Read` renders the PNG screenshot visually). Keep at most
+6 workers open at once; run overflow in later batches or serially in the current
+agent. If the tool exposes `message` and `items`, pass the filled prompt as one
+or the other, never both. Its **entire final message must be the JSON** described
+below; save that verbatim to `<run>/repair/<id>.attempt-<N>.output.json`.
 
 ---
 
@@ -25,7 +26,9 @@ must be the JSON** described below; save that verbatim to
 >
 > Read these two files:
 > - Failure context (JSON): `{INPUT_JSON_PATH}`
-> - Screenshot of the failed state (PNG): `{SCREENSHOT_PATH}`
+> - Screenshot of the failed state (PNG): `{SCREENSHOT_PATH}`. If this says
+>   `Screenshot unavailable; reason from repairContext alone.`, do not try to
+>   read a PNG and do not request a recapture; rely on `repairContext`.
 >
 > The context already contains the classifier's verdict — `failure.cause` and
 > `failure.causeSignals` (Part 1 buckets). **Consume it; do not re-derive it.** The
@@ -93,7 +96,9 @@ must be the JSON** described below; save that verbatim to
 > override toward terminal is exactly your job.
 >
 > Output ONLY this JSON object as your entire final message (no prose, no code
-> fence):
+> fence). The caller saves this exact message to
+> `<run>/repair/<id>.attempt-<N>.output.json` and validates it with
+> `repair-step.js apply` before acting:
 >
 > ```json
 > {

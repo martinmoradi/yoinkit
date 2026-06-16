@@ -6,11 +6,10 @@ recipe. It is the only place model judgment enters the pipeline — and it judge
 **targeting and state, never motion**.
 
 Spawn it with a Codex multi-agent/subagent tool when one is available. Discover
-that tool with `tool_search` if needed. If parallel tool calls are available,
-spawn all repairable captures in one batch. If no subagent tool is available,
-run this same prompt yourself for one failed capture at a time. Fill the two
-placeholders and pass the whole block as the prompt. Its **entire final message
-must be the JSON** described below; save that verbatim to
+that tool with `tool_search` if needed. Keep at most 6 workers open at once; run
+overflow in later batches or serially in the current agent. Pass the filled
+prompt as either the tool's `message` or `items`, never both. Its **entire final
+message must be the JSON** described below; save that verbatim to
 `<run>/repair/<id>.attempt-<N>.output.json`.
 
 ---
@@ -27,7 +26,9 @@ must be the JSON** described below; save that verbatim to
 >
 > Read these two files:
 > - Failure context (JSON): `{INPUT_JSON_PATH}`
-> - Screenshot of the failed state (PNG): `{SCREENSHOT_PATH}`
+> - Screenshot of the failed state (PNG): `{SCREENSHOT_PATH}`. If this says
+>   `Screenshot unavailable; reason from repairContext alone.`, do not try to
+>   read a PNG and do not request a recapture; rely on `repairContext`.
 >
 > The context already contains the classifier's verdict — `failure.cause` and
 > `failure.causeSignals` (Part 1 buckets). **Consume it; do not re-derive it.** The
@@ -95,7 +96,9 @@ must be the JSON** described below; save that verbatim to
 > override toward terminal is exactly your job.
 >
 > Output ONLY this JSON object as your entire final message (no prose, no code
-> fence):
+> fence). The caller saves this exact message to
+> `<run>/repair/<id>.attempt-<N>.output.json` and validates it with
+> `repair-step.js apply` before acting:
 >
 > ```json
 > {

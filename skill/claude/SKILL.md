@@ -14,7 +14,8 @@ description: >-
 compatibility: >-
   Run from the YoinkIt repo root. Needs Bun and agent-browser
   (the tool self-drives a real headed browser via bin/capture-browser). Repair
-  diagnosis uses parallel subagents (the Agent tool).
+  diagnosis uses at most 6 parallel subagents (the Agent tool), with overflow
+  queued in later batches or run serially.
 ---
 
 # YoinkIt
@@ -113,11 +114,13 @@ re-measure** loop that *you* drive; the engine still does all measuring. Read
 **`references/repair-loop.md`** for the exact loop (Phases A/B/C, the ceilings,
 how to call `repair-step.js`, how Phase C threads attempt history). In short:
 
-- **Phase A — diagnose (parallel, no browser).** For each `repairInput`, spawn one
-  subagent with the prompt in **`references/diagnosis-subagent.md`**, handing it
-  that capture's `input.json` + screenshot. It returns **strictly** the §3 output
-  schema (a closed action enum + a machine-checkable `successCriterion`, defaulting
-  to `expect: moved`). It never proposes a duration/easing/from-to. Save each as
+- **Phase A — diagnose (queued parallel, no browser).** For each `repairInput`,
+  spawn one subagent with the prompt in **`references/diagnosis-subagent.md`**,
+  handing it that capture's `input.json` + screenshot if present. Use at most 6
+  workers at once; queue overflow in later batches or run serially. It returns
+  **strictly** the §3 output schema (a closed action enum + a machine-checkable
+  `successCriterion`, defaulting to `expect: moved`). It never proposes a
+  duration/easing/from-to. Save each as
   `<run>/repair/<id>.attempt-1.output.json`.
 - **Phase B — apply + re-measure (serial, headed).** For each diagnosis, run
   `repair-step.js apply …`. It routes the output (terminal / low-confidence /

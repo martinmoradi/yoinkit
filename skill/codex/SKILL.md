@@ -26,10 +26,10 @@ Run from the YoinkIt repo root. Needs Bun and agent-browser; the tool
 self-drives a real headed browser via `bin/capture-browser`.
 
 For repair diagnosis, use a Codex multi-agent/subagent tool when one is available
-(discover it with `tool_search` if needed), launching one diagnosis worker per
-repair input. If no subagent tool is available in the session, run the same
-diagnosis prompt serially in the current agent and save the same output JSON
-files before applying repairs.
+(discover it with `tool_search` if needed), launching at most 6 diagnosis
+workers at once. Queue overflow in later batches, or run the same diagnosis
+prompt serially in the current agent if no subagent tool is available. Always
+save the same output JSON files before applying repairs.
 
 ## The one rule that shapes everything: script measures, agent judges
 
@@ -120,11 +120,13 @@ re-measure** loop that *you* drive; the engine still does all measuring. Read
 **`references/repair-loop.md`** for the exact loop (Phases A/B/C, the ceilings,
 how to call `repair-step.js`, how Phase C threads attempt history). In short:
 
-- **Phase A — diagnose (parallel, no browser).** For each `repairInput`, spawn one
-  subagent with the prompt in **`references/diagnosis-subagent.md`**, handing it
-  that capture's `input.json` + screenshot. It returns **strictly** the §3 output
-  schema (a closed action enum + a machine-checkable `successCriterion`, defaulting
-  to `expect: moved`). It never proposes a duration/easing/from-to. Save each as
+- **Phase A — diagnose (queued parallel, no browser).** For each `repairInput`,
+  spawn one subagent with the prompt in **`references/diagnosis-subagent.md`**,
+  handing it that capture's `input.json` + screenshot if present. Use at most 6
+  workers at once; queue overflow in later batches or run serially. It returns
+  **strictly** the §3 output schema (a closed action enum + a machine-checkable
+  `successCriterion`, defaulting to `expect: moved`). It never proposes a
+  duration/easing/from-to. Save each as
   `<run>/repair/<id>.attempt-1.output.json`.
 - **Phase B — apply + re-measure (serial, headed).** For each diagnosis, run
   `repair-step.js apply …`. It routes the output (terminal / low-confidence /

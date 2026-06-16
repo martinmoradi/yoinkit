@@ -22,23 +22,38 @@ full rationale, `docs/PART-5-repair-loop-design.md`.
 4. `maxRetries = 2`, `confidenceFloor = 0.4` (these are enforced inside
    `repair-step.js`; you enforce the budget, the retry count, and repeated-identical).
 
-## Phase A — diagnose, in parallel (no browser)
+## Phase A — diagnose, queued parallel (no browser)
 
-For **every** repairable result, spawn one diagnosis subagent if the Codex
-session has a multi-agent/subagent tool available. Use `tool_search` to discover
-one when needed, and run all diagnoses in parallel if the tool supports it. If no
-subagent tool is available, perform the same diagnosis step serially in the
-current agent. Build each prompt from
-`references/diagnosis-subagent.md`, filling:
+For **every** repairable result, run one diagnosis prompt. Use a Codex
+multi-agent/subagent tool when available (`tool_search` can discover it), but
+keep at most **6 workers open at once**. If there are more than 6 repairable
+inputs, queue the overflow: wait for workers to finish, save their outputs, close
+them, then launch the next batch. If no subagent tool is available, perform the
+same diagnosis step serially in the current agent.
+
+Build each prompt from `references/diagnosis-subagent.md`, filling:
 
 - `{INPUT_JSON_PATH}` → `<run>/<result.repairInput>`
 - `{SCREENSHOT_PATH}` → `<run>/repair/<id>.attempt-1.png` (the input's `screenshot`
-  field; may be absent if the screenshot failed — then tell the subagent to reason
-  from `repairContext` alone).
+  field). If the screenshot field is absent, or `<run>/<input.screenshot>` is not
+  readable, fill this with `Screenshot unavailable; reason from repairContext
+  alone.` Do **not** re-run capture just to recover a screenshot.
+
+When spawning Codex workers, use exactly one call shape:
+Use either `message` or `items`, never both:
+
+```js
+spawn_agent({ agent_type: "worker", message: "<filled diagnosis prompt>" })
+spawn_agent({
+  agent_type: "worker",
+  items: [{ type: "text", text: "<filled diagnosis prompt>" }]
+})
+```
 
 Save each subagent's final message verbatim to
 `<run>/repair/<id>.attempt-1.output.json`. (Subagents return raw JSON — that IS the
-file content.)
+file content: no prose, no code fence, no transcript wrapper.) Before Phase B,
+make sure every repairable capture you plan to apply has this output file.
 
 ## Phase B — apply + re-measure, serial per site (headed)
 
@@ -62,6 +77,11 @@ Decrement `budget`. The script routes the output and prints a one-line verdict J
   repair that didn't converge → eligible for **one** retry (Phase C). Keep its
   verdict (note its `resultTriple` and `occludedBy`).
 
+This apply step is also the validation step for the subagent output: it reads the
+saved JSON, calls `validateRepairOutput`, and records a safe
+`terminal_give_up(provider_error)` if the file is unreadable or invalid. Never
+act on a diagnosis that has not gone through this command.
+
 Serial, not parallel: these drive the one real browser, and stateful repairs must
 not interleave. (Each apply is its own fresh isolated single capture — M1 holds by
 construction — but running two headed captures at once would still collide.)
@@ -71,17 +91,18 @@ construction — but running two headed captures at once would still collide.)
 For each Phase-B verdict that is `unrepaired / measured / not converged`, and only
 if `attempt < maxRetries` and `budget > 0`:
 
-1. Spawn one more diagnosis subagent if available, or run the same retry
-   diagnosis serially. Reuse the **same** attempt-1 input + screenshot (the
-   failed state is structurally unchanged), and append an attempt-history note to
-   the prompt, e.g.:
+1. Spawn one more diagnosis subagent if available, using the same 6-worker queue
+   and the same `message`/`items` call-shape rule from Phase A. Otherwise run the
+   retry diagnosis serially. Reuse the **same** attempt-1 input + screenshot if it
+   exists (the failed state is structurally unchanged), and append an
+   attempt-history note to the prompt, e.g.:
 
    > ATTEMPT HISTORY: attempt 1 used `<kind>` (`<params>`) and the engine measured
    > `<status>` (occludedBy: `<occludedBy>`); it did not converge. Do not repeat it
    > unchanged — refine it (a different instance, an extra precondition step, a
    > parent target), or give an honest `terminal_give_up` if nothing here animates.
 
-   Save to `<run>/repair/<id>.attempt-2.output.json`.
+   Save the raw final JSON to `<run>/repair/<id>.attempt-2.output.json`.
 
 2. Apply attempt 2:
 
@@ -91,7 +112,8 @@ if `attempt < maxRetries` and `budget > 0`:
      --output <run>/repair/<id>.attempt-2.output.json --attempt 2
    ```
 
-   Decrement `budget`. Read the verdict:
+   Decrement `budget`. This validates attempt 2 through `validateRepairOutput`.
+   Read the verdict:
    - `converged` → done (ok/check-after-repair).
    - **repeated-identical**: the attempt-2 `resultTriple` equals attempt 1's → it's
      not converging. Stop and record an honest terminal:
