@@ -73,6 +73,7 @@ RUN="$(./bin/yoinkit init https://mammothmurals.com/)"
 ./bin/yoinkit recon "$RUN"
 ./bin/yoinkit static-map "$RUN"
 ./bin/yoinkit motion-scout "$RUN"
+REPORT="$(./bin/yoinkit map-report "$RUN")"
 ```
 
 `init` materializes the run shell only: `00-config.json` and the minimal
@@ -103,6 +104,13 @@ leads for later Capture: trigger, target selector, Region attachment or
 mechanical priority hint. They deliberately do not store measured duration,
 easing, from/to values, sampled timelines, capture ids, Signature importance, or
 implementation component/token names.
+
+`map-report` requires completed Recon, Static Map, and Motion Scout artifacts,
+then writes the portable static Report v0 to `04-map-report/index.html` and
+prints its absolute path. The HTML embeds the Page model projection, assertion
+and coverage snapshots, motion candidates, and input hashes, while linking crops
+and copied asset evidence by relative path. It does not open a browser by
+default.
 
 Asset fetching is safe by default. Same-origin assets are fetched; `file:` and
 cross-origin assets are skipped, reported in `coverage.md`, and printed in the
