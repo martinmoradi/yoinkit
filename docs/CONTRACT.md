@@ -41,45 +41,78 @@ but the structure inside it is fixed.
 yoink-runs/{slug}/
 ├── 00-config.json
 ├── page-model.json
-├── map/
+├── 01-recon/
+│   ├── page-state.json
+│   ├── viewport-manifest.json
+│   └── source-metadata.json
+├── 02-static-map/
 │   ├── measurements.json
 │   ├── assertions.json
 │   ├── coverage.md
-│   └── exceptions.json
-├── capture/
-│   └── passes/
-│       └── pass-001/
-│           ├── pass.json
-│           ├── clips/
-│           └── crops/
-├── report/
-│   └── index.html
-├── spec.json
-└── implement/
+│   ├── crops/
+│   └── assets/
+├── 03-motion-scout/
+│   ├── motion-candidates.json
+│   ├── coverage.md
+│   └── assertions.json
+├── 04-map-report/
+│   ├── index.html
+│   └── gate.json
+├── 05-capture/
+│   ├── passes/
+│   │   └── pass-001/
+│   │       ├── pass.json
+│   │       ├── clips/
+│   │       └── crops/
+│   └── results.json
+├── 06-spec/
+│   └── spec.json
+└── 07-implement/
+    ├── architecture/
+    │   ├── file-tree.md
+    │   ├── component-map.md
+    │   ├── motion-map.md
+    │   └── token-map.md
     ├── static-assertions.json
     ├── motion-assertions.json
     └── qa/
 ```
 
-`page-model.json` is the canonical artifact. The Report and Spec are projections
-of it. They are never hand-authored in parallel.
+Earlier prototype paths such as `map.json`, `manifest.proposed.json`,
+`animations.json`, and `report.md` are salvage material, not the contract.
+
+`page-model.json` is the canonical artifact. Stage directories hold evidence,
+assertions, projections, and logs that update or derive from it. No stage owns a
+second copy of the Page model.
+
+The Report and Spec are projections of `page-model.json`. They are never
+hand-authored in parallel.
+
+Report Region placeholder positions and dimensions are derived from Region
+geometry in `page-model.json`. The Report must not store separate geometry or
+sizing facts that can drift from the Page model.
 
 `00-config.json` is the shared interface between the agent skill and the
 deterministic CLI. Skill arguments and CLI flags both compile into this file
 before stage commands run.
 
-It is also shared by `implement`. `spec.json` remains the main implementation
+It is also shared by `implement`. `06-spec/spec.json` is the main implementation
 input, but operational settings such as output path, target stack, gate
-tolerances, and check-in policy live under an `implement` section of the same
-run config.
+tolerances, and check-in policy live under an `implement` section of the same run
+config.
 
 Minimum shape:
 
 ```json
 {
+  "schemaVersion": 1,
   "targetUrl": "https://example.com",
   "scope": "page",
-  "viewports": ["desktop", "mobile"],
+  "viewports": [
+    { "id": "desktop", "width": 1280, "height": 800 },
+    { "id": "mobile", "width": 390, "height": 844 }
+  ],
+  "primaryViewport": "desktop",
   "outputDir": "./out/example",
   "yoink": {
     "mode": "observe"
@@ -91,6 +124,39 @@ Minimum shape:
   }
 }
 ```
+
+The skill and CLI may accept friendly shorthand, but the resolved
+`00-config.json` stores explicit viewport dimensions. Map v0 uses those
+dimensions to measure Region geometry, responsive presence, crops, and Report v0
+Region placeholder sizing.
+
+Minimum `page-model.json` v0 shape:
+
+```json
+{
+  "schemaVersion": 1,
+  "source": { "url": "https://example.com" },
+  "viewports": [
+    { "id": "desktop", "width": 1280, "height": 800 }
+  ],
+  "pages": {
+    "home": {
+      "path": "/",
+      "dimensions": {
+        "desktop": { "scrollWidth": 1280, "scrollHeight": 4200 }
+      },
+      "regions": []
+    }
+  },
+  "captures": [],
+  "notes": [],
+  "exceptions": []
+}
+```
+
+Map v0 writes ordered Regions into the page's `regions` list. The capture,
+notes, and exceptions buckets exist in the model from the start, but Capture
+passes fill them later.
 
 ## CLI Boundary
 
@@ -113,10 +179,42 @@ working code from it, but must not preserve its monolithic shape or any
 pre-contract command semantics that conflict with the Page model, Map Gate,
 Report view modes, or deterministic stage-runner boundary.
 
+The first stage-runner slice exposes each pre-gate stage directly:
+
+```text
+yoinkit init <url>
+yoinkit recon <run-dir>
+yoinkit static-map <run-dir>
+yoinkit motion-scout <run-dir>
+yoinkit map-report <run-dir>
+yoinkit map-gate <run-dir>
+```
+
+It also exposes one convenience command:
+
+```text
+yoinkit map <run-dir>
+```
+
+`yoinkit map` runs `recon -> static-map -> motion-scout -> map-report`, then
+stops before `map-gate` so the human can review Report v0. `map-gate` is a pure
+validator and recorder: it accepts an explicit decision from the agent session
+after human review, checks that the required assertions and coverage allow that
+decision, and writes `04-map-report/gate.json`. It does not decide approval
+itself.
+
+Minimum decision commands:
+
+```text
+yoinkit map-gate <run-dir> --approve
+yoinkit map-gate <run-dir> --reject
+yoinkit map-gate <run-dir> --approve-exception <exception-id>
+```
+
 ## Stage Spine
 
 ```text
-Map -> Map Gate -> Capture -> Report + Spec -> Implement
+Recon -> Static Map -> Motion Scout -> Map Report -> Map Gate -> Capture -> Spec -> Implement
 ```
 
 The agent may run deterministic helper commands inside a stage. It must not cross
@@ -160,55 +258,199 @@ Every claim that affects a gate must carry evidence.
 - When sources conflict, prefer measured runtime facts over screenshots, and
   prefer source-like visual evidence only as supporting context.
 
+## Recon Stage
+
+Recon proves the source page can be reached and described at the configured
+viewports before any Page model structure is authored.
+
+Recon must write:
+
+- `01-recon/page-state.json`
+- `01-recon/viewport-manifest.json`
+- `01-recon/source-metadata.json`
+
+Recon records at least:
+
+- final URL after redirects
+- readiness and blocker status
+- viewport dimensions actually used
+- page dimensions per viewport
+- title and source metadata
+- framework and library hints where detectable
+- dominant iframe facts, including same-origin retargeting or cross-origin
+  blockers
+- scroll and lazy-load readiness notes
+
+Recon must not create Regions, Region placeholders, or motion candidates. Those
+begin in Static Map and Motion Scout.
+
 ## Map Stage
 
-Map builds the Page model skeleton. It is place-first: Regions ordered
-top-to-bottom, with captures nested later inside their spatial home.
+Map builds the Page model skeleton through two pre-human passes:
+
+- **Static Map** proves the static scaffold: Region identity, boxes, layout,
+  colors, typography, assets, and Region placeholder shape and size.
+- **Motion Scout** discovers likely motion targets from registries, CSS
+  transitions, keyframes, split reveals, hover affordances, loops, and scroll
+  triggers. It writes candidates for Capture; it does not write measured motion
+  facts.
+
+Map is place-first: Regions are ordered top-to-bottom, with captures nested later
+inside their spatial home.
+
+Static Map is YoinkIt's extraction-equivalent layer: it records measured
+per-Region facts. It must not synthesize global design tokens, infer component
+architecture, or decide how the implementation should be decomposed. Those
+decisions belong to `implement`.
+
+Static Map `static.colors`, `static.typography`, and `static.assets` are evidence
+lists, not tokenized design-system fields. They record measured values, selectors,
+asset paths, intrinsic dimensions, and evidence methods. They must not contain
+implementation tokens such as `--color-primary` or component names such as
+`HeroTitle`.
+
+Motion Scout writes candidates in two shapes:
+
+- `03-motion-scout/motion-candidates.json` is the flat runnable checklist for
+  Capture.
+- `page-model.json` stores Region-local candidate references so the Report can
+  show each candidate in its spatial home.
+
+Motion candidates are leads, not measurements. They may record a likely trigger,
+source selector, Region id, and evidence source. They must not record measured
+duration, easing, from/to values, or frame timelines.
 
 Map must write:
 
 - `page-model.json`
-- `map/measurements.json`
-- `map/assertions.json`
-- `map/coverage.md`
-- `map/exceptions.json`
-- `report/index.html` as Report v0
+- `02-static-map/measurements.json`
+- `02-static-map/assertions.json`
+- `02-static-map/coverage.md`
+- `02-static-map/crops/`
+- `03-motion-scout/motion-candidates.json`
+- `03-motion-scout/assertions.json`
+- `03-motion-scout/coverage.md`
+- `04-map-report/index.html` as Report v0
+
+`02-static-map/coverage.md` is the human-readable checklist for Static Map
+coverage. `02-static-map/assertions.json` is the machine-readable gate input
+that `map-gate` evaluates. They cover the same Map facts from different angles:
+human scan versus deterministic validation.
+
+`03-motion-scout/coverage.md` and `03-motion-scout/assertions.json` follow the
+same split for candidate discovery. They answer whether Motion Scout inspected
+the obvious motion sources before human review: registries, CSS transitions,
+CSS keyframes, split reveals, hover affordances, loops, and scroll-trigger
+sources. They gate discovery coverage, not motion fidelity.
+
+Coverage rows include:
+
+- area
+- whether it is required
+- status
+- evidence
+- reason when missing, out of scope, or exceptional
+
+Assertion rows include:
+
+- stable id
+- kind
+- required flag
+- status
+- evidence references
+- failure or exception reference when applicable
 
 Each Region must have:
 
 - stable id
 - human-readable name
+- order within the page
 - per-viewport rect and scroll-Y
 - per-viewport presence
+- Region placeholder dimensions derived from the measured Region rect
 - crop path or `null + reason`
 - static visual evidence where available
 - source selectors or `null + reason`
+- motion candidates or an empty list
+
+Minimum Region v0 shape:
+
+```json
+{
+  "id": "region-hero",
+  "name": "Hero",
+  "order": 1,
+  "viewports": {
+    "desktop": {
+      "presence": "present",
+      "rect": { "x": 0, "y": 0, "width": 1280, "height": 760 },
+      "scrollY": 0,
+      "placeholder": { "width": 1280, "height": 760 },
+      "crop": { "path": "02-static-map/crops/region-hero.desktop.png" }
+    }
+  },
+  "static": {
+    "colors": [],
+    "typography": [],
+    "assets": [],
+    "layout": {}
+  },
+  "source": {
+    "selectors": ["main > section.hero"],
+    "evidence": []
+  },
+  "motionCandidates": [],
+  "unknowns": []
+}
+```
+
+The Region id is the stable identity across viewports. Presence, rect, scroll-Y,
+placeholder dimensions, and crop are per-viewport facts.
 
 ## Map Gate
 
 The Map Gate is binary. It passes only when all of the following are true:
 
 - every required Map assertion passes
-- every required coverage row is complete
+- every required Static Map coverage row is complete
+- every required Motion Scout coverage row is complete
 - every unknown has `null + reason`
 - every exception is explicitly human-approved and recorded
 - the human approves Report v0
+
+Canonical exceptions live in `page-model.json` under `exceptions[]` so Capture,
+Spec, and Implement inherit them automatically. `04-map-report/gate.json` is the
+Map Gate decision record: it records the gate result, assertion summary, coverage
+summary, unknowns, human approval, and the ids of approved exceptions. It does
+not own a second copy of the exceptions.
+
+`map-gate` must fail an approval when required assertions fail or coverage rows
+are incomplete unless each blocking item has already been marked out of scope or
+approved as an exception. The command records explicit approval or rejection; it
+does not infer either from the Report.
+
+Map Gate can pass with zero motion candidates when Motion Scout completed its
+discovery checklist and found no applicable motion sources. It cannot pass when
+Motion Scout simply failed to inspect required sources such as CSS transitions,
+keyframes, hover affordances, registries, loops, or scroll-trigger clues.
 
 Map assertions cover at least:
 
 - important visible sections are represented as Regions
 - Region rects match the source within the configured tolerance
+- Report v0 Region placeholders match the measured Region dimensions
 - crops align with the source Region
 - scroll order is correct
 - responsive presence is correct for the mapped viewports
 - Region names are stable enough for capture and implementation handoff
+- Motion Scout candidates are recorded as candidates, not measured motion facts
 
 There are no agent-controlled warnings. A finding is one of:
 
 - **Required assertion failure**: blocks the gate.
 - **Out of scope**: excluded before the gate with a reason.
-- **Human-approved exception**: allowed only when recorded in
-  `map/exceptions.json`.
+- **Human-approved exception**: allowed only when recorded in the Page model and
+  the gate artifact.
 - **Info**: visible note only, not part of the gate.
 
 ## Report
@@ -220,10 +462,14 @@ or agent explicitly reads a small part of it.
 Report v0 must support three view modes:
 
 - **Source mode**: source-like crops and measured static visuals first, exact
-  Region positions, minimal debug overlay.
+  Region positions, correctly sized Region placeholders, minimal debug overlay.
+  It answers whether the static scaffold resembles the source.
 - **Region mode**: artificial tints, inset non-layout-affecting borders, labels,
-  hover outlines, and tooltips.
-- **Gate mode**: missing, uncertain, failed, or blocking items emphasized.
+  hover outlines, and tooltips. It answers whether segmentation is correct.
+- **Gate mode**: missing, uncertain, failed, or blocking items emphasized. For
+  Report v0, this includes failed assertions, incomplete coverage rows, unknowns,
+  unapproved exceptions, and motion candidates that need human attention. It
+  answers what blocks Capture.
 
 Edits made through the Report write back to `page-model.json`. They do not
 decorate the HTML only.
@@ -272,8 +518,9 @@ the engine can measure.
 
 ## Spec
 
-`spec.json` is the machine-facing projection of `page-model.json`. It is compact
-and agent-ingestable. It references Clip paths but does not inline frames.
+`06-spec/spec.json` is the machine-facing projection of `page-model.json`. It is
+compact and agent-ingestable. It references Clip paths but does not inline
+frames.
 
 The Spec must preserve:
 
@@ -286,9 +533,9 @@ The Spec must preserve:
 
 ## Implement Stage
 
-`implement` consumes `spec.json` first. The Report and Clips are supporting
-evidence. The implementation skill inherits clone-app's build rigor where it
-does not conflict with YoinkIt.
+`implement` consumes `06-spec/spec.json` first. The Report and Clips are
+supporting evidence. The implementation skill inherits clone-app's build rigor
+where it does not conflict with YoinkIt.
 
 The default `implement.targetStack` is `house`: React, Bun, Vite, Lenis, GSAP,
 and CSS Modules. Lenis is default-on: calibrate it toward measured source smooth
@@ -312,9 +559,16 @@ Required shape:
 - permanent implement references inside this repo define the standard House
   architecture and build rules
 - run a minimal per-run Architecture stage before build work starts
-- the Architecture stage writes `implement/architecture/file-tree.md`,
-  `implement/architecture/component-map.md`, and
-  `implement/architecture/motion-map.md`
+- the Architecture stage writes `07-implement/architecture/file-tree.md`,
+  `07-implement/architecture/component-map.md`,
+  `07-implement/architecture/motion-map.md`, and
+  `07-implement/architecture/token-map.md`
+- the Architecture/Foundation work extracts an editable implementation token
+  layer from the Spec, covering color, typography, spacing, assets, and motion
+  variables where evidence supports them
+- the built app exposes the implementation token layer through the House stack's
+  normal control surface, such as global CSS custom properties and motion
+  variables, instead of scattering hard-coded values through components
 - document the generated file tree before implementation work fans out
 - build foundation first: tokens, layout shell, assets, shared components
 - build pages or sections after the foundation
@@ -341,8 +595,8 @@ Implementation gates are tiered:
 ## Improve Pass
 
 An Improve pass starts from an existing run directory. The agent reads
-`page-model.json`, `spec.json`, implementation QA artifacts, and the Report
-status, then works with the human to choose the next focused target.
+`page-model.json`, `06-spec/spec.json`, implementation QA artifacts, and the
+Report status, then works with the human to choose the next focused target.
 
 Valid targets include:
 

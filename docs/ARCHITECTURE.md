@@ -43,43 +43,64 @@ scroll choreography is in; multi-page route transitions are out.
 
 One `yoink` pipeline, two capture modes, plus a separate downstream skill:
 
-1. **Map** — static structure into a legible, **place-first page model**: an
-   ordered list of [Region]s top-to-bottom, each with rect + scroll-Y + crop +
-   human-readable name, with captures (hovers, reveals, loops, scroll-triggers)
-   nested *inside* the region they belong to. Cheap, headless. This is the
-   referent captures attach to and the model the Report renders to scale; without
-   it, captured IDs are floating signifiers. (The current engine emits a
-   capability-first flat selector bag — `{ scrollTriggers[], hoverCandidates[],
-   loops[], … }` — and will be rebuilt place-first.) Map ends with a **Map
-   Gate**: the human approves the Report v0's Regions, rects, crops, scroll
-   positions, responsive presence, and names before Capture begins.
-2. **Capture** — measure motion, attached to the map's named Regions. Two modes:
+1. **Recon** — source reachability and orientation at the configured viewports:
+   final URL, readiness, blockers, page dimensions, iframe facts, source
+   metadata, and viewport manifest. It does not author Regions, Region
+   placeholders, or motion candidates.
+2. **Map** — two pre-human passes that build the legible, **place-first page
+   model**:
+   - **Static Map** — boxes, identity, layout, colors, typography, assets, and
+     correctly sized Region placeholders. It proves the static scaffold before
+     any back-and-forth. It records measured facts region-by-region; it does not
+     synthesize a design system or implementation component model.
+   - **Motion Scout** — likely hovers, reveals, loops, scroll triggers, split
+     reveals, and registry/CSS motion clues. It produces capture candidates, not
+     measured motion facts. It writes both a flat runnable checklist for Capture
+     and Region-local candidate references for the Report.
+
+   The result is an ordered list of [Region]s top-to-bottom, each with rect +
+   scroll-Y + crop + human-readable name, with later captures (hovers, reveals,
+   loops, scroll-triggers) nested *inside* the region they belong to. Cheap,
+   headless. This is the referent captures attach to and the model the Report
+   renders to scale; without it, captured IDs are floating signifiers. (The
+   current engine emits a capability-first flat selector bag —
+   `{ scrollTriggers[], hoverCandidates[], loops[], … }` — and will be rebuilt
+   place-first.) Map ends with a **Map Gate**: the human approves the Report v0's
+   Regions, correctly sized Region placeholders, rects, crops, scroll positions,
+   responsive presence, names, Static Map coverage, and Motion Scout discovery
+   coverage before Capture begins.
+3. **Capture** — measure motion, attached to the map's named Regions. Two modes:
    - **Automated** — the agent drives known triggers (hover/scroll/click).
    - **Observe (human-guided)** — the human drives a real browser and the engine
      measures. The capture mode for the hard stuff automation misses
      (choreography, invisible hover zones, "the good bit"). See [the observe-mode
      spec](./specs/human-guided-observe-mode.md) and *Observe mode in practice*
      below.
-3. **Report + Spec** — *two projections of one canonical [Page model]*, never
+4. **Report + Spec** — *two projections of one canonical [Page model]*, never
    authored in parallel. The Map builds the page model's skeleton, each capture
    pass enriches it, and the human annotates it through the Report. This
    single-source discipline (clone-app's `DESIGN.md`/`assertions.json` move) is
    what guarantees **no drift** between what the human sees and what the build
    agent ingests.
    - **Report** (human-facing render): a scroll-accurate HTML scaffold of the
-     page, placeholders at real positions, captured motion/crops/verify-flags
-     pinned where they happen. For *assessment*. Accretes across passes; makes
-     gaps visible. Zero context cost — it never re-enters an agent. Human edits
+     page, Region placeholders at real positions, captured motion/crops/
+     verify-flags pinned where they happen. Region placeholder positions and
+     dimensions are rendered from the Page model's Region geometry, not stored
+     separately by the Report.
+     For *assessment*. Accretes across passes; makes gaps visible. Zero context
+     cost — it never re-enters an agent. Human edits
      (rename, importance, verify, note) write *back into* the page model. It has
      explicit view modes:
      - **Source mode** renders source-like evidence first: region crops where
        available, measured static visuals and tokens as fallbacks, exact Region
-       rects and scroll positions.
+       rects and scroll positions. It answers whether the static scaffold
+       resembles the source.
      - **Region mode** adds artificial debug overlays: low-opacity tints, inset
        non-layout-affecting borders, hover outlines, labels, and tooltips with
-       Region name, rect, scroll-Y, viewport presence, and gaps.
+       Region name, rect, scroll-Y, viewport presence, and gaps. It answers
+       whether segmentation is correct.
      - **Gate mode** emphasizes missing, uncertain, or blocking items for the
-       current approval gate.
+       current approval gate. For Report v0, it answers what blocks Capture.
    - **Spec** (machine-facing serialization): the compact JSON the build phase
      ingests. The only projection that re-enters context.
 
@@ -99,16 +120,28 @@ generating the Report, emitting the Spec, and managing run artifacts.
 Both skill arguments and CLI flags compile into the same `00-config.json`. The
 skill is the friendly product entrypoint, while the CLI is the deterministic way
 to create, update, or execute the same run configuration. `implement` uses the
-same config under its own section: `spec.json` is the main implementation input,
-while `00-config.json` carries operational settings like output path, target
-stack, gate tolerances, and check-in policy.
+same config under its own section: `06-spec/spec.json` is the main
+implementation input, while `00-config.json` carries operational settings like
+output path, target stack, gate tolerances, and check-in policy.
+
+The run shape follows clone-app's stage-directory discipline: numbered layers,
+fixed artifact ownership, and explicit handoffs. YoinkIt borrows the artifact
+rigor, not the exact clone-app stages:
+
+```text
+Recon -> Static Map -> Motion Scout -> Map Report -> Map Gate -> Capture -> Spec -> Implement
+```
 
 The CLI is a **stage runner**, not the product brain. Commands such as `init`,
-`map`, `report`, `map-gate`, `capture`, `merge-pass`, `spec`, and `validate`
-perform repeatable work against `00-config.json` and the run artifacts. They do
-not decide what is worth capturing, whether a Report is good, or when the product
-has succeeded; those judgment calls stay in the agent session and the human
-gates.
+`recon`, `static-map`, `motion-scout`, `map-report`, `map-gate`, `capture`,
+`merge-pass`, `spec`, and `validate` perform repeatable work against
+`00-config.json` and the run artifacts. They do not decide what is worth
+capturing, whether a Report is good, or when the product has succeeded; those
+judgment calls stay in the agent session and the human gates.
+
+For the first Map slice, `yoinkit map <run-dir>` is only a convenience wrapper
+for `recon -> static-map -> motion-scout -> map-report`. It stops before
+`map-gate`; the gate command records the human-reviewed decision separately.
 
 The existing `bin/yoinkit` is prototype material, not the architecture to
 preserve. Reuse working browser-driving, artifact-writing, map/capture, and
@@ -180,13 +213,22 @@ before code generation fans out. The implement skill has permanent references
 for the standard House architecture, kept inside this repo for now because they
 depend on YoinkIt terms like Region, Spec, Confidence, Clip, Static Fidelity, and
 House stack. Each run has a minimal Architecture stage that writes
-`file-tree.md`, `component-map.md`, and `motion-map.md` for the current Spec.
-This is a guardrail against god files and mystery CSS, not an invitation to
-over-design. CSS Modules are the default styling boundary: component styling,
-responsive rules, state selectors, and local animation classes live beside the
-component. Global CSS is for tokens and House stack shell rules. Inline styles
-are reserved for dynamic runtime values or assigning CSS custom properties such
-as measured delays.
+`file-tree.md`, `component-map.md`, `motion-map.md`, and `token-map.md` for the
+current Spec. This is a guardrail against god files and mystery CSS, not an
+invitation to over-design. CSS Modules are the default styling boundary:
+component styling, responsive rules, state selectors, and local animation
+classes live beside the component. Global CSS is for tokens and House stack shell
+rules. Inline styles are reserved for dynamic runtime values or assigning CSS
+custom properties such as measured delays.
+
+Implementation extracts an **Implementation token layer** from the Spec during
+the Architecture/Foundation work. Static Map stays factual and region-local; the
+build turns those facts into editable color, typography, spacing, asset, and
+motion variables, documented in `07-implement/architecture/token-map.md`, so the
+human can toy with the final product without spelunking through component
+internals. In the House stack, the built app exposes this control surface through
+CSS custom properties and motion variables rather than scattered hard-coded
+values.
 
 Barba.js is a deferred candidate for inter-page transitions, not part of the
 default stack yet. The first-client scope is one landing page, so this decision
