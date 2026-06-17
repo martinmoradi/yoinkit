@@ -378,6 +378,33 @@ test('yoinkit map-gate --approve blocks stale Report config inputs', () => {
   ]));
 });
 
+test('yoinkit map-gate --approve blocks stale Report HTML paired with a newer snapshot', () => {
+  const cwd = tempDir();
+  const config = prepareGateRun(cwd);
+  const reportFile = path.join(mapReportDir(config.runDir), 'index.html');
+  const old = new Date('2026-06-17T12:44:00.000Z');
+  fs.utimesSync(reportFile, old, old);
+
+  const result = runGate(cwd, [config.runDir, '--approve']);
+
+  expect(result.status).toBe(1);
+  expect(result.stderr).toContain('04-map-report/index.html');
+  const gate = readJson(path.join(mapReportDir(config.runDir), 'gate.json'));
+  expect(gate).toMatchObject({
+    decision: 'blocked',
+    freshnessSummary: {
+      staleInputs: 1,
+    },
+  });
+  expect(gate.blockers).toEqual(expect.arrayContaining([
+    expect.objectContaining({
+      id: '04-map-report/index.html',
+      source: 'report-freshness',
+      status: 'stale',
+    }),
+  ]));
+});
+
 test('yoinkit map-gate --approve blocks missing Report config inputs', () => {
   const cwd = tempDir();
   const config = prepareGateRun(cwd);
