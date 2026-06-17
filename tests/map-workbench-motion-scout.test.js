@@ -380,6 +380,7 @@ test('motion-scout records source-level inspection failures while preserving sib
       source: 'scroll-trigger-registry',
       status: 'missing',
       candidates: 0,
+      evidence: '',
       reason: 'ScrollTrigger registry inspection threw: registry unavailable',
     }),
   ]));

@@ -568,8 +568,8 @@ test('yoinkit map-gate --approve blocks uninspected required Motion Scout discov
   });
   expect(gate.blockers).toEqual(expect.arrayContaining([
     expect.objectContaining({
-      id: 'scroll-trigger-registry',
-      source: 'motion-scout-coverage',
+      id: 'scroll-trigger-registry:desktop',
+      source: 'motion-scout-discovery',
       status: 'missing',
       message: 'ScrollTrigger registry inspection threw: registry unavailable',
     }),
@@ -592,8 +592,8 @@ test('yoinkit map-gate --approve blocks when Motion Scout emits no discovery ins
   });
   expect(gate.blockers).toEqual(expect.arrayContaining([
     expect.objectContaining({
-      id: 'css-transition-hover',
-      source: 'motion-scout-coverage',
+      id: 'css-transition-hover:desktop',
+      source: 'motion-scout-discovery',
       status: 'missing',
       message: 'css-transition-hover was not inspected',
     }),
@@ -623,9 +623,37 @@ test('yoinkit map-gate --approve treats unrecognized Motion Scout inspection sta
   });
   expect(gate.blockers).toEqual(expect.arrayContaining([
     expect.objectContaining({
-      id: 'css-keyframes',
-      source: 'motion-scout-coverage',
+      id: 'css-keyframes:desktop',
+      source: 'motion-scout-discovery',
       status: 'missing',
+    }),
+  ]));
+});
+
+test('yoinkit map-gate --approve blocks a missing structured Motion Scout discovery matrix row', () => {
+  const cwd = tempDir();
+  const config = prepareGateRun(cwd);
+  const candidatesFile = path.join(motionScoutDir(config.runDir), 'motion-candidates.json');
+  const candidates = readJson(candidatesFile);
+  candidates.discovery.inspections = candidates.discovery.inspections
+    .filter(row => !(row.source === 'cursor-affordance' && row.viewportId === 'desktop'));
+  writeJson(candidatesFile, candidates);
+  runMapReport(config.runDir, { now: new Date('2026-06-17T13:10:00.000Z') });
+
+  const result = runGate(cwd, [config.runDir, '--approve']);
+
+  expect(result.status).toBe(1);
+  expect(result.stderr).toContain('cursor-affordance:desktop');
+  const gate = readJson(path.join(mapReportDir(config.runDir), 'gate.json'));
+  expect(gate.coverageSummary).toMatchObject({
+    motionScout: { incompleteRequired: 1 },
+  });
+  expect(gate.blockers).toEqual(expect.arrayContaining([
+    expect.objectContaining({
+      id: 'cursor-affordance:desktop',
+      source: 'motion-scout-discovery',
+      status: 'missing',
+      message: 'cursor-affordance was not inspected for desktop',
     }),
   ]));
 });
