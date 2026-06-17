@@ -3860,7 +3860,7 @@ function motionScoutCommand(argv) {
   console.log(`Saved ${result.artifacts.candidates}`);
   console.log(`Saved ${result.artifacts.assertions}`);
   console.log(`Saved ${result.artifacts.coverage}`);
-  console.log(`Candidates: ${result.candidates.length}`);
+  console.log(`Candidates: ${result.candidates?.length || 0}`);
 }
 
 function mapCommand(argv) {

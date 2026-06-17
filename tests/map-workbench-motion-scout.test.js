@@ -16,6 +16,7 @@ const {
 } = require('../lib/map-workbench/motion-scout');
 
 const BIN = path.join(__dirname, '..', 'bin', 'yoinkit');
+const CLI_TIMEOUT_MS = 10000;
 const tempDirs = new Set();
 
 afterEach(() => {
@@ -381,6 +382,7 @@ test('yoinkit motion-scout runs the Motion Scout stage from completed Static Map
   const result = spawnSync(process.execPath, [BIN, 'motion-scout', config.runDir], {
     cwd,
     encoding: 'utf8',
+    timeout: CLI_TIMEOUT_MS,
     env: Object.assign({}, process.env, {
       YOINKIT_MOTION_SCOUT_FIXTURE: fixtureFile,
     }),
@@ -404,6 +406,7 @@ test('yoinkit motion-scout exits clearly before Static Map has produced Regions'
   const result = spawnSync(process.execPath, [BIN, 'motion-scout', config.runDir], {
     cwd,
     encoding: 'utf8',
+    timeout: CLI_TIMEOUT_MS,
     env: process.env,
   });
 
@@ -435,7 +438,9 @@ test('motion-scout updates only Motion Scout-owned Page model references', () =>
   const config = prepareStaticMapRun(cwd);
   const pageModelFile = path.join(config.runDir, 'page-model.json');
   const before = readJson(pageModelFile);
-  before.pages.home.regions[1].motionCandidates = ['candidate-stale'];
+  const beforeRegion = before.pages.home.regions.find(region => region.id === 'region-launch-faster');
+  expect(beforeRegion).toBeDefined();
+  beforeRegion.motionCandidates = ['candidate-stale'];
   before.captures = [{ id: 'capture-existing' }];
   before.notes = [{ id: 'note-existing', text: 'keep' }];
   before.exceptions = [{ id: 'exception-existing', reason: 'keep' }];
@@ -457,7 +462,9 @@ test('motion-scout updates only Motion Scout-owned Page model references', () =>
   expect(after.captures).toEqual(before.captures);
   expect(after.notes).toEqual(before.notes);
   expect(after.exceptions).toEqual(before.exceptions);
-  expect(after.pages.home.regions[1].motionCandidates).not.toContain('candidate-stale');
-  expect(after.pages.home.regions[1].motionCandidates).toHaveLength(1);
+  const afterRegion = after.pages.home.regions.find(region => region.id === 'region-launch-faster');
+  expect(afterRegion).toBeDefined();
+  expect(afterRegion.motionCandidates).not.toContain('candidate-stale');
+  expect(afterRegion.motionCandidates).toHaveLength(1);
   expect(fs.existsSync(path.join(config.runDir, '04-map-report'))).toBe(false);
 });
