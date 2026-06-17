@@ -97,3 +97,17 @@ It's deliberately a single JS file; don't add build tooling without a real need.
   `codex/` prefix unless Martin asks for another branch name.
 - Keep commits coherent and semantic.
 - Don't commit local captures (`*.animation.json`) — they're gitignored.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs are tracked in GitHub Issues for `martinmoradi/yoinkit`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Triage labels use a small GitHub workflow vocabulary, reusing existing `question`, `help wanted`, and `wontfix` labels where they fit. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This is a single-context repo: read root `CONTEXT.md` and root `docs/adr/` when present. See `docs/agents/domain.md`.
