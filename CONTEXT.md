@@ -44,6 +44,13 @@ The default implementation stack YoinkIt uses for built outputs so yoinks share 
 common component and motion vocabulary. It can be overridden explicitly for a
 project, but it is never inferred from the source site's stack.
 
+**Implementation token layer**:
+The editable design and motion variables produced during implementation so the
+final product can be adjusted and remixed by a human. It is derived from measured
+yoink evidence, but it is part of the clean output, not a copy of the source
+site's token system.
+_Avoid_: Source tokens.
+
 ### The unit of work
 
 **Choreography**:
@@ -88,9 +95,10 @@ is the mobile menu").
 
 **Report**:
 The human-facing *projection* of the [[Page model]]: a scroll-accurate HTML
-scaffold mirroring the source page's real dimensions, with placeholder components
-pinned at their real positions and captured motion, crops, embedded [[Clip]]s,
-and verify-flags attached where they happen. Built to be *looked at and assessed*, not implemented.
+scaffold mirroring the source page's real dimensions, with correctly sized
+[[Region placeholder]]s pinned at their real positions and captured motion,
+crops, embedded [[Clip]]s, and verify-flags attached where they happen. Built to
+be *looked at and assessed*, not implemented.
 Written to disk and opened in a browser — it never re-enters an agent's context.
 It *accretes* across capture passes (each pass merges in, it is not regenerated)
 and is meant to make *gaps* visible: blank regions are the parts not yet captured.
@@ -151,6 +159,12 @@ feeds agent reasoning and the human verify path.
 
 ### The pipeline
 
+**Recon**:
+The pre-Map reachability and source-orientation stage. It proves the source page
+can be reached and described at the configured viewports, recording readiness,
+redirects, blockers, viewport facts, page dimensions, and source metadata; it
+does not author [[Region]]s or motion candidates.
+
 **Map**:
 Static analysis of a page's structure (GSAP/ScrollTrigger registry, CSS
 keyframes, transitions, DOM split-reveal). Cheap, works headless, generalizes
@@ -159,12 +173,30 @@ model**: an ordered list of [[Region]]s top-to-bottom, *not* a flat inventory of
 capabilities. It is the model the [[Report]] renders to scale.
 _Avoid_: Scan (means something narrower in the engine API).
 
+**Static Map**:
+The first Map pass: the pure static scaffold of the page before human
+back-and-forth. It proves Region identity, boxes, layout, colors, typography,
+assets, and [[Region placeholder]] shape and size.
+
+**Motion Scout**:
+The second Map pass: a pre-human discovery pass for likely motion targets using
+static and runtime-readable clues such as animation registries, CSS transitions,
+keyframes, split reveals, hover affordances, and scroll triggers. It produces
+motion candidates, not measured motion facts.
+
 **Map Gate**:
 The approval point between [[Map]] and [[Capture]] where the human checks that
 the [[Report]] v0's Regions, rects, crops, scroll positions, responsive presence,
 and names are accurate enough to serve as the spatial truth for capture and
-implementation. It is binary: required assertions pass, coverage is complete,
-unknowns are recorded honestly, and exceptions proceed only when human-approved.
+implementation. It is binary: required assertions pass, [[Static Map]] coverage
+is complete, [[Motion Scout]] discovery coverage is complete, unknowns are
+recorded honestly, and exceptions proceed only when human-approved.
+
+**Region placeholder**:
+The Report's static visual stand-in for a [[Region]] before implementation. It
+has the Region's measured position, shape, and dimensions, plus static visual
+evidence where available; it is not an implementation component.
+_Avoid_: Component (too easily confused with implementation components).
 
 **Dependency-Aware Gate**:
 A gate that blocks only the stages that depend on the missing evidence. A later
