@@ -1043,6 +1043,48 @@ test('yoinkit map-gate --approve-exception records freshness blockers when Repor
   ]));
 });
 
+test('yoinkit map-gate --approve-exception preserves live Page model edits when another Report input is missing', () => {
+  const cwd = tempDir();
+  const config = prepareGateRun(cwd);
+  const pageModelFile = path.join(config.runDir, 'page-model.json');
+  const model = readJson(pageModelFile);
+  model.pages.home.regions[0].name = 'Hero Edited After Report';
+  writeJson(pageModelFile, model);
+  fs.rmSync(path.join(motionScoutDir(config.runDir), 'coverage.md'));
+
+  const result = runGate(cwd, [
+    config.runDir,
+    '--approve-exception', 'exception-hero-crop',
+    '--reason', 'Approved while another Report input is missing.',
+    '--scope', 'region:region-hero',
+  ]);
+
+  expect(result.status).toBe(0);
+  const page = readJson(pageModelFile);
+  expect(page.pages.home.regions[0].name).toBe('Hero Edited After Report');
+  expect(page.exceptions).toEqual(expect.arrayContaining([
+    expect.objectContaining({
+      id: 'exception-hero-crop',
+      stage: 'map-gate',
+      scope: { kind: 'region', id: 'region-hero' },
+      reason: 'Approved while another Report input is missing.',
+    }),
+  ]));
+  const gate = readJson(path.join(mapReportDir(config.runDir), 'gate.json'));
+  expect(gate.blockers).toEqual(expect.arrayContaining([
+    expect.objectContaining({
+      id: '03-motion-scout/coverage.md',
+      source: 'report-freshness',
+      status: 'missing',
+    }),
+    expect.objectContaining({
+      id: 'page-model.json',
+      source: 'report-freshness',
+      status: 'stale',
+    }),
+  ]));
+});
+
 test('yoinkit map-gate --approve-exception rejects an unknown Region scope', () => {
   const cwd = tempDir();
   const config = prepareGateRun(cwd);
