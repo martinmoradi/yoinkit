@@ -276,7 +276,26 @@ test('yoinkit map-report requires completed Recon, Static Map, and Motion Scout 
   expect(fs.existsSync(path.join(config.runDir, '04-map-report'))).toBe(false);
 });
 
-test('Gate mode surfaces failed, incomplete, unknown, exception, stale, and candidate findings', () => {
+test('yoinkit map-report reports a friendly prerequisite error for a missing page model', () => {
+  const cwd = tempDir();
+  const config = createRun(cwd);
+  fs.rmSync(path.join(config.runDir, 'page-model.json'));
+
+  const result = spawnSync(process.execPath, [BIN, 'map-report', config.runDir], {
+    cwd,
+    encoding: 'utf8',
+    timeout: CLI_TIMEOUT_MS,
+    env: process.env,
+  });
+
+  expect(result.status).toBe(1);
+  expect(result.stderr).toContain('map-report requires completed Recon, Static Map, and Motion Scout artifacts');
+  expect(result.stderr).toContain('page-model.json');
+  expect(result.stderr).not.toContain('ENOENT');
+  expect(fs.existsSync(path.join(config.runDir, '04-map-report'))).toBe(false);
+});
+
+test('Gate mode surfaces failed, unknown, unapproved exception, stale, and candidate findings', () => {
   const cwd = tempDir();
   const config = prepareReportRun(cwd);
 
