@@ -101,7 +101,7 @@ appendEvent(event) {
 
 Five things to notice:
 
-1. **`normalizeEvent` ([:82](../../source/skill/scripts/live/session-store.mjs)) is the only validation here.** It requires `event` to be an object, requires a string `id` (falling back to the store's bound `sessionId`), and requires a string `type`. Anything else throws — and because the caller in `live-server.mjs` treats a throw as a 500 (see [§5](#5-durability-as-precondition-the-server-wiring)), a malformed event never gets journaled *or* enqueued. Note the store does **not** validate event *shape* (that the `count` is 1–8, that `action` is a real verb, etc.); that is the server's `validateEvent` upstream, which runs **before** `appendEvent`. The store's job is durability, not domain validation.
+1. **`normalizeEvent` ([:82](../../source/skill/scripts/live/session-store.mjs)) is the only event-shape validation here.** It requires `event` to be an object, requires a string `id` (falling back to the store's bound `sessionId`), and requires a string `type`. `appendEvent` then routes through `getJournalPath`, whose `safeSessionId` enforces a path-safe session id before any journal/snapshot file is touched. Anything else throws — and because the caller in `live-server.mjs` treats a throw as a 500 (see [§5](#5-durability-as-precondition-the-server-wiring)), a malformed event never gets journaled *or* enqueued. Note the store does **not** validate domain shape (that the `count` is 1–8, that `action` is a real verb, etc.); that is the server's `validateEvent` upstream, which runs **before** `appendEvent`. The store's job is durability, not domain validation.
 
 2. **`seq` comes from the *prior* folded state's `nextSeq`** (`:42`), not from a free-running counter on the store object. This means the sequence is a pure function of the journal: rebuild from scratch and you get the same `seq` values. There is no in-memory counter to lose on restart.
 
@@ -135,7 +135,7 @@ Two design choices encoded here:
 
 - **Rebuild-every-call.** Every `getSnapshot` replays the entire journal from `baseSnapshot`. This is what lets a *second* process (a `live-resume.mjs` invocation, a `live-status.mjs` invocation) read correct state even though it shares no memory with the server. The journal on disk is the only shared medium, so the only safe read is a fresh fold. The in-memory `snapshotCache` is opportunistically refreshed here but is irrelevant to correctness for cross-process reads — it exists for the append fast-path, not the read path.
 
-- **Completed sessions are hidden by default** ([`:63`](../../source/skill/scripts/live/session-store.mjs)). `COMPLETED_PHASES = new Set(['completed', 'discarded'])` ([:5](../../source/skill/scripts/live/session-store.mjs)). A finished session returns `null` unless the caller passes `{ includeCompleted: true }`. This is what makes `listActiveSessions` ([:66](../../source/skill/scripts/live/session-store.mjs)) naturally return only live work: it maps every journal id through `getSnapshot()` and `.filter(Boolean)` drops the terminal ones.
+- **Completed/discarded sessions are hidden by default** ([`:63`](../../source/skill/scripts/live/session-store.mjs)). `COMPLETED_PHASES = new Set(['completed', 'discarded'])` ([:5](../../source/skill/scripts/live/session-store.mjs)). A finished or discarded session returns `null` unless the caller passes `{ includeCompleted: true }`. `agent_error` is not in that hidden set: it clears pending work but remains visible as an error phase in `listActiveSessions`. This is what makes `listActiveSessions` ([:66](../../source/skill/scripts/live/session-store.mjs)) return non-hidden sessions: it maps every journal id through `getSnapshot()` and `.filter(Boolean)` drops only completed/discarded ones.
 
 ```js
 // session-store.mjs:66
@@ -192,7 +192,7 @@ function baseSnapshot(id) {
 What each group means for recovery:
 
 - **`phase`** — the single most important field; the state-machine position (see [§6](#6-the-fold-is-not-a-guarded-fsm-it-is-an-event-typephase-map)).
-- **`pendingEvent` / `pendingEventSeq`** — the in-flight work item. Set when a `generate`/`accept`/`steer`/`manual_edit_apply`/`discard` is journaled; **cleared to `null`** when the agent's terminal reply (`agent_done`/`variants_ready`/`steer_done`/`discarded`/`complete`/`agent_error`) is journaled. A non-null `pendingEvent` after a crash is exactly "there is unacknowledged work the agent must pick up." This is what `restorePendingEventsFromStore` re-enqueues and what `live-resume.mjs` keys its next-action string off of. `pendingEvent` is the event with its `token` stripped (`toPendingEvent`, [:275](../../source/skill/scripts/live/session-store.mjs)) — durable state must never persist a live auth secret.
+- **`pendingEvent` / `pendingEventSeq`** — the in-flight work item. Set when a `generate`/`accept`/`steer`/`discard` event is journaled, and also when a `manual_edit_apply` event is journaled. In the current manual-apply chat route, however, the server-created `manual_edit_apply` event is enqueued directly rather than appended to this session journal. Journaled pending events are **cleared to `null`** when the agent's terminal reply (`agent_done`/`variants_ready`/`steer_done`/`discarded`/`complete`/`agent_error`) is journaled. A non-null `pendingEvent` after a crash is exactly "there is unacknowledged work the agent must pick up." This is what `restorePendingEventsFromStore` re-enqueues and what `live-resume.mjs` keys its next-action string off of. `pendingEvent` is the event with its `token` stripped (`toPendingEvent`, [:275](../../source/skill/scripts/live/session-store.mjs)) — durable state must never persist a live auth secret.
 - **`sourceFile` / `previewFile` / `previewMode` / `fallbackMode`** — where the variants were written and how the browser is rendering them (HMR vs no-HMR `/source` fetch). Survives a reload so the browser can re-find its variants.
 - **`expectedVariants` / `arrivedVariants` / `visibleVariant` / `paramValues`** — the cycling position. `visibleVariant` + `paramValues` are what let a browser reload restore *exactly which variant was on screen with which knob values*.
 - **`checkpointRevision` / `activeOwner`** — the monotonic guard and its owner (see [§7](#7-checkpoints-the-only-guarded-event-and-why-browser-reloads-are-safe)).
@@ -257,7 +257,16 @@ function restorePendingEventsFromStore() {
 }
 ```
 
-`listActiveSessions` already filters out completed/discarded sessions, so only genuinely in-flight work is considered, and each `pendingEvent` is re-enqueued (idempotently, via the `id`+`type` dedup). The agent-facing contract spells out the consequence ([`reference/live.md:91`, into `../../source/skill/`]): *"Startup requeues unacknowledged pending events from the journal, so do not ask the user to click Go again unless `live-resume.mjs` says no active session exists."* This is the line between "the server crashed, click Go again" and "the server crashed, it picked up where it left off."
+`listActiveSessions` already filters out completed/discarded sessions, so journaled
+in-flight work is considered, and each `pendingEvent` is re-enqueued
+(idempotently, via the `id`+`type` dedup). The agent-facing contract spells out
+the consequence ([`reference/live.md:91`, into `../../source/skill/`]): *"Startup
+requeues unacknowledged pending events from the journal, so do not ask the user to
+click Go again unless `live-resume.mjs` says no active session exists."* This is
+the line between "the server crashed, click Go again" and "the server crashed, it
+picked up where it left off." Manual-apply chat-route events are the caveat: they
+live in manual-apply deferred state and `state.pendingEvents`, so the session
+journal does not recover them unless the implementation later journals that event.
 
 ### The reply path is also journaled — but best-effort, and terminal-safe
 
@@ -536,7 +545,7 @@ const event = args.status === 'discarded'
 const snapshot = store.appendEvent(event);
 ```
 
-When the server is up it routes the completion through `POST /poll` ([`completeThroughServer`, :53](../../source/skill/scripts/live-complete.mjs)) so the server journals it *and* notifies the browser over SSE (the green "applied" confirmation). When the server is down it appends the terminal event straight to the journal itself, so the session still reaches a terminal phase and stops showing up in `listActiveSessions`. Either way the journal converges to `completed`/`discarded`/`agent_error`. The `--id` is mandatory; flags select the status (`--discarded`, `--error MESSAGE`, default `complete`) ([:9](../../source/skill/scripts/live-complete.mjs)). Reading with `{ includeCompleted: true }` ([:34](../../source/skill/scripts/live-complete.mjs)) is what lets it echo the now-terminal snapshot back (a default read would return `null`).
+When the server is up it routes the completion through `POST /poll` ([`completeThroughServer`, :53](../../source/skill/scripts/live-complete.mjs)) so the server journals it *and* notifies the browser over SSE (the green "applied" confirmation). When the server is unavailable or returns non-OK, it appends the terminal event straight to the journal itself, so `completed`/`discarded` sessions still reach a hidden terminal phase. That fallback does not cover every server-success anomaly: if the server returns OK after swallowing a reply-journal failure, `live-complete.mjs` will read and echo the snapshot but will not append a local fallback. `agent_error` is also different from `completed`/`discarded`: it clears pending work but remains visible as an error phase. The `--id` is mandatory; flags select the status (`--discarded`, `--error MESSAGE`, default `complete`) ([:9](../../source/skill/scripts/live-complete.mjs)). Reading with `{ includeCompleted: true }` ([:34](../../source/skill/scripts/live-complete.mjs)) is what lets it echo the snapshot after a terminal read would normally return `null`.
 
 ```mermaid
 flowchart TD

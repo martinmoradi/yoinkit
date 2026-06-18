@@ -16,7 +16,7 @@ two-tier injection ladder** that gets the engine into MAIN world whether or not
 the page's CSP blocks a script tag, (2) a **two-hop ISOLATED↔MAIN postMessage
 bridge with a `ready` handshake** that makes "use the engine" deterministic
 instead of timing-based, and (3) an **MV3 service-worker-death survival kit**
-(auto-reconnecting named ports, heartbeats, await-don't-`setTimeout` teardown)
+(reconnecting lifecycle/panel ports, heartbeats, await-don't-`setTimeout` teardown)
 that keeps a multi-second session correct across a cold worker.
 
 All source paths are under `../../source/` (i.e. `audit/impeccable/source/`).
@@ -54,9 +54,8 @@ All source paths are under `../../source/` (i.e. `audit/impeccable/source/`).
 
 ## File map
 
-Click-through index of the subsystem. Line counts are content lines (a few files
-ship without a trailing newline, so `wc -l` reads one lower). Paths are relative
-to `../../source/`.
+Click-through index of the subsystem. Line counts are content lines. Paths are
+relative to `../../source/`.
 
 | File | Lines | Role |
 |---|---|---|
@@ -64,13 +63,13 @@ to `../../source/`.
 | [`extension/background/service-worker.js`](../../source/extension/background/service-worker.js) | 272 | The hub: message router, per-tab state in two `Map`s, badge, on-demand content-script injection, CSP-fallback MAIN-world injector, named-port lifecycle, navigation reset |
 | [`extension/content/content-script.js`](../../source/extension/content/content-script.js) | 125 | ISOLATED-world bridge: injects the MAIN-world engine via `<script src>`, transcodes `chrome.runtime` ↔ `window.postMessage`, idempotency guard, SPA-nav detection |
 | [`extension/devtools/devtools.html`](../../source/extension/devtools/devtools.html) | 5 | Shell that loads `devtools.js` |
-| [`extension/devtools/devtools.js`](../../source/extension/devtools/devtools.js) | 51 | Registers the panel + Elements sidebar pane; owns the canonical "DevTools open/closed" lifecycle port + 20s heartbeat |
+| [`extension/devtools/devtools.js`](../../source/extension/devtools/devtools.js) | 50 | Registers the panel + Elements sidebar pane; owns the canonical "DevTools open/closed" lifecycle port + 20s heartbeat |
 | [`extension/devtools/panel.{html,js,css}`](../../source/extension/devtools/panel.js) | 519 (js) | Main UI: grouped findings, per-rule settings, click-to-inspect, copy-as-markdown, hover→page-spotlight, theme matching |
-| [`extension/devtools/sidebar.{html,js,css}`](../../source/extension/devtools/sidebar.js) | 104 (js) | Elements-panel sidebar: findings for the currently selected `$0` via a "ship all selectors, ask the page" eval |
+| [`extension/devtools/sidebar.{html,js,css}`](../../source/extension/devtools/sidebar.js) | 103 (js) | Elements-panel sidebar: findings for the currently selected `$0` via a "ship all selectors, ask the page" eval |
 | [`extension/popup/popup.{html,js,css}`](../../source/extension/popup/popup.js) | 67 (js) | Toolbar popup: finding count, Scan, toggle-overlays |
-| [`extension/STORE_LISTING.md`](../../source/extension/STORE_LISTING.md) | 70 | Chrome Web Store copy (single-purpose, "100% local", **stale "41" rule count**) |
-| [`scripts/build-extension.js`](../../source/scripts/build-extension.js) | 160 | Generates `detect.js` + `antipatterns.json`, derives the Firefox manifest, zips both stores |
-| [`scripts/build-browser-detector.js`](../../source/scripts/build-browser-detector.js) | 63 | Sibling generator: same 5 modules → the CLI/Puppeteer bundle + the website-overlay copy |
+| [`extension/STORE_LISTING.md`](../../source/extension/STORE_LISTING.md) | 69 | Chrome Web Store copy (single-purpose, "100% local", **stale "41" rule count**) |
+| [`scripts/build-extension.js`](../../source/scripts/build-extension.js) | 159 | Generates `detect.js` + `antipatterns.json`, derives the Firefox manifest, zips both stores |
+| [`scripts/build-browser-detector.js`](../../source/scripts/build-browser-detector.js) | 62 | Sibling generator: same 5 modules → the CLI/Puppeteer bundle + the website-overlay copy |
 | [`cli/engine/browser/injected/index.mjs`](../../source/cli/engine/browser/injected/index.mjs) | 1,937 | **The engine source.** The whole file is guarded `if (IS_BROWSER)`; the dual-mode (`EXTENSION_MODE`) page-side runtime, `window.impeccable*` API |
 | [`cli/engine/registry/antipatterns.mjs`](../../source/cli/engine/registry/antipatterns.mjs) | 448 | `ANTIPATTERNS` array (44 rules) shared across CLI/site/extension |
 | [`cli/engine/detect-antipatterns.mjs`](../../source/cli/engine/detect-antipatterns.mjs) | 50 | **Facade** (re-exports + main-module guard). Not the engine; see the correction above |
@@ -294,7 +293,7 @@ in the sub-dive named.
    per-tab state. Frugal permissions + zero egress is also the right privacy
    posture for a tool that reads arbitrary pages. → [02a §1-2](02a-manifest-permissions-build.md), [02b §5-6](02b-messaging-and-survival.md).
    ([service-worker.js:9-12,56-74,244-266](../../source/extension/background/service-worker.js))
-4. **MV3 SW-death survival kit.** Auto-reconnecting named ports + 20s heartbeats
+4. **MV3 SW-death survival kit.** Reconnecting lifecycle/panel ports + 20s heartbeats
    + `await`-the-teardown-message (not `setTimeout`) + a `postToPort()`
    "retry-once-with-a-fresh-port" idiom. YoinkIt's timed-capture recipe spans
    many seconds and *will* outlive a cold SW. → [02b §4](02b-messaging-and-survival.md).
@@ -353,10 +352,12 @@ Secondary but valuable:
   running a check is free, so the engine never filters provider-gated rules; only
   the Node CLI return path does ([index.mjs:1461-1464](../../source/cli/engine/browser/injected/index.mjs)).
   A useful mental model for capture: *collect broadly, filter at emit.*
-- **The generated bundle is gitignored.** `extension/detector/detect.js` and
+- **The generated extension bundle is gitignored but packaged fresh.** `extension/detector/detect.js` and
   `antipatterns.json` are build artifacts ([`.gitignore:75`](../../source/.gitignore)),
   absent from a fresh clone; they exist only after `bun run build:extension`. The
-  release script refuses to tag if they are stale. See [02a §3-4](02a-manifest-permissions-build.md).
+  extension release path rebuilds them and verifies the Chrome/Firefox zips exist
+  before tagging, but ignored detector artifacts are not commit-status-enforced.
+  See [02a §3-4](02a-manifest-permissions-build.md).
 - **Two navigation paths, not one.** Full navigations reset state in the SW via
   `webNavigation.onCompleted` (and conditionally rescan); SPA route changes are
   handled separately in the content script via `popstate`/`hashchange` — and

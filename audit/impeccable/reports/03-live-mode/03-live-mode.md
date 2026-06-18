@@ -33,7 +33,7 @@ All source paths are under `../../source/` (i.e. `audit/impeccable/source/`).
 > - [`03b-session-journal-and-recovery.md`](03b-session-journal-and-recovery.md): the append-only JSONL journal, the snapshot **fold**, the phase machine, durability-as-precondition, restart requeue, and the `resume`/`status`/`complete` recovery printers. **The durable spine under the variant loop.**
 > - [`03c-variant-lifecycle-and-carbonize.md`](03c-variant-lifecycle-and-carbonize.md): the variant lifecycle traced across all three parties — pick → `generate` → `wrap` → write N variants → cycle → **inline accept** → the **carbonize two-phase commit**. **The agent-driven seam.**
 > - [`03d-overlay-picker-and-locators.md`](03d-overlay-picker-and-locators.md): the 11k-line in-page overlay — injection + isolation (namespace tier vs shadow DOM), the capture-phase element picker, the three selector flavors, and the **id-decisive dual-locator re-resolution** under HMR, plus the variant-cycling/param UI. **The `pick()` / `on(sel)` analog.**
-> - [`03e-manual-edit-round-trip.md`](03e-manual-edit-round-trip.md): the second, parallel loop — inline copy editor → buffer (merge-by-ref keeping the original text) → multi-strategy **evidence** → a **separately spawned** codex/claude agent → server-side **verification + rollback + repair**. **The untrusted-agent write-back loop.**
+> - [`03e-manual-edit-round-trip.md`](03e-manual-edit-round-trip.md): the second, parallel loop — inline copy editor → buffer (merge-by-ref keeping the original text) → multi-strategy **evidence** → a manual Apply backend, either the active chat poll agent or a spawned codex/claude subprocess → server-side **verification + rollback + repair**. **The untrusted-agent write-back loop.**
 > - [`03f-framework-source-mapping.md`](03f-framework-source-mapping.md): the shared hard case — mapping a live DOM element back to source when a framework renders text from expressions (`{count} seats`). The Svelte prop contract, the literal↔expression text map, anchor re-resolution, and the Astro source hint. **The machinery both loops lean on.**
 >
 > **Corrections to the first drafts and the ADR, up front** (each verified
@@ -43,7 +43,7 @@ All source paths are under `../../source/` (i.e. `audit/impeccable/source/`).
 > - **`live-wrap.mjs` (894 lines) was missing from draft 03's file map** yet is the entire "wrap" half of the 40s→15-20s latency win and a required step in every generate. Restored in the master map below and in [`03c`](03c-variant-lifecycle-and-carbonize.md).
 > - **The session "state machine" is an event-sourced fold, not a guarded FSM.** `applyEvent` ([`session-store.mjs:155`](../../source/skill/scripts/live/session-store.mjs)) sets each event type's phase **unconditionally**; the *only* guarded event is `checkpoint` (monotonic via `checkpointRevision`, ignored after a terminal phase). Draft 03's clean `stateDiagram` overstates the enforced invariants. `baseSnapshot` also carries `deliveryLease` and `activeOwner` (draft omitted both), and the fields are `pendingEvent` + `pendingEventSeq` (two keys). See [`03b`](03b-session-journal-and-recovery.md).
 > - **Two line-number fixes that matter:** `VISUAL_ACTIONS` is at [`vocabulary.mjs:36`](../../source/skill/scripts/live/vocabulary.mjs) (the `.map()` derivation), not `:20` (that is `LIVE_COMMANDS`); the agent poll-loop pseudocode is under the **"Poll loop"** heading at [`live.md:46`](../../source/skill/reference/live.md), not `:51-63`. `live-browser-dom.js` is **146** lines, not 147.
-> - **The manual-edit loop is a different machine.** It does **not** use the session journal or the poll-loop agent. `/events` POST *rejects* `manual_edits` and `manual_edit_apply` ([`live-server.mjs:673,678`](../../source/skill/scripts/live-server.mjs)); the loop uses its own `/manual-edit-*` routes, a JSON **buffer**, and spawns a fresh `codex`/`claude` subprocess. This two-agent-model seam is traced in §4. See [`03e`](03e-manual-edit-round-trip.md).
+> - **The manual-edit loop is a different machine.** It does **not** use browser `/events` journaling: `/events` POST *rejects* `manual_edits` and `manual_edit_apply` ([`live-server.mjs:673,678`](../../source/skill/scripts/live-server.mjs)). The loop uses its own `/manual-edit-*` routes and JSON **buffer**. Apply can run through the active chat poll agent (`manual_edit_apply`) or fall back to a spawned `codex`/`claude` subprocess; either way, the server verifies and repairs/rolls back the result. This seam is traced in §4. See [`03e`](03e-manual-edit-round-trip.md).
 
 ---
 
@@ -89,7 +89,7 @@ flowchart TB
         POLL["live-poll.mjs (03a)<br/>270s slices"]
         WRAP["live-wrap.mjs / Edit (03c)"]
         ACC["live-accept.mjs (03c)"]
-        COMMIT["live-commit-manual-edits.mjs<br/>→ spawns codex/claude (03e)"]
+        COMMIT["live-commit-manual-edits.mjs<br/>→ chat apply or codex/claude (03e)"]
     end
     subgraph Disk[".impeccable/live/ + project source"]
         SRVJSON["server.json (pid,port,token)"]
@@ -127,7 +127,7 @@ but almost nothing else:
 |---|---|---|
 | Trigger | pick element → action → Go | double-click "Edit copy" → type → Save → Apply |
 | Browser→server route | `POST /events {generate}` | `POST /manual-edit-stash` then `/manual-edit-commit` |
-| Agent model | the **harness poll agent** (long-poll loop) | a **freshly spawned `codex`/`claude` subprocess** |
+| Agent model | the **harness poll agent** (long-poll loop) | an existing chat poll agent when active, otherwise a spawned `codex`/`claude` subprocess |
 | Durable state | append-only **session journal** (03b) | a project-local **JSON buffer** (03e) |
 | Output | N variants written to source; one accepted + carbonized | each copy edit written back to source, verified |
 | Trust posture | agent drives its own edits | agent treated as **untrusted**: server verifies + rolls back |
@@ -206,11 +206,11 @@ commit, and the contract `live.md`.
 | [`skill/scripts/detect-csp.mjs`](../../source/skill/scripts/detect-csp.mjs) | 198 | 03d | Classify a project's CSP shape so the agent can propose a dev-only localhost patch. |
 | [`skill/scripts/live/sveltekit-adapter.mjs`](../../source/skill/scripts/live/sveltekit-adapter.mjs) | 274 | 03d/03f | Generates `ImpeccableLiveRoot.svelte` (shadow root + `__IMPECCABLE_LIVE_UI_ROOT__`), patches `+layout.svelte`. |
 | **The manual-edit round-trip (03e)** | | | |
-| [`skill/scripts/live/manual-edit-routes.mjs`](../../source/skill/scripts/live/manual-edit-routes.mjs) | 357 | 03e | HTTP routes `/manual-edit-stash` (Save), `/manual-edit-commit` (Apply), `/manual-edit-discard`. |
+| [`skill/scripts/live/manual-edit-routes.mjs`](../../source/skill/scripts/live/manual-edit-routes.mjs) | 357 | 03e | HTTP routes `POST`/`GET /manual-edit-stash` (Save/read), `/manual-edit-commit` (Apply), `/manual-edit-discard`, `/manual-edit-repair-decision`; legacy `/manual-edit` returns 410. |
 | [`skill/scripts/live/manual-edits-buffer.mjs`](../../source/skill/scripts/live/manual-edits-buffer.mjs) | 152 | 03e | The on-disk pending-edit buffer; `stageEntry` merge-by-`(pageUrl, ref)` keeping the original text. |
 | [`skill/scripts/live-manual-edit-evidence.mjs`](../../source/skill/scripts/live-manual-edit-evidence.mjs) | 363 | 03e/03f | Builds source candidates per op (literal/object-key/locator/context + Astro hint). **Never edits source.** |
 | [`skill/scripts/live-commit-manual-edits.mjs`](../../source/skill/scripts/live-commit-manual-edits.mjs) | 1241 | 03e | Orchestrates Apply: snapshot → run agent → **verify each op in source** → roll back partials → repair → clear. |
-| [`skill/scripts/live-copy-edit-agent.mjs`](../../source/skill/scripts/live-copy-edit-agent.mjs) | 683 | 03e | Spawns codex/claude with the staged batch + a strict-JSON contract; treats user text as literal data. |
+| [`skill/scripts/live-copy-edit-agent.mjs`](../../source/skill/scripts/live-copy-edit-agent.mjs) | 683 | 03e | Subprocess Apply backend: spawns codex/claude with the staged batch + a strict-JSON contract; treats user text as literal data. |
 | [`skill/scripts/live/manual-apply.mjs`](../../source/skill/scripts/live/manual-apply.mjs) | 939 | 03e | Apply controller: chunking, soft/hard timeouts, tombstones, in-flight progress. |
 | [`skill/scripts/live-discard-manual-edits.mjs`](../../source/skill/scripts/live-discard-manual-edits.mjs) | 51 | 03e | Truncate buffer + return restore entries for DOM revert. |
 | **Framework source mapping (03f)** | | | |
@@ -324,12 +324,14 @@ So there are **two agent-invocation models** in one subsystem:
 - the **variant loop** is driven by the *harness poll agent* — the same Claude
   Code / Codex / Cursor process that ran `live.mjs`, parked on `GET /poll`. It
   edits source with its own tools and journals through the session store (03b).
-- the **manual-edit loop** spawns a *fresh subprocess* —
-  `live-copy-edit-agent.mjs` launches `codex --dangerously-bypass-…` or
-  `claude --permission-mode bypassPermissions`
-  ([`live-copy-edit-agent.mjs`](../../source/skill/scripts/live-copy-edit-agent.mjs))
-  — given a strict-JSON batch and treated as **untrusted** (server verifies the
-  result landed, rolls back partials, repairs). Its durable state is the JSON
+- the **manual-edit loop** uses the manual-edit routes/buffer and then chooses an
+  Apply backend. In chat mode, or auto mode when an active chat agent is likely,
+  it dispatches a server-created `manual_edit_apply` event to the poll loop; in
+  subprocess mode, `live-copy-edit-agent.mjs` launches `codex
+  --dangerously-bypass-…` or `claude --permission-mode bypassPermissions`
+  ([`live-copy-edit-agent.mjs`](../../source/skill/scripts/live-copy-edit-agent.mjs)).
+  Both receive a strict-JSON batch and are treated as **untrusted**: the server
+  verifies the result landed, rolls back partials, and repairs. Its durable state is the JSON
   buffer, not the journal.
 
 A fresh reader who assumes "the agent" is one thing will mis-trace half the
@@ -382,9 +384,11 @@ Two pieces are shared by *both* loops:
   DOM shows rendered text, but source authored it from an expression
   (`{count} seats`). The Svelte adapter holds the bidirectional contract; the
   Astro `data-astro-source-*` hint gives a precise-when-present location. A sharp
-  correction lives here: the variant accept path for Svelte writes the component
-  into `node_modules/.impeccable-live/`, never route source, so **carbonize is
-  always `false` for it** — it diverges from the plain-DOM accept in 03c.
+  correction lives here: Svelte variants live in
+  `node_modules/.impeccable-live/<id>/` during preview; on accept, the chosen
+  variant is spliced into the route source and the temp session is removed.
+  **Carbonize is always `false` for it** because no plain-DOM wrapper or
+  carbonize marker remains in source — it diverges from the plain-DOM accept in 03c.
 - **The single-source vocabulary (03a).** The 12 design verbs live once in
   [`vocabulary.mjs`](../../source/skill/scripts/live/vocabulary.mjs) and feed
   three consumers — the server validator, the browser picker (serialized into
@@ -410,13 +414,14 @@ own "Patterns worth stealing" section. The ranked summary:
    `.yoinkit/sessions/<id>.jsonl` journal makes a long multi-source,
    multi-viewport capture sweep resumable, and "a capture you cannot persist is
    not captured." **STEAL.** → [`03b`](03b-session-journal-and-recovery.md).
-3. **Self-stabilizing dual locator, re-resolved id-first across reloads.** A
-   picked element is held as *both* a durable structural ref
-   (`tag#id.cls:nth-of-type(n)>…`) and a tolerant snapshot
-   (`{tag,id,classes,text[120]}`), re-resolved after HMR id-first → class-subset
-   → text-needle, because hashed classes and component tag names do not survive
-   the build. *YoinkIt:* this is the concrete implementation of "drive by
-   selector, never coordinates" for `pick()` / `on(sel)`. **STEAL.** → [`03d`](03d-overlay-picker-and-locators.md).
+3. **Self-stabilizing locator recovery, re-resolved id-first across reloads.** Impeccable has
+   two adjacent mechanisms: variant recovery uses a tolerant snapshot
+   (`{tag,id,classes,text[120]}`), and manual-edit recovery uses a durable
+   structural ref (`tag#id.cls:nth-of-type(n)>…`). YoinkIt should intentionally
+   store both and re-resolve after HMR id-first → class-subset → text-needle,
+   because hashed classes and component tag names do not survive the build.
+   *YoinkIt:* this is the concrete implementation of "drive by selector, never
+   coordinates" for `pick()` / `on(sel)`. **STEAL.** → [`03d`](03d-overlay-picker-and-locators.md).
 4. **Redundancy + server-side verification over one perfect selector.** The
    manual-edit loop hands the agent five weak source candidates, then the server
    *independently proves* the edit landed and rolls back partial writes; the
@@ -478,9 +483,10 @@ own "Patterns worth stealing" section. The ranked summary:
   already-injected overlay; the hard part it engineers around is the agent's
   round-trip latency. The two tools optimize opposite bottlenecks: YoinkIt
   fights the browser, Impeccable fights the agent loop.
-- **One subsystem, two agents, two trust models.** The variant loop trusts its
-  poll agent; the manual-edit loop spawns a subprocess it does not trust and
-  verifies after the fact. The "agent" is not one thing.
+- **One subsystem, two Apply paths, two trust models.** The variant loop trusts
+  its poll agent; the manual-edit loop either dispatches server-created chat
+  Apply work to the poll agent or spawns a subprocess, then verifies after the
+  fact. The "agent" is not one thing.
 - **The journal is a fold, not a guarded machine.** Most events set their phase
   unconditionally; only checkpoints are guarded (monotonic + terminal-safe).
   Robustness comes from *re-derivability* (replay the journal) and *durability*

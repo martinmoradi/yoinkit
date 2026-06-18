@@ -64,7 +64,7 @@ Click-through index (relative to `source/`). Line counts re-checked at audit tim
 | [`scripts/lib/transformers/factory.js`](../../source/scripts/lib/transformers/factory.js) | 326 | `createTransformer(config)` (156-326): the per-skill emit loop. **The 170-line core.** |
 | [`scripts/lib/transformers/providers.js`](../../source/scripts/lib/transformers/providers.js) | 122 | The `PROVIDERS` config map (13 entries) |
 | [`scripts/lib/transformers/hooks.js`](../../source/scripts/lib/transformers/hooks.js) | 120 | Per-harness hook-manifest builders (Claude `settings.json`, Codex/Cursor `hooks.json`, plugin `hooks/hooks.json`) |
-| [`scripts/lib/transformers/index.js`](../../source/scripts/lib/transformers/index.js) | 19 | Named exports kept as test spy targets (load-bearing despite looking dead) |
+| [`scripts/lib/transformers/index.js`](../../source/scripts/lib/transformers/index.js) | 19 | Named exports kept for tests/helpers (load-bearing despite looking dead) |
 | [`scripts/lib/utils.js`](../../source/scripts/lib/utils.js) | 852 | `readSourceFiles`, `PROVIDER_PLACEHOLDERS`, `replacePlaceholders`, `compileProviderBlocks`, `stripRuleMarkers`, YAML emit, per-project artifact stash/restore |
 | [`scripts/lib/sub-pages-data.js`](../../source/scripts/lib/sub-pages-data.js) | 334 | `SKILL_CATEGORIES` + `CATEGORY_ORDER` (drive `{{command_hint}}` and the site) |
 | **Distribution / install** | | |
@@ -107,9 +107,9 @@ flowchart TD
     OUT --> UNI["assembleUniversal() → dist/universal/"]
     OUT --> ZIP["createAllZips() → dist/*.zip"]
     OUT -->|"build:release only"| ROOT["root sync: 12 dirs<br/>(.codex excluded) + deprecated cleanup (23)"]
-    ROOT --> PLUGIN["plugin/ subtree (~0.3 MB)<br/>marketplace source: ./plugin"]
+    ROOT --> PLUGIN["plugin/ subtree<br/>~2.1 MB archive / ~0.6 MB gzipped<br/>marketplace source: ./plugin"]
 
-    OUT --> VAL["validator gauntlet (build fails on any):<br/>generateCounts · validateSiteHeader (no-op)<br/>validateTheme · validateProse · validateSkillProse"]
+    OUT --> VAL["validator gauntlet (combined exit):<br/>generateCounts · validateSiteHeader (no-op)<br/>validateTheme · validateProse · validateSkillProse"]
 ```
 
 The transform `T1→T5` is the whole secret: everything provider-specific is **data
@@ -370,8 +370,9 @@ mirrored edits. (CLAUDE.md is loose on script names here — the flag actually r
 
 **The slim plugin subtree.** `build.js:707-761` builds a `plugin/` directory
 (manifest + skills + agents + `hooks/hooks.json`). The Claude Code marketplace
-points at `"source": "./plugin"`, so the plugin cache copies ~0.3 MB instead of
-the entire ~291 MB monorepo. The manifest rewrites `skills` to `./skills/`
+points at `"source": "./plugin"`, so the plugin cache copies the assembled subtree
+(currently 96 tracked files, about 2.1 MB archived / 0.6 MB gzipped) instead of
+the full monorepo. The manifest rewrites `skills` to `./skills/`
 (trailing slash — issue #86, slash commands don't register without it).
 
 **The install CLI.** `npx impeccable install` detects harness folders
@@ -421,7 +422,7 @@ tax of the model — keep one category map and derive every other list from it.
 - **The 23-command count is regex-derived from a markdown table and build-enforced across 5 docs** (`build.js:42`). Elegant, and it makes stale marketing numbers a build failure. But the OG card derives the same count a *second*, independent way (`Object.keys(metadata).length`) — two derivations that nothing reconciles.
 - **The update check rides the context boot** (`context.mjs`). Most tools would add an `update` command and hope users run it; Impeccable folds a throttled, anti-nag, opt-out poll into the once-per-session script the agent runs anyway. Zero extra round trips.
 - **Empty stdout was abandoned as a signal because cheap models miss it** (`context.mjs:240-241`). The protocol was hardened against the *weakest* model that runs it — a real lesson for prompt-as-protocol design.
-- **Named transformer exports look dead but are load-bearing for tests.** `index.js` exports `transformCursor` etc. that `build.js` never calls; they exist only as `spyOn` targets, and only 11 of 13 providers have them (trae/trae-cn don't). The upstream `CLAUDE.md` warns in capitals not to delete them ("I made that mistake once and broke 8 tests").
+- **Named transformer exports look dead but are load-bearing for tests.** `index.js` exports `transformCursor` etc. that `build.js` never calls; they are test helpers (some spy targets, some direct-call helpers), and only 11 of 13 providers have them (trae/trae-cn don't). The upstream `CLAUDE.md` warns in capitals not to delete them ("I made that mistake once and broke 8 tests").
 - **The skill-behavior test harness symlinks the raw source** (with `{{placeholders}}` showing) and asserts on the *tool-call trace*, not model text. So edits to SKILL/reference/`context.mjs` are tested instantly without a rebuild — 9 scenarios × 3 providers = 27 tests.
 - **`writeOpenAIMetadata` + nested Codex agents** mean Codex gets *three* things from one source: the `SKILL.md`, an `agents/openai.yaml` branding sidecar, and a `.toml` subagent bundled *inside* the skill's `agents/` folder (auto-discovered on install — `CODEX_SKILL_PROVIDERS`, [`04b`](04b-build-pipeline-and-validators.md)).
 - **One source file is 24 KB and always in context, but 28 reference files are lazy.** The architecture spends its always-loaded budget on the shared design laws + router, and defers per-command flow. That is the deliberate progressive-disclosure trade.

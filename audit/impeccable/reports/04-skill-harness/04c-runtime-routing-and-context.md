@@ -3,9 +3,9 @@
 Companion to [`04-skill-harness.md`](04-skill-harness.md). That report is the
 overview. This one goes to the floor on the single most transferable idea in the
 subsystem for YoinkIt: **how a ~24 KB markdown file plus three tiny Node scripts
-drive an arbitrary LLM deterministically — one skill, 23 sub-commands, a
-once-per-session boot contract, and a no-LLM signal gatherer — with no runtime
-beyond the agent itself.** Read this if a fresh agent is going to rebuild
+in the boot/menu routing path drive an arbitrary LLM deterministically — one
+skill, 23 sub-commands, a once-per-session boot contract, and a no-LLM signal
+gatherer.** Read this if a fresh agent is going to rebuild
 YoinkIt's `map → capture` skill as one router instead of two hand-kept copies
 (`skill/codex/`, `skill/claude/`).
 
@@ -38,11 +38,13 @@ and the prior draft drifted in three places, corrected inline and summarized in
 One thing the table cannot show: **there is no router process.** No dispatcher,
 no command registry the way a CLI has one. The "router" is the markdown in
 `SKILL.src.md` §Commands, interpreted by whatever model loaded the skill. The
-three `.mjs` scripts are the *only* executable code in the runtime path, and
-each does exactly one deterministic, side-effect-bounded thing the model cannot
-reliably do in its head (read files, probe ports, poll a version endpoint). That
-division — **Node gathers facts, the model decides** — is the spine of the whole
-design and recurs at every layer below.
+three `.mjs` scripts above are the executable code in the boot/menu routing path;
+other command flows invoke other scripts such as `palette.mjs`, `pin.mjs`,
+`hook-admin.mjs`, and the live-mode scripts. In this path, each script does one
+deterministic, side-effect-bounded thing the model cannot reliably do in its head
+(read files, probe ports, poll a version endpoint). That division — **Node gathers
+facts, the model decides** — is the spine of the whole design and recurs at every
+layer below.
 
 ---
 
@@ -192,10 +194,11 @@ commands not in the table**: `pin <command>`, `unpin <command>`, and
 `hooks <on|off|status|…>`. They are documented in their own sections
 ([:174-186](../../source/skill/SKILL.src.md)) and are routable (rule 2 names them
 explicitly) but are deliberately kept *out* of the 23-row catalog because they
-manage the skill rather than design anything. So: **23 design commands + 3
-management commands = 26 routable first-words.** The "23 commands" figure
-everyone quotes is the design catalog only; `pin`/`unpin`/`hooks` are the
-escape-hatch tier. (`pin` mechanics → [04d](04d-command-metadata-and-pin.md);
+manage the skill rather than design anything. So: **23 catalog commands + 3
+management commands = 26 commands, plus the deprecated `teach` alias accepted as
+an `init` route.** If counting accepted first words, the total is 27. The "23
+commands" figure everyone quotes is the design catalog only; `pin`/`unpin`/`hooks`
+are the escape-hatch tier. (`pin` mechanics → [04d](04d-command-metadata-and-pin.md);
 `hooks` runtime → [05-hook-system.md](../05-hook-system/05-hook-system.md).)
 
 > Aside worth flagging for a rebuilder: a *different* 19-name list lives at
@@ -302,12 +305,13 @@ Impeccable splits the skill into two tiers by load-time:
   (every design rule, every ban — §2.3) and the *router table* (§2.4). These are
   the things every command needs, or needs to know exist. The router table is
   literally a manifest: 23 one-line entries pointing at chunks.
-- **Lazy chunk — the command reference.** Each `reference/<command>.md` (~100-200
-  lines) is fetched **only for the invoked command**, by the MUST in
-  [`SKILL.src.md:18`](../../source/skill/SKILL.src.md). The agent reads exactly
-  one of the 28 reference files per invocation (23 command refs +
-  `brand.md`/`product.md` registers + `codex.md`/`hooks.md`/`interaction-design.md`
-  domain refs). A `polish` run never pays the token cost of `live.md` or
+- **Lazy chunks — command, register, and occasional domain references.** Each
+  `reference/<command>.md` (~100-200 lines) is fetched **only for the invoked
+  command**, by the MUST in [`SKILL.src.md:18`](../../source/skill/SKILL.src.md).
+  Setup also loads the matching register reference (`brand.md` or `product.md`),
+  and some flows may load an additional domain reference such as `codex.md`,
+  `hooks.md`, or `interaction-design.md`. The 28-file tree is lazy, but it is not
+  exactly-one-per-turn. A `polish` run never pays the token cost of `live.md` or
   `craft.md`.
 
 So the design is: **pay once for the laws + the map (always), pay per-command for
@@ -324,7 +328,7 @@ flowchart LR
     LAWS["Shared design laws\nsrc:23-117\n(color/type/layout/motion/bans)"]
     TABLE["Router table\nsrc:121-145\n23 entries → reference links"]
   end
-  subgraph LAZY["Lazy chunks (loaded 1 per invocation)"]
+  subgraph LAZY["Lazy chunks (loaded as needed)"]
     R1["reference/polish.md"]
     R2["reference/audit.md"]
     R3["reference/live.md"]
@@ -599,7 +603,7 @@ The division of labor: **Node answers "what is true here" (does a port answer? i
 the tree dirty? is there a cached critique?); the model answers "so what should
 you do" (which of 23 commands fits those facts).** The script ships no scoring
 function on purpose — a score would bake a fixed policy into Node that the routing
-prose ([`SKILL.src.md:153-159`](../../source/skill/scripts/context.mjs)) can
+prose ([`SKILL.src.md:153-159`](../../source/skill/SKILL.src.md)) can
 evolve without a code change. Routing rule 1 is the matching reasoning table:
 `hasDesign false & hasCode true → document`; `critique.latest null → critique`;
 `critique.latest low score / nonzero p0/p1 → polish`; `git.changedFiles on one
@@ -632,7 +636,7 @@ and side-effect-free — a port might not be this project's.
 ### 5.3 Folding in real detector hits (rule 1's optional step)
 
 If `scan.targets` is non-empty, routing rule 1
-([`SKILL.src.md:161`](../../source/skill/scripts/context.mjs)) tells the agent to
+([`SKILL.src.md:161`](../../source/skill/SKILL.src.md)) tells the agent to
 run `node {{scripts_path}}/detect.mjs --json <scan.targets joined by spaces>`
 **once** — the bundled detector over those local files. This is the one place the
 menu path touches the heavy detector, and it is opt-in and bounded: *"If detect
@@ -717,9 +721,10 @@ is the source of truth."* Two design choices make it robust:
   symlink would defeat an `endsWith` guard — and the reason scenario 9 must
   *seed* a version (§4.4): under the symlink, `readLocalSkillVersion` finds no
   built `SKILL.md` and returns `null`.
-- **`fileLoaded(trace, filename)` checks both `read` and bash `cat`** because
-  *"different models prefer different tools"* — the assertion is tool-agnostic so
-  a model reading via `cat` isn't scored as failing to load the file.
+- **`fileLoaded(trace, filename)` checks both `read` and bash commands containing
+  the filename** because *"different models prefer different tools"* — the
+  assertion is tool-agnostic so a model reading via `cat` or another shell read
+  isn't scored as failing to load the file.
 
 **The nine scenarios** (from CLAUDE.md), each pinning one clause of §2/§4:
 
@@ -778,6 +783,13 @@ build-skew.
 | NO_PRODUCT_MD / "cheap models miss the empty case" comment | [:240-241](../../source/skill/scripts/context.mjs). ✓ as cited. |
 | "9 scenarios" vs "27 tests" | Both true: **9 scenarios × 3 providers (sonnet-4-6 / gpt-5.5 / gemini-3.1-flash-lite) = 27 tests.** CLAUDE.md's "21-22 / 24 baseline" is stale (old cheap tier). |
 | `version:` read from a sibling `SKILL.md` | True at runtime, but **`SKILL.md` is a build artifact**; the *source* tree has only `SKILL.src.md` (no `version:`). Under the symlinked-source test harness `readLocalSkillVersion` → `null`, so the update check no-ops there. |
+
+Stale upstream docs extend beyond CLAUDE.md: the skill-behavior README and
+scenario comments still describe the old cheap-tier lineup, while
+`tests/skill-behavior/providers.mjs` names the current three-provider matrix.
+CLAUDE.md also mentions older domain refs such as `typography.md` and
+`color-and-contrast.md`; the current `skill/reference/` tree uses `brand.md`,
+`product.md`, `codex.md`, `hooks.md`, and `interaction-design.md`.
 
 Also worth recording: CLAUDE.md's `context.mjs` *file header* ([:1-6](../../source/skill/scripts/context.mjs))
 still describes the abandoned "empty stdout" signaling design — the code now

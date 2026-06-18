@@ -208,10 +208,12 @@ repo named `SKILL.md` are the **compiled** outputs under `.claude/skills/`,
 `{ skills: [] }` if it is absent ([`utils.js:253-256`](../../source/scripts/lib/utils.js)),
 so the build is keyed to the `.src.md` name on the read side too.
 
-Verified: the repo contains exactly one `skill/SKILL.src.md` (the source) and 12
-committed `*/skills/impeccable/SKILL.md` compiled outputs. (Codex is the
-exception — see §6/§9 — its `skills/` dir is not committed; only `.codex/hooks.json`
-is. The codex *identity* still drives `.agents` via the borrow chain.)
+Verified: the repo contains exactly one `skill/SKILL.src.md` (the source), 12 root
+harness `*/skills/impeccable/SKILL.md` compiled outputs, and one plugin-packaged
+Claude skill copy at `plugin/skills/impeccable/SKILL.md`. Codex is the root
+exception — see §6/§9 — its root `skills/` dir is not committed; only
+`.codex/hooks.json` is. The codex *identity* still drives `.agents` via the
+borrow chain.
 
 ### STEAL — the naming dodge is free insurance
 
@@ -274,11 +276,13 @@ Stages run on **markdown** (bodies + references) only. Script files are copied
 **verbatim** ([`factory.js:261-268`](../../source/scripts/lib/transformers/factory.js)):
 no placeholder replacement. Verified: the compiled
 `.claude/skills/impeccable/scripts/pin.mjs` still contains a literal
-`{{command_prefix}}` token — because `pin.mjs` resolves the prefix itself at
-*runtime* from the harness it finds, rather than at build time. This bounds the
-transform's blast radius cleanly: prose is compiled, executable scripts are
-shipped as-is and self-resolve. **Worth copying:** keep build-time substitution to
-human-readable instruction text; let scripts read their own environment.
+`{{command_prefix}}` token. That is not a runtime self-resolution trick: `pin.mjs`
+is copied verbatim and currently writes that literal token into generated pinned
+skills. It is harmless for slash-prefix harnesses but wrong for Codex unless fixed
+in the `pin` flow (04d). This bounds the transform's blast radius cleanly: prose
+is compiled, executable scripts are shipped as-is. **Worth copying:** keep
+build-time substitution to human-readable instruction text unless a script has an
+explicit templating contract.
 
 ```mermaid
 flowchart LR
@@ -463,8 +467,7 @@ Semantics per matched block ([`utils.js:667-671`](../../source/scripts/lib/utils
 
 Finally, if any known block was compiled, collapse 3+ consecutive newlines to 2
 ([`utils.js:673`](../../source/scripts/lib/utils.js)) — the **blank-line reaping**
-that prevents stripped blocks from leaving holes. (This same normalization also
-reaps the blank lines that `stripRuleMarkers` leaves behind; see §8.)
+that prevents stripped blocks from leaving holes.
 
 `PROVIDER_BLOCK_TAGS` ([`utils.js:633-648`](../../source/scripts/lib/utils.js)) has
 **14 entries**: `agents`, `claude`, `claude-code`, `codex`, `cursor`, `gemini`,
@@ -545,16 +548,12 @@ identifies. But the markers are noise to the agent reading the compiled skill, s
 stage 3 strips them ([`factory.js:231`](../../source/scripts/lib/transformers/factory.js)).
 
 The regex eats the leading whitespace too, so `something. <!-- rule:foo -->`
-becomes `something.` and a *standalone* marker line collapses to an empty line —
-which the blank-line normalization inside `compileProviderBlocks` (§7a) reaps.
-There is an ordering coupling here: `stripRuleMarkers` (stage 3) relies on
-`compileProviderBlocks` (stage 1) having installed the collapse, **but** the
-collapse only runs if a known block was compiled
-([`utils.js:673`](../../source/scripts/lib/utils.js), guarded by
-`didCompileBlock`). In practice the SKILL body always has `<codex>`/`<gemini>`
-blocks so the collapse fires; reference files without blocks keep the marker's
-trailing blank line, which is harmless in markdown. Verified: **no** committed
-output under any `*/skills/` dir contains a `rule:` marker.
+becomes `something.`. Current source markers are inline, so stripping them removes
+marker text without creating meaningful blank holes. If standalone marker lines
+are introduced later, add a post-`stripRuleMarkers` newline normalization or
+accept the extra blank line; `compileProviderBlocks` cannot reap blanks created
+after it has already run. Verified: **no** committed output under any
+`*/skills/` dir contains a `rule:` marker.
 
 ### STEAL — author-time eval anchors, stripped at build
 
@@ -799,7 +798,7 @@ and the outputs are generated and committed (the committed-output policy is
 
 - **STEAL — the naming dodge.** Author the source as `SKILL.src.md`; the only `SKILL.md` files are compiled outputs the installer can safely grab. One-character-class change, prevents shipping un-compiled `{{placeholders}}`.
 - **STEAL — one source + two data tables.** `PROVIDERS` (how to emit) and `PROVIDER_PLACEHOLDERS` (who the provider is). All per-harness variation is data; the transform body has no provider branch. This is the mechanism that deletes `skill/codex/` + `skill/claude/`.
-- **STEAL — the 5-stage, markdown-only pipeline.** `compileProviderBlocks` → `replacePlaceholders` → `stripRuleMarkers` → `{{scripts_path}}` → optional `bodyTransform`, in that order. Compile prose; ship scripts verbatim and let them self-resolve.
+- **STEAL — the 5-stage, markdown-only pipeline.** `compileProviderBlocks` → `replacePlaceholders` → `stripRuleMarkers` → `{{scripts_path}}` → optional `bodyTransform`, in that order. Compile prose; ship scripts verbatim unless they have an explicit script-templating contract.
 - **STEAL — `<provider>` conditional blocks.** Shared 99% lives once; the harness-specific paragraph goes in a standalone-tag fence. The own-line-tag regex means a tool whose prose mentions inline `<elements>` (YoinkIt) is safe from false matches.
 - **STEAL — author-time `<!-- rule:id -->` anchors stripped at build.** Free now, valuable when an eval harness arrives.
 - **ADAPT — the borrow chain (`placeholderProvider`).** Useful (13 dirs, 11 identities), but the dir name can lie about its identity (`.agents` uses codex; the `agents` placeholder entry serves `.github`). If YoinkIt borrows, comment the indirection.

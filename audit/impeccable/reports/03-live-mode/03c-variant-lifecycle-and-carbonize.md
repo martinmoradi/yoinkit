@@ -149,11 +149,11 @@ if (text) {
   // … if >1 candidate, narrow by textContent via filterByText …
 ```
 
-`filterByText` ([`:798`](../../source/skill/scripts/live-wrap.mjs)) compares the snippet against each candidate's stripped body under **two** whitespace normalizations (single-space and no-space) because `el.textContent` concatenates sibling text without spaces while source has whitespace between tags. When `--text` matches **multiple** candidates equally, wrap refuses rather than guess and returns `element_ambiguous` with `fallback:"agent-driven"` and the candidate line ranges ([`:172-183`](../../source/skill/scripts/live-wrap.mjs)). The contract spells out *why* this matters ([`live.md:150`](../../source/skill/reference/live.md)):
+`filterByText` ([`:798`](../../source/skill/scripts/live-wrap.mjs)) compares the snippet against each candidate's stripped body under **two** whitespace normalizations (single-space and no-space) because `el.textContent` concatenates sibling text without spaces while source has whitespace between tags. When `--text` matches **multiple** candidates equally, wrap refuses rather than guess and returns `element_ambiguous` with `fallback:"agent-driven"` and the candidate line ranges ([`:172-183`](../../source/skill/scripts/live-wrap.mjs)). When text is too short or not present in source, the current implementation preserves first-match behavior instead of refusing. The contract spells out *why* meaningful text matters ([`live.md:150`](../../source/skill/reference/live.md)):
 
 > When the picked element shares classes + tag with sibling components (a list of `<Card>`s, repeating sections), this is what disambiguates which branch in source to wrap. Without it, wrap silently lands on the first match and may rewrite the wrong element.
 
-This is the **drive-by-selector lesson** in its purest form: the browser ships *enough identity* (id, classes, tag, an ~80ch text snippet) for the agent side to **re-resolve the element against live source**, never trusting a captured coordinate or DOM node reference. (YoinkIt steal, §10.)
+This is the **drive-by-selector lesson** in its purest form: the browser ships *enough identity* (id, classes, tag, an ~80ch text snippet) for the agent side to **re-resolve the element against live source**, never trusting a captured coordinate or DOM node reference. The source fallback is not as strict as the ideal, so YoinkIt should tighten this if wrong-target capture is worse than a structured failure. (YoinkIt steal, §10.)
 
 **What wrap writes** ([`:300-310`](../../source/skill/scripts/live-wrap.mjs), the HTML branch). The original element is moved inside a `data-impeccable-variant="original"` slot so the page never flashes empty, wrapped in a `display:contents` shell that is invisible to flex/grid:
 
@@ -175,7 +175,15 @@ Two structural facts a fresh agent must know:
 - **JSX/TSX is single-slot.** The picked element occupies one JSX child slot (a ternary branch, a `.map` element, an `asChild` child). Three adjacent siblings (`comment + <div> + comment`) is invalid JSX, and a Fragment `<></>` breaks `asChild`/`cloneElement` parents ("Invalid prop supplied to React.Fragment"). So for JSX the markers are tucked **inside** the wrapper `<div>` ([`:290-299`](../../source/skill/scripts/live-wrap.mjs)), and accept/discard later expand their replace range to swallow the wrapper's `<div>`/`</div>` via div-depth tracking ([`live-accept.mjs:449`, `expandReplaceRange`](../../source/skill/scripts/live-accept.mjs)).
 - **`styleMode` is a detected capability, returned in the output.** `.astro` → `astro-global-prefixed` (explicit `[data-impeccable-variant="N"]` prefixes + `is:inline` style tag); everything else → `scoped` (`@scope ([data-impeccable-variant="N"])` blocks). The agent must author preview CSS exactly per the returned `cssAuthoring` object ([`:610-648`](../../source/skill/scripts/live-wrap.mjs)), not from a framework guess.
 
-**Generated-file refusal.** Wrap only writes into files it judges to be source (git-tracked, not GENERATED-marked, not in config `generatedFiles`). If the element lives only in generated output it errors **without writing** — `element_not_in_source` / `element_not_found` / `file_is_generated`, all carrying `fallback:"agent-driven"` ([`:101-126`](../../source/skill/scripts/live-wrap.mjs)). The contract's rationale ([`live.md:184`](../../source/skill/reference/live.md)): *"accepting a variant into a generated file is silent data loss."*
+**Generated-file refusal.** Wrap and accept refuse files classified as generated
+by the shared helper: git-ignore checks plus generated-file header markers. The
+current source does not enforce a positive "tracked by git" requirement and does
+not read a config `generatedFiles` list, even though the contract prose is broader
+there. If the element lives only in generated output it errors **without writing**
+— `element_not_in_source` / `element_not_found` / `file_is_generated`, all
+carrying `fallback:"agent-driven"` ([`:101-126`](../../source/skill/scripts/live-wrap.mjs)).
+The contract's rationale ([`live.md:184`](../../source/skill/reference/live.md)):
+*"accepting a variant into a generated file is silent data loss."*
 
 > **Svelte fork (cross-link [`03f`](03f-framework-source-mapping.md)):** for Svelte/SvelteKit targets, `live-wrap.mjs` returns `previewMode:"svelte-component"` with `file` pointing at a temp `node_modules/.impeccable-live/<id>/manifest.json` and `componentDir` for `v1.svelte`/`v2.svelte`/… components ([`:319-336`](../../source/skill/scripts/live-wrap.mjs); contract `live.md:158-175`). Markup HMR resets Svelte component-local state, so generation stays source-neutral and the browser mounts compiled components while the user cycles. Params on this path go in `componentDir/params.json`, **not** a `data-impeccable-params` attribute (Svelte parses `{` inside an attribute as an expression and fails to compile). 03f owns that accept.
 
@@ -277,7 +285,10 @@ const needsCarbonize = !!(cssContent || hasHelperAttrs);   // :359
 
 So `carbonize` is returned **true** only when there is real cleanup to do — the variant carried a `<style>` block **or** `data-impeccable-variant` markup. A pure inline-styled variant with no `<style>` returns `carbonize:false` and is terminal at once. **Discard is always `carbonize:false`** ([`:148-149`](../../source/skill/scripts/live-accept.mjs)).
 
-The stitched-in "carbonize block" is built by `buildCarbonizeReplacement` ([`live-accept.mjs:274-323`](../../source/skill/scripts/live-accept.mjs)). The HTML shape it emits (re-derived from `pushCarbonizeBody`, [`:294-311`](../../source/skill/scripts/live-accept.mjs)) is:
+When `extractCss()` returns CSS, the stitched-in "carbonize block" is built by
+`buildCarbonizeReplacement` ([`live-accept.mjs:274-323`](../../source/skill/scripts/live-accept.mjs)).
+The HTML shape it emits (re-derived from `pushCarbonizeBody`,
+[`live-accept.mjs:294-311`](../../source/skill/scripts/live-accept.mjs)) is:
 
 ```html
 <!-- impeccable-carbonize-start SESSION_ID -->
@@ -295,6 +306,13 @@ Two details verified against source that the prose summaries gloss:
 
 1. **Order:** the `<style>` and the `impeccable-param-values` comment sit **between** the start and end markers ([`:296-307`](../../source/skill/scripts/live-accept.mjs)); the accepted `<div data-impeccable-variant="N" style="display: contents">` comes **after** the end marker ([`:308-310`](../../source/skill/scripts/live-accept.mjs)). The param-values comment is emitted **only** when `paramValues` is non-empty ([`:302-306`](../../source/skill/scripts/live-accept.mjs)).
 2. **JSX gets an extra outer wrapper.** For `.jsx`/`.tsx`, the whole block is tucked inside one outer `<div data-impeccable-carbonize="ID" style={{ display: "contents" }}>` so the single JSX slot keeps a single root node ([`:313-320`](../../source/skill/scripts/live-accept.mjs)), and the `<style>` body is template-literal-wrapped (`{\`…\`}`). `extractCss` strips that wrap back off on the next accept to avoid nesting `{` `{` … `}` `}` ([`:674-707`](../../source/skill/scripts/live-accept.mjs)).
+
+There is a rare edge case worth naming: `needsCarbonize` is also true for inner
+helper attrs, but `buildCarbonizeReplacement()` returns the restored content
+without a marker block when there is no extracted CSS. In that helper-attrs-only
+case the result can say `carbonize:true` without `impeccable-carbonize-start/end`
+markers, so the cleanup instructions below describe the CSS-block path rather
+than guaranteeing that every carbonize-required accept contains a block.
 
 ### 6b. What the agent rewrites it into — the "clean finalize" (after)
 
@@ -430,15 +448,15 @@ On accept/discard for non-Svelte targets, `live-accept.mjs` **removes the wrappe
 
 YoinkIt's product model is the same async human↔agent-in-a-real-browser loop, inverted: the human points at a live animation, the agent works, they iterate. The lifecycle above is the most directly relevant prior art. Tagged STEAL / ADAPT / AVOID with a concrete application.
 
-### STEAL — the two-phase commit (instant ugly draft → gated clean finalize)
+### ADAPT the full accept feature; STEAL the completion gate (instant draft → gated finalize)
 
-This is the crown jewel and it survives the inversion intact. The shape:
+The full Impeccable feature is an adaptation, because its visible output is a source rewrite. The durable sub-pattern is worth stealing outright:
 
 1. On "accept", do a **fast, deterministic, possibly-ugly** write that is *correct enough to show the human immediately* (Impeccable: stitch the variant into source with markers + inline CSS; the file op runs inline with no model in the loop).
 2. Hand back a completion that is **either terminal or owes a finalize** — driven by a tiny pure function ([`completion.mjs:1`](../../source/skill/scripts/live/completion.mjs)).
 3. If it owes a finalize, land the session in a **blocking phase** that a recovery command surfaces and that **refuses to be `completed`** until the finalize runs (Impeccable: `carbonize_required` → only `live-complete.mjs` clears it).
 
-**YoinkIt application:** accept a capture into an **instant draft spec** the moment sampling finishes — the human is not blocked on the slow part — and gate a **"crystallize" step** behind a `carbonize_required`-style phase that refuses to mark the capture complete until the draft is rewritten into the final agent-ready spec (normalize keyframes, dedupe layers, resolve easings, attach the disambiguation payload). A `yoinkit-resume`-equivalent prints *"finish crystallize, then run finalize"* if interrupted. Copy `completion.mjs` almost verbatim — it is 19 lines and it is the whole gate.
+**YoinkIt application:** accept a capture into an **instant draft spec** the moment sampling finishes; the human is not blocked on the slow part. Then gate a **"crystallize" step** behind a `carbonize_required`-style phase that refuses to mark the capture complete until the draft is rewritten into the final agent-ready spec (normalize keyframes, dedupe layers, resolve easings, attach the disambiguation payload). A `yoinkit-resume`-equivalent prints *"finish crystallize, then run finalize"* if interrupted. Copy the **gate/fold/recovery shape** almost verbatim from `completion.mjs` + `session-store.mjs`; adapt the surrounding accept feature.
 
 > **AVOID — the file-writing mechanic.** Be explicit: the *mechanism* Impeccable's commit rides on does **not** transfer. "Accept = the winning variant is already in source, delete the losers" only works because Impeccable's agent **owns the repo and the dev server** and leans on the framework's HMR to render. YoinkIt captures third-party sites it does not own and its whole stance is *"emit a spec, never write code."* So do not copy the source-modification, do not copy carbonize's "move CSS into the real stylesheet." Copy the **state machine** — the temporal decoupling and the durable blocking gate — not the code-writing. The carbonize idea is a state-machine pattern, not a file-writing one.
 
@@ -456,9 +474,9 @@ Impeccable's loop is strictly serial and uninterruptible mid-generate: *"the sou
 
 ### STEAL — carry enough element identity in the event to re-resolve on the agent side
 
-The `generate` event ships the element's id, classes, tag, an ~80ch `textContent` snippet, and bounding rect; `live-wrap.mjs` re-resolves the element **against live source** by id → classes → tag+class, using the text snippet to disambiguate siblings ([`live-wrap.mjs:138`, `filterByText:798`](../../source/skill/scripts/live-wrap.mjs)), and **refuses** rather than guess when still ambiguous. This is YoinkIt's *"drive by selector, never coordinates — captured page coordinates drift with viewport"* lesson, realized as a concrete payload.
+The `generate` event ships the element's id, classes, tag, an ~80ch `textContent` snippet, and bounding rect; `live-wrap.mjs` re-resolves the element **against live source** by id → classes → tag+class, using the text snippet to disambiguate siblings ([`live-wrap.mjs:138`, `filterByText:798`](../../source/skill/scripts/live-wrap.mjs)). It refuses when multiple candidates match meaningful text equally; when text is too short or absent from source, the current implementation can preserve first-match behavior. This is YoinkIt's *"drive by selector, never coordinates — captured page coordinates drift with viewport"* lesson, realized as a concrete payload, with a fidelity caveat worth tightening.
 
-**YoinkIt application:** the map step's output for each tracked element should carry the same disambiguation bundle (stable selector candidates + a text/aria fingerprint), so the capture and recreate steps **re-resolve the live element** instead of trusting a captured node handle or a page coordinate. When the fingerprint matches multiple siblings, surface a structured ambiguity (`element_ambiguous`-style) with candidate locations rather than silently capturing the wrong one — Impeccable's refuse-don't-guess discipline is exactly right for a tool whose whole value is fidelity.
+**YoinkIt application:** the map step's output for each tracked element should carry the same disambiguation bundle (stable selector candidates + a text/aria fingerprint), so the capture and recreate steps **re-resolve the live element** instead of trusting a captured node handle or a page coordinate. When the fingerprint is meaningful and matches multiple siblings, surface a structured ambiguity (`element_ambiguous`-style) with candidate locations rather than silently capturing the wrong one. If the fingerprint is too weak, YoinkIt should choose stricter ambiguity reporting than Impeccable's first-match fallback, because capturing the wrong animated element corrupts the spec.
 
 ---
 

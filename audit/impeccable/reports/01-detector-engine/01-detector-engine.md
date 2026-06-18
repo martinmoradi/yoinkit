@@ -24,7 +24,7 @@ All paths are under `source/cli/`.
 >
 > - [`01a-rule-trinity-and-dispatch.md`](01a-rule-trinity-and-dispatch.md): the pure-core + two-adapter trinity traced end to end, the generated-bundle mechanism, and the full **rule×engine matrix** (all 44 rules across 4 engines).
 > - [`01b-css-cascade-engine.md`](01b-css-cascade-engine.md): the hand-rolled CSS cascade algorithm by algorithm, its fidelity gaps, and the dead-code finding.
-> - [`01c-color-and-contrast-tiers.md`](01c-color-and-contrast-tiers.md): color science and the three-tier contrast escalation in full (in-page canvas sampling plus the screenshot render-twice-and-diff).
+> - [`01c-color-and-contrast-tiers.md`](01c-color-and-contrast-tiers.md): color science and the three-tier contrast escalation in full (in-page visual background resolution plus the screenshot render-twice-and-diff).
 > - [`01d-selector-and-footprint.md`](01d-selector-and-footprint.md): selector generation, text-rect measurement, and footprint scrubbing (drops into `pick()` / `on(sel)` / `scan()`).
 
 ---
@@ -527,17 +527,19 @@ Concrete techniques worth copying:
   and a `window.__IMPECCABLE_CONFIG__` global
   ([`detect-url.mjs:191-197`](../../source/cli/engine/engines/browser/detect-url.mjs)).
 - **A namespaced public API on `window`** — `window.impeccableDetect`,
-  `impeccableScan`, `impeccableScanAsync`, `impeccableCollectVisualContrastCandidates`,
-  `impeccableAnalyzeVisualContrast`
+  `impeccableDetectAsync`, `impeccableScan`, `impeccableScanAsync`,
+  `impeccableCollectVisualContrastCandidates`, `impeccableAnalyzeVisualContrast`
   ([`injected/index.mjs:1930-1936`](../../source/cli/engine/browser/injected/index.mjs)).
   Structurally the same pattern as YoinkIt's `window.__cap`.
-- **It scrubs its own footprint from results.** Every scan loop skips
+- **It scrubs its own footprint from results and sampling inputs.** Every scan loop skips
   `.impeccable-*` overlay nodes, `[id^="impeccable-live-"]` inspector chrome,
   and other extensions' nodes (`claude-`, `cic-`)
   ([`injected/index.mjs:1466-1476`](../../source/cli/engine/browser/injected/index.mjs)),
   and it *clones the document and strips its own nodes* before the
   regex-on-HTML pass so its injected inline styles don't self-trigger
   ([`injected/index.mjs:1551-1558`](../../source/cli/engine/browser/injected/index.mjs)).
+  Visual-contrast candidate collection and background sampling apply the same
+  skip before measuring pixels.
   Anyone injecting into a live page must not measure their own injection.
 - **Feature-detect, degrade gracefully.** Uses `el.checkVisibility?.()` with an
   offsetWidth fallback ([`:1205-1210`](../../source/cli/engine/browser/injected/index.mjs)),
@@ -565,10 +567,12 @@ Ranked by leverage for a capture/extraction tool:
    method that works:
    - *Tier 1 — math:* parse computed `color`/bg, compute WCAG ratio in
      `checkColors` ([`checks.mjs:94-117`](../../source/cli/engine/rules/checks.mjs)).
-   - *Tier 2 — in-page canvas sampling:* `analyzeVisualContrastCandidate`
+   - *Tier 2 — in-page visual background resolution:* `analyzeVisualContrastCandidate`
      ([`injected/index.mjs:1087-1165`](../../source/cli/engine/browser/injected/index.mjs))
-     samples actual painted background pixels at multiple text points, blends
-     rgba over them (`blendRgba`), and reports a p10 ratio. When it hits a case
+     resolves backgrounds at multiple text points, using canvas for drawable
+     underlays and loaded background images, analytic worst-stop math for
+     gradients, and recursive blending for semi-transparent background-color
+     layers. It reports a p10 ratio. When it hits a case
      it *cannot* trust off-pixels (`background-clip:text`, filters, blend modes,
      opacity stacks), it returns `status:'unresolved', reason:'… needs
      screenshot pixels'` ([`:1097-1107`](../../source/cli/engine/browser/injected/index.mjs)).
@@ -587,8 +591,8 @@ Ranked by leverage for a capture/extraction tool:
    `buildSelectorSegment` ([`injected/index.mjs:499-563`](../../source/cli/engine/browser/injected/index.mjs))
    build a `:scope`-anchored selector that **drops framework-hashed classes**
    (`isLikelyHashedClass`, [`:491-497`](../../source/cli/engine/browser/injected/index.mjs)
-   — catches `css-*`, `sc-*`, `_x8f3k`, alnum+digit hashes), anchors on the
-   first ancestor `id`, **stops as soon as the partial selector is unique**, and
+   — catches `css-*`, `sc-*`, `_x8f3k`, alnum+digit hashes), anchors at the
+   first ancestor `id` while preserving descendant segments, **stops as soon as the partial selector is unique**, and
    disambiguates siblings with `:nth-of-type`. This is a near-perfect fit for
    YoinkIt's documented rule *"drive by selector, never coordinates."* It even
    round-trips: candidates carry a selector, and the screenshot/analyze passes

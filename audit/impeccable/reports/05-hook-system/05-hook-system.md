@@ -34,9 +34,9 @@ All paths are under `source/` unless noted.
 > re-verify every line number against `source/` (corrections flagged inline and
 > collected below):
 >
-> - [`05a-hook-models-and-runtime-core.md`](05a-hook-models-and-runtime-core.md): the two hook models traced end to end, the shared `runHook` pipeline and emission-priority ladder, harness/target-file resolution (incl. Codex `apply_patch` patch-body parsing), co-located-stylesheet expansion, the scan surface (skip gates, the two generated-file mechanisms, the 3-candidate detector loader, the 2-of-4-engines fact), and the **"never break the turn" fail-open contract** through every error path.
-> - [`05b-anti-nag-and-the-directive.md`](05b-anti-nag-and-the-directive.md): the no-silent-fires policy, the per-session dedup cache, edit-count suppression, the three ack states and the `ACK_EXTS` gate, the Cursor per-signature denial loop-breaker, and the directive footer as a tuned prompt.
-> - [`05c-config-and-ignore-model.md`](05c-config-and-ignore-model.md): the two-tier config schema, the three ignore axes (incl. the in-lib CSS color parser for `design-system-color` matching), env overrides, consent storage, the `cli/lib` duplication, and the **two divergent `.git/info/exclude` writers**.
+> - [`05a-hook-models-and-runtime-core.md`](05a-hook-models-and-runtime-core.md): the two hook models traced end to end, the shared `runHook` pipeline and emission-priority ladder, harness/target-file resolution (incl. Codex `apply_patch` patch-body parsing), co-located-stylesheet expansion, the scan surface (skip gates, the two generated-file mechanisms, the 3-candidate detector loader, post-edit's 2-of-4-engine coverage and Cursor's text-only pre-write coverage), and the **"never break the turn" fail-open contract** through every error path.
+> - [`05b-anti-nag-and-the-directive.md`](05b-anti-nag-and-the-directive.md): the qualified no-silent-fires policy, the per-session dedup cache, edit-count suppression, the three ack states and the `ACK_EXTS` gate, the Cursor per-signature denial loop-breaker, and the directive footer as a tuned prompt.
+> - [`05c-config-and-ignore-model.md`](05c-config-and-ignore-model.md): the two-tier config schema, the three ignore axes (incl. the in-lib CSS color parser for `design-system-color` matching), env overrides, consent storage, the `cli/lib` duplication, and the **two divergent `.git/info/exclude` writers** in the hook/config subsystem.
 > - [`05d-admin-cli-and-contract.md`](05d-admin-cli-and-contract.md): the `/impeccable hooks` CLI (`status`/`on`/`off`/`ignore-*`/`reset`), the runtime manifest-repair machinery, the agent-facing contract (`hooks.md`), and the intentional-findings policy + taught escape-hatch.
 > - [`05e-manifest-generation-and-install.md`](05e-manifest-generation-and-install.md): the build-time manifest builders, per-provider `emitHooks` opt-in (3 of 13), the four placement paths, the four committed manifests, the `npx impeccable skills install` path (merge-don't-clobber, leave-it-never-duplicate, skill-root rewrite), and the ask-once consent decision.
 >
@@ -48,10 +48,10 @@ All paths are under `source/` unless noted.
 > - **`DEFAULT_CONFIG` shape.** The frozen default (`hook-lib.mjs:72-81`) also carries `designSystem:{enabled:true}`, `ignoreRules:[]`, `ignoreFiles:[]`, `ignoreValues:[]` — the draft's §4b listed only `enabled/quiet/auditLog/limits`. (05c)
 > - **`hook.pending.json` is a tombstone, not an active state file.** Nothing in the current code writes it; the live Cursor denial state is `cursorDenials` inside `hook.cache.json` (`hook-before-edit.mjs:351-363`). `hook.pending.json` survives only in the git-exclude pattern list and the `reset` cleanup. The draft's §4e and `hooks.md:28` ("Cursor pending queue") read it as live. (05b, 05c, 05d)
 > - **The manifest duplication is two shape-definitions, not "three copies of the JSON."** The shape is defined independently in `transformers/hooks.js` (4 builders) and `hook-admin.mjs` `HOOK_MANIFEST_TARGETS`; the committed manifests are generated from the first; `skills.mjs` is a *consumer* that reads+merges the bundled file (it duplicates only the 5-element marker list + merge/strip logic). The `hook-lib` ↔ `cli/lib` config-layout/color-parser duplication is a separate axis. (05e, 05c)
-> - **Two divergent `.git/info/exclude` writers.** `ensureHookGitExcludes` (`hook-lib`, 3 patterns, marker `# impeccable-hook-ignore-*`) and `ensureConfigGitExclude` (`cli/lib`, 1 pattern, marker `# impeccable-config-ignore-*`); both list `config.local.json`, so it can appear in both blocks. (05c)
+> - **Two divergent `.git/info/exclude` writers in the hook/config subsystem.** `ensureHookGitExcludes` (`hook-lib`, 3 patterns, marker `# impeccable-hook-ignore-*`) and `ensureConfigGitExclude` (`cli/lib`, 1 pattern, marker `# impeccable-config-ignore-*`); both list `config.local.json`, so it can appear in both blocks. Live mode has a third writer outside this slice. (05c)
 > - **`IMPECCABLE_HOOK_COMMAND_MARKERS` carries 3 legacy tombstone script names** (`hook-probe.mjs`, `hook-after-edit.mjs`, `hook-stop.mjs`) that no longer exist — evidence of earlier hook designs, kept to clean stale installs. (05d, 05e)
-> - **The hook uses only 2 of the detector's 4 engines** — `detectText` (regex) for non-HTML, `detectHtml` (static-html cascade) for `.html`, plus `loadDesignSystemForCwd`; never the Puppeteer/visual engines. And re-confirmed: `cli/engine/detect-antipatterns.mjs` is a **50-line re-export facade** (the upstream `source/CLAUDE.md`'s references to lines ~1837 / ~2058 inside it are stale; see report [`01`](../01-detector-engine/01-detector-engine.md)). (05a)
-> - **Consent is never read by the hook runtime.** `readConfig` reads `enabled/quiet/auditLog/limits` + ignores, not `consent`; consent is read/written only by the CLI module (`getHookConsent`/`setHookConsent`) and gates *install*, not *runtime*. (05c, 05e)
+> - **Post-edit uses only 2 of the detector's 4 engines; Cursor pre-write uses 1.** Post-edit dispatches `.html` to `detectHtml` (static-html cascade) and non-HTML to `detectText` (regex), plus `loadDesignSystemForCwd`; Cursor pre-write uses only `detectText` over reconstructed proposed content. Neither uses the Puppeteer/visual engines. And re-confirmed: `cli/engine/detect-antipatterns.mjs` is a **50-line re-export facade** (the upstream `source/CLAUDE.md`'s references to lines ~1837 / ~2058 inside it are stale; see report [`01`](../01-detector-engine/01-detector-engine.md)). (05a)
+> - **Consent is never read by the hook runtime.** `readConfig` reads `enabled/quiet/auditLog/limits` + ignores, not `consent`; installer consent is read/written by the CLI module (`getHookConsent`/`setHookConsent`), while `/impeccable hooks on` also writes local accepted consent through `hook-admin.mjs`. Consent gates install/enable flows, not runtime scanning. (05c, 05e)
 
 ---
 
@@ -112,7 +112,8 @@ library and one config:
   reminder. Advisory, never blocking, **always exit 0**.
 - **Pre-write blocking gate** (Cursor). `hook-before-edit.mjs` runs *before* the
   write lands, **reconstructs** the proposed file content (Cursor hands you the
-  operation, not the result), runs the same detector, and returns
+  operation, not the result), runs the same detector facade/config/filter stack
+  but only through `detectText`, and returns
   `{permission:"deny"}` to stop the write when findings exist.
 
 Both delegate to `hook-lib.mjs`, both read `.impeccable/config.json` +
@@ -337,13 +338,16 @@ Impeccable solves both, three ways (full mechanics in
 
 The "no silent fires" policy is deliberate (`hook-lib.mjs:1177-1201`): the model
 forgets a prior reminder once tool output scrolls past, so a clean/pending **ack**
-keeps the discipline in context — but plain `.ts`/`.js` files (in `ALLOWED_EXTS`
-but not `ACK_EXTS`, `:51-54`) are scanned yet stay silent unless something is
-found. And the **directive footer** (`directiveFooter:1254-1266`) is a carefully
-tuned prompt: imperative ("Handle these before finalizing"), an explicit judgment
-clause ("a finding is not automatically a defect; intentional motion, demos,
-fixtures... can be valid"), and an acknowledgement instruction so the resolution
-surfaces in the model's reply (the user never sees the raw envelope).
+keeps the discipline in context. It is still a qualified policy, not an absolute
+invariant: detector errors, quiet mode, non-UI ack extensions, and post-notice
+edit-count suppression deliberately fall silent. Plain `.ts`/`.js` files (in
+`ALLOWED_EXTS` but not `ACK_EXTS`, `:51-54`) are scanned yet stay silent unless
+something is found. And the **directive footer** (`directiveFooter:1254-1266`) is
+a carefully tuned prompt: imperative ("Handle these before finalizing"), an
+explicit judgment clause ("a finding is not automatically a defect; intentional
+motion, demos, fixtures... can be valid"), and an acknowledgement instruction so
+the resolution surfaces in the model's reply (the user never sees the raw
+envelope).
 
 ---
 
@@ -358,12 +362,14 @@ Two files, one unified schema (full detail in
   **`.git/info/exclude`** (not `.gitignore`). Holds the per-developer
   `hook.consent` decision and any `--local` ignore-values.
 
-`readConfig(cwd)` (`hook-lib.mjs:137-148`) reads both, **local last (local
-wins)**, with back-compat that reads detector filters from an older `hook` subtree
-before letting the canonical `detector` subtree win. The `hook` subtree gates
-runtime (`enabled`, `quiet`, `auditLog`, `limits`); the `detector` subtree carries
-the **three ignore axes** that are shared with manual `npx impeccable detect` so a
-suppression travels:
+`readConfig(cwd)` (`hook-lib.mjs:137-148`) reads both, **local last**. Local wins
+for scalar hook settings, `designSystem.enabled`, and duplicate ignore-value
+keys, while `ignoreRules`/`ignoreFiles` are additive unions. Back-compat reads
+detector filters from an older `hook` subtree before applying the canonical
+`detector` subtree, which overrides scalars/duplicate value entries and extends
+rule/file arrays. The `hook` subtree gates runtime (`enabled`, `quiet`,
+`auditLog`, `limits`); the `detector` subtree carries the **three ignore axes**
+that are shared with manual `npx impeccable detect` so a suppression travels:
 
 - **`ignoreRules`** — antipattern ids dropped entirely.
 - **`ignoreFiles`** — globs (a custom `globToRegex` supporting `**`,`*`,`?`,`{a,b}`).
@@ -374,15 +380,17 @@ suppression travels:
   `#fff` matches `rgb(255,255,255)`.
 
 Two duplication facts that matter for anyone copying this: (1) `cli/lib/impeccable-config.mjs`
-re-implements the config-path layout, the color parser, the glob, and the ignore
-semantics, because (per its header) the published CLI and the bundled skill scripts
-"live in separate trees and cannot share runtime code" — kept in sync by hand. (2)
-There are **two independent `.git/info/exclude` writers** with different marker
-comments and pattern sets (`ensureHookGitExcludes` in `hook-lib`, three patterns;
+re-implements the config-path layout, the color parser, `globToRegex` plus a
+functionally parallel matcher, and the ignore semantics, because (per its header)
+the published CLI and the bundled skill scripts "live in separate trees and
+cannot share runtime code" — kept in sync by hand. (2) There are **two independent
+`.git/info/exclude` writers** with different marker comments and pattern sets in
+the hook/config subsystem (`ensureHookGitExcludes` in `hook-lib`, three patterns;
 `ensureConfigGitExclude` in `cli/lib`, one pattern), so `config.local.json` can end
-up listed in both blocks. The **consent** lifecycle (`getHookConsent`/`setHookConsent`)
-writes only `config.local.json` and is read only by the CLI — the hook runtime never
-reads it.
+up listed in both blocks. Installer **consent** (`getHookConsent`/`setHookConsent`)
+writes only `config.local.json` and is read only by the CLI; `/impeccable hooks on`
+also writes local accepted consent via `hook-admin.mjs`. The hook runtime never
+reads consent.
 
 ---
 
@@ -422,7 +430,7 @@ flowchart TD
   HOOKSJS["transformers/hooks.js\n4 builders + hooksJsonFor"]
   HOOKSJS --> FAC["factory.js:304-315\nbuild emit (config.emitHooks)"]
   HOOKSJS --> SYNC["build.js:407 syncRootHookManifests\n+ :755 plugin hooks.json\n(RELEASE build only)"]
-  FAC --> BUNDLE["committed bundle manifests\n.claude/.cursor/.agents(.codex)"]
+  FAC --> BUNDLE["generated bundle manifests\ndist provider dirs + dist/universal"]
   SYNC --> ROOT["repo-root .claude/settings.json\n.codex/hooks.json .cursor/hooks.json\nplugin/hooks/hooks.json"]
   BUNDLE --> INSTALL["skills.mjs copyProviderHooks\nnpx impeccable skills install"]
   INSTALL --> USER["user project\n.claude/settings.local.json\n.codex/hooks.json .cursor/hooks.json"]

@@ -118,19 +118,19 @@ Every branch with the line it begins on. Re-verified against source.
 | Route | Method | Auth | Purpose | Line |
 |---|---|---|---|---|
 | `/live.js` | GET | none | Serve the assembled browser bundle, token/port/vocab prepended, `no-store` | [`:398`](../../source/skill/scripts/live-server.mjs) |
-| `/detect.js`, `/` | GET | none | Anti-pattern overlay script (backwards-compat); cached | [`:425`](../../source/skill/scripts/live-server.mjs) |
+| `/detect.js`, `/` | GET | none | Anti-pattern overlay script (backwards-compat); no explicit `Cache-Control` header | [`:425`](../../source/skill/scripts/live-server.mjs) |
 | `/modern-screenshot.js` | GET | none | Vendored UMD lib, lazy-loaded for annotation screenshots; `immutable` cache | [`:435`](../../source/skill/scripts/live-server.mjs) |
-| `/annotation` | POST | token (query) | Stage a raw PNG to `sessionDir/<eventId>.png` so the screenshot path rides in the event, not over SSE | [`:453`](../../source/skill/scripts/live-server.mjs) |
+| `/annotation` | POST | token (query) | Stage a PNG-only payload to `sessionDir/<eventId>.png`; event id pattern-checked and body capped at 10 MB | [`:453`](../../source/skill/scripts/live-server.mjs) |
 | `/status` | GET | token (query) | Durable recovery status: clients, polling, pendingEvents (summarized), activeSessions, manualEdits | [`:510`](../../source/skill/scripts/live-server.mjs) |
 | `/health` | GET | none | Liveness: status, port, mode, hasProjectContext, connectedClients | [`:527`](../../source/skill/scripts/live-server.mjs) |
 | `/design-system.json`, `/design-system/raw` | GET | token (query) | DESIGN.md sidecar for the in-browser design panel | [`:548`](../../source/skill/scripts/live-server.mjs) |
 | `/source` | GET | token (query) | Raw source-file reader for the **no-HMR fallback**; path-traversal guarded | [`:599`](../../source/skill/scripts/live-server.mjs) |
 | `/events` | GET | token (query) | **SSE stream, server→browser push** | [`:615`](../../source/skill/scripts/live-server.mjs) |
-| `/manual-edit-*` | POST | token | Manual copy-edit stash/commit/discard; dispatched **before** `/events` POST (see [`03e`](03e-manual-edit-round-trip.md)) | [`:653`](../../source/skill/scripts/live-server.mjs) |
+| `/manual-edit-*` | mixed | mixed token | Manual edit routes dispatched **before** `/events` POST: `POST`/`GET /manual-edit-stash`, `POST /manual-edit-commit`, `POST /manual-edit-repair-decision`, `POST /manual-edit-discard`, plus legacy removed `POST /manual-edit` (see [`03e`](03e-manual-edit-round-trip.md)) | [`:653`](../../source/skill/scripts/live-server.mjs) |
 | `/events` | POST | token (body) | **Browser→server events** (generate, accept, discard, steer, exit, checkpoint, prefetch) | [`:656`](../../source/skill/scripts/live-server.mjs) |
 | `/stop` | GET | token (query) | Graceful shutdown | [`:711`](../../source/skill/scripts/live-server.mjs) |
 | `/poll` | GET | token (query) | **Agent long-poll** (blocks until event or timeout) | [`:721`](../../source/skill/scripts/live-server.mjs) |
-| `/poll` | POST | token (body) | **Agent reply** (acks event, journals, forwards to browser SSE) | [`:725`](../../source/skill/scripts/live-server.mjs) |
+| `/poll` | POST | token (body) | **Agent reply**; normal replies ack, journal, and forward to browser SSE; `manual_edit_apply` deferred replies return through a separate branch | [`:725`](../../source/skill/scripts/live-server.mjs) |
 
 > **Correction:** The first draft's route table (overview §2) is accurate on lines, but lists `/manual-edit-*` after `/events` POST. The dispatch order in source is the reverse: `manualEditRoutes(req, res, url)` is called at [`:653`](../../source/skill/scripts/live-server.mjs) — **between** the `/events` GET branch ([`:615`](../../source/skill/scripts/live-server.mjs)) and the `/events` POST branch ([`:656`](../../source/skill/scripts/live-server.mjs)). That ordering matters: a manual-edit POST is claimed by `manualEditRoutes` and never reaches the `/events` POST handler. The `/events` POST handler then *also* explicitly rejects `manual_edits` ([`:673`](../../source/skill/scripts/live-server.mjs)) and `manual_edit_apply` ([`:678`](../../source/skill/scripts/live-server.mjs)) as defense in depth.
 
@@ -308,7 +308,7 @@ The parked `resolve` closure is the entire mechanism: it captures `res`, and a *
 
 > **Correction (first-draft poll-loop pseudocode citation):** the overview §3 cites the agent poll-loop pseudocode at [`live.md:51-63`](../../source/skill/reference/live.md). The pseudocode block is at `:51-63`, but it lives **under the `## Poll loop` heading at [`live.md:46`](../../source/skill/reference/live.md)** — cite the heading, not the body lines, since the body is provider-templated (`{{scripts_path}}`).
 
-### Hop 3 — `/poll` POST: acknowledge, journal the reply, broadcast
+### Hop 3 — `/poll` POST: acknowledge, journal the normal reply, broadcast
 
 ```js
 // live-server.mjs:809  handlePollPost (manual-apply + steer-guard branches elided; shown below + in 03e)
@@ -331,6 +331,13 @@ res.writeHead(200, ...); res.end(JSON.stringify({ ok: true }));
 ```
 
 `acknowledgePendingEvent(id)` ([`:174`](../../source/skill/scripts/live-server.mjs)) is the *only* operation that truly removes an event from `pendingEvents` (lease expiry just makes it pollable again — it does not remove it). After the splice, `flushPendingPolls()` lets the now-cleared queue admit the next event, and `broadcast()` mirrors the reply to every SSE client so the overlay can react ("variants ready", "variant applied", etc.).
+
+`manual_edit_apply` replies are the important exception. They take an early
+manual-apply branch that validates structured result data, resolves the deferred
+manual-apply promise, acknowledges the pending event, flushes parked polls, and
+returns without the normal session-journal append or generic reply SSE broadcast.
+That belongs to the manual-edit machine in [`03e`](03e-manual-edit-round-trip.md),
+not to the ordinary variant-loop reply path.
 
 Two guards in `handlePollPost` worth their own line:
 
@@ -433,6 +440,11 @@ function broadcastAgentPollingIfChanged() {
 ```
 
 "An agent is connected" is true when *either* a poll is parked *or* an event is currently leased (i.e. an agent is mid-work). The broadcast is edge-triggered (only fires on a transition), so it's cheap. The overlay renders this as the global-bar Impeccable mark: solid when an agent is attached, dimmed with a pulsing amber dot when not — the ambient "is my collaborator listening?" signal the contract calls out at [`live.md:19`](../../source/skill/reference/live.md). In an async loop, the worst silent failure is "I'm pointing at elements and nobody's home"; this beacon is the fix.
+
+Manual-edit chat routing has a second, narrower presence heuristic: it treats a
+parked poll or a poll seen within the last 60 seconds as evidence that the chat
+agent is likely active. That heuristic chooses the manual Apply backend; it is not
+the same thing as the browser-facing `agent_polling` beacon.
 
 ---
 

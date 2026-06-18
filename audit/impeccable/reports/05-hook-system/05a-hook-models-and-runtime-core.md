@@ -56,7 +56,7 @@ story.
 
 ```mermaid
 flowchart TB
-  subgraph CORE["Shared core — hook-lib.mjs (1527 lines)"]
+  subgraph CORE["Shared core — hook-lib.mjs (1526 lines)"]
     RC["readConfig"]
     RT["resolveTargetFiles / parseApplyPatchPaths"]
     EX["expandScanTargets (co-located CSS)"]
@@ -73,22 +73,23 @@ flowchart TB
 ```
 
 `hook.mjs` is a thin adapter and pushes **all** logic down into
-`hook-lib.runHook()`. `hook-before-edit.mjs` is **self-contained** — it imports
-a handful of helpers from `hook-lib.mjs` (`filterFindings`, `loadDetector`,
-`readConfig`, `designSystemOptions`, `persistCache`, `readCache`,
-`renderTemplate`, `matchesAnyGlob`, the path regexes;
-[`hook-before-edit.mjs:16-33`](../../source/skill/scripts/hook-before-edit.mjs))
+`hook-lib.runHook()`. `hook-before-edit.mjs` is **self-contained** — it imports,
+among others, `filterFindings`, `loadDetector`, `readConfig`,
+`designSystemOptions`, `persistCache`, `readCache`, `renderTemplate`,
+`matchesAnyGlob`, the path regexes, and generated/sensitive path guards from
+`hook-lib.mjs`
+([`hook-before-edit.mjs:16-33`](../../source/skill/scripts/hook-before-edit.mjs))
 but owns its own `main()` and its own decision flow, because it does the hard
 work the post-edit path never has to: reconstructing the file *before* it exists.
 
-Both load the **same detector** through `loadDetector` and the same config
-through `readConfig`. Same evidence, same filters, opposite control posture.
+Both load the **same detector facade** through `loadDetector` and the same config
+through `readConfig`, then pass through the same finding filters. Their engine
+selection differs by posture: post-edit can read disk and dispatch HTML to the
+static-HTML engine; pre-write only has reconstructed proposed content and uses
+text/regex scanning. Same facade and policy, not exactly the same evidence.
 
-> **Drift note (first draft):** report 06's file-map says
-> `hook-before-edit.mjs` is "477 lines." The file ends at line 477 but line 477
-> is the trailing `});` of the top-level `.catch`; it is effectively a 476-line
-> module. The draft's other line counts (`hook.mjs` 61, `hook-lib.mjs` 1527)
-> check out.
+> **Drift note (first draft):** `hook-before-edit.mjs` is 476 lines, not 477;
+> `hook.mjs` is 61; `hook-lib.mjs` is 1526. Interior anchors are unaffected.
 
 ---
 
@@ -422,8 +423,13 @@ the proposed `command` string for the destination *and* the content.
 | heredoc `<<EOF` | (destination via redirect) | `shellHereDocContent` | [:266-276](../../source/skill/scripts/hook-before-edit.mjs) |
 | Python `.write_text` / `open(...,'w')` | `shellPythonWriteDestination` | `shellPythonWriteContent` | dest [:186-206](../../source/skill/scripts/hook-before-edit.mjs), content [:278-310](../../source/skill/scripts/hook-before-edit.mjs) |
 
-`shellWriteDestination` ([:182-184](../../source/skill/scripts/hook-before-edit.mjs))
-chains them: `redirect || tee || cp.dest || python || ''`. `shellWords`
+Destination resolution and content reconstruction are separate. Redirect, `tee`,
+`cp`, and Python writes can identify a destination; Python/heredoc/`cp` can also
+reconstruct content. Plain redirects without a recoverable body fall through to
+`no-proposed-content` ([:405-406](../../source/skill/scripts/hook-before-edit.mjs))
+and fail open. `shellWriteDestination`
+([:182-184](../../source/skill/scripts/hook-before-edit.mjs)) chains them:
+`redirect || tee || cp.dest || python || ''`. `shellWords`
 ([:255-264](../../source/skill/scripts/hook-before-edit.mjs)) is a small
 quote-aware tokenizer that `tee`/`cp` parsing rides on. The Python path
 ([:186-206](../../source/skill/scripts/hook-before-edit.mjs)) even tracks
@@ -690,9 +696,10 @@ first existing candidate, dynamically `import()`s it once (cached in
 `detectorCache`), and exposes exactly three functions:
 `detectText`, `detectHtml`, `loadDesignSystemForCwd`.
 
-**The hook invokes only 2 of report 01's 4 engines.** HTML files →
+**The post-edit hook invokes only 2 of report 01's 4 engines.** HTML files →
 `detectHtml` (the static-HTML cascade engine); everything else → `detectText`
-(the regex engine). It **never** uses the Puppeteer/browser engine or the visual
+(the regex engine). The Cursor pre-write gate invokes only `detectText` over the
+projected content. Neither path uses the Puppeteer/browser engine or the visual
 engine — those need a live page, which a hook running on a file edit doesn't
 have. `loadDesignSystemForCwd` is used only to pass design-system options
 (`designSystemOptions`, [:1225-1234](../../source/skill/scripts/hook-lib.mjs)),
@@ -783,8 +790,9 @@ code into the user's repo and treats inspection as free, so it engineers around
 hard problem is firing real-browser motion. That changes what transfers.
 
 - **STEAL: the thin-adapter / one-core / recover-harness-at-runtime shape.**
-  `hook.mjs` (61 lines) and `hook-before-edit.mjs` both reach one detector and
-  one config; `payload()` ([:1519](../../source/skill/scripts/hook-lib.mjs)) and
+  `hook.mjs` (61 lines) and `hook-before-edit.mjs` both reach one detector
+  facade, one config, and one filter/output policy; `payload()`
+  ([:1519](../../source/skill/scripts/hook-lib.mjs)) and
   `resolveHarness()` ([:959](../../source/skill/scripts/hook-lib.mjs)) branch on
   provider at the seam, not by forking the script. YoinkIt should keep its
   capture/validation engine harness-agnostic (it already aims for ~6 browser

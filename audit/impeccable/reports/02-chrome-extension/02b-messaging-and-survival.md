@@ -89,7 +89,7 @@ relies on `sender.tab.id`.
 | `overlays-toggled` | content script | persist `state.overlaysVisible`, notify panels + broadcast for popup | [:113-119](../../source/extension/background/service-worker.js) |
 | `get-state` | popup | `sendResponse(getState(tabId))` | [:121-123](../../source/extension/background/service-worker.js) |
 | `inject-fallback` | content script | **MAIN-world `executeScript` of `detect.js`** (the CSP fallback; see [02c §2](02c-injection-and-main-world.md)) | [:125-137](../../source/extension/background/service-worker.js) |
-| `disabled-rules-changed` | panel | re-scan every injected tab | [:139-145](../../source/extension/background/service-worker.js) |
+| `disabled-rules-changed` | panel | broader settings invalidation: rule toggles, line-length mode, and spotlight blur re-scan every injected tab | [:139-145](../../source/extension/background/service-worker.js) |
 
 The `findings` and `overlays-toggled` handlers each emit a *second*, broadcast
 `chrome.runtime.sendMessage` ([:94,117](../../source/extension/background/service-worker.js))
@@ -146,7 +146,7 @@ via `chrome.runtime.sendMessage`, [content-script.js:45-70](../../source/extensi
 
 | Engine posts | CS forwards to SW | Notes |
 |---|---|---|
-| `{source:'impeccable-results', findings, count}` | `{action:'findings', findings, count}` | the main result path ([index.mjs:1794-1801,1650-1659](../../source/cli/engine/browser/injected/index.mjs)) |
+| `{source:'impeccable-results', findings, count, scanId?}` | `{action:'findings', findings, count}` | the main result path; the engine can include optional `scanId`, but the content script currently drops it before the SW ([index.mjs:1794-1801,1650-1659](../../source/cli/engine/browser/injected/index.mjs)) |
 | `{source:'impeccable-overlays-toggled', visible}` | `{action:'overlays-toggled', visible}` | engine toggled its own `impeccable-hidden` body class ([index.mjs:1870](../../source/cli/engine/browser/injected/index.mjs)) |
 | `{source:'impeccable-ready'}` | *(not forwarded)* — flips CS `injected=true`, fires the pending scan | the handshake ([index.mjs:1912](../../source/cli/engine/browser/injected/index.mjs) → [content-script.js:63-69](../../source/extension/content/content-script.js)); see [02c §3](02c-injection-and-main-world.md) |
 | `{source:'impeccable-error', message}` | *(not forwarded)* | posted by `postExtensionError` ([index.mjs:1661-1667](../../source/cli/engine/browser/injected/index.mjs)) |
@@ -218,7 +218,9 @@ function postToPort(msg) {
 
 If the SW died between heartbeats, the first `postMessage` throws on the stale
 port; dropping `port` and re-`getPort()`ing reconnects and re-sends. Worth copying
-verbatim.
+as a shape. For capture-critical YoinkIt commands, the final failure should not be
+silent: return an ack/error to the UI or mark the capture stale when the retry
+cannot be delivered.
 
 ### 4.4 Teardown is `await`ed, never `setTimeout`
 
@@ -314,13 +316,14 @@ coverage is exactly the kind of thing YoinkIt must get right for its own
   YoinkIt the "tab state" is the in-progress capture (armed selectors, last
   spec); the `tabState`/`panelPorts` pair is a complete, copyable model for
   "per-tab capture state + which UI surfaces are listening."
-- **STEAL the survival kit wholesale.** YoinkIt's timed-capture recipe (settle →
-  arm → trigger → wait the duration → dump) spans many seconds and **will**
-  outlive a cold SW. Auto-reconnecting named ports + 20s heartbeats +
-  `postToPort`'s retry-once + `await`-the-teardown + connect⇒scan-if-empty are the
-  exact mechanisms that keep an armed capture from silently dying. `postToPort`
-  ([panel.js:26-34](../../source/extension/devtools/panel.js)) is two lines; copy
-  it.
+- **STEAL the mechanics, adapt state ownership.** YoinkIt's timed-capture recipe
+  (settle → arm → trigger → wait the duration → dump) spans many seconds and
+  **will** outlive a cold SW. Auto-reconnecting named ports + 20s heartbeats +
+  `postToPort`'s retry-once + `await`-the-teardown are the mechanics to copy.
+  But Impeccable can heal by rescanning because detection is idempotent; a timed
+  capture cannot always replay a missed arm/trigger window. Keep critical capture
+  state in the page engine and/or a session/journal store so a lost operation can
+  be correlated or explicitly failed, not silently replayed.
 - **STEAL the two-transport split.** One-shot messages for transient surfaces
   (a capture-trigger popup), named ports for the long-lived "Capture" panel that
   needs a disconnect signal.

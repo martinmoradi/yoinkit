@@ -18,9 +18,9 @@ these surfaces is [02b](02b-messaging-and-survival.md).
 ```mermaid
 graph TB
     subgraph DTSESSION["DevTools session (per inspected tab)"]
-      DT["devtools.js (51 lines)<br/>registers panel + sidebar pane<br/>owns lifecycle port + heartbeat"]
+      DT["devtools.js (50 lines)<br/>registers panel + sidebar pane<br/>owns lifecycle port + heartbeat"]
       PANEL["panel.js (519 lines)<br/>the main UI"]
-      SIDE["sidebar.js (104 lines)<br/>Elements pane, per-$0"]
+      SIDE["sidebar.js (103 lines)<br/>Elements pane, per-$0"]
     end
     POPUP["popup.js (67 lines)<br/>toolbar action"]
     PAGE["inspected page (MAIN world)"]
@@ -177,7 +177,7 @@ page with 3 elements carrying 7 findings shows **3** on the toolbar badge and
 **7** in the panel/popup. A real inconsistency the first draft missed; for YoinkIt,
 pick one count semantics and use it on every surface.
 
-### 4.2 Per-rule settings, persisted and broadcast
+### 4.2 Per-rule settings, persisted and selectively broadcast
 
 Settings live in `storage.sync` (roams across profiles). The panel fetches the
 generated `antipatterns.json` ([panel.js:54](../../source/extension/devtools/panel.js))
@@ -186,11 +186,13 @@ to render per-rule enable/disable checkboxes grouped by category
 controls defined in `panel.html`: `autoScan` (panel/devtools, [panel.html:34](../../source/extension/devtools/panel.html)),
 `lineLength` (strict 80 / lax 120, [panel.html:41](../../source/extension/devtools/panel.html)),
 and `spotlightBlur` ([panel.html:49](../../source/extension/devtools/panel.html)).
-Toggling a rule or a setting writes `storage.sync` and fires
+Toggling a rule writes `storage.sync` and fires
 `chrome.runtime.sendMessage({action:'disabled-rules-changed'})`
-([toggleRule, :155-163](../../source/extension/devtools/panel.js)), which makes the
-SW **re-scan every injected tab** ([service-worker.js:139-145](../../source/extension/background/service-worker.js)).
-So a settings change is immediately reflected everywhere without a manual rescan.
+([toggleRule, :155-163](../../source/extension/devtools/panel.js)); line-length
+mode and spotlight blur use the same invalidation path. The SW then **re-scans
+every injected tab** ([service-worker.js:139-145](../../source/extension/background/service-worker.js)).
+`autoScan` is different: it is persisted and affects future DevTools/panel-open
+behavior, but changing it does not rescan the current page.
 
 ### 4.3 Theme matching (cheap, correct)
 
@@ -248,9 +250,11 @@ YoinkIt of anything in the extension.
   ([:36-49](../../source/extension/popup/popup.js)); Scan and toggle buttons send
   one-shot messages with an explicit `tabId`
   ([:51-65](../../source/extension/popup/popup.js)). No port — it is transient.
-- **`sidebar.js`** (104 lines): an auto-reconnecting port for receiving findings
-  ([:17-28](../../source/extension/devtools/sidebar.js)), the `$0` match from §3.3,
-  and a small renderer ([:77-97](../../source/extension/devtools/sidebar.js)).
+- **`sidebar.js`** (103 lines): a named receive-only port for receiving findings.
+  It has a reconnect-capable `getPort()` helper ([:17-28](../../source/extension/devtools/sidebar.js)),
+  but current code only calls it at startup, with no heartbeat or send path to
+  trigger self-reconnect after SW death. It also owns the `$0` match from §3.3 and
+  a small renderer ([:77-97](../../source/extension/devtools/sidebar.js)).
   Both surfaces `escapeHtml` all interpolated text
   ([sidebar.js:99-103](../../source/extension/devtools/sidebar.js),
   [panel.js:513-517](../../source/extension/devtools/panel.js)) — findings come

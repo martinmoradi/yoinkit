@@ -257,8 +257,10 @@ the sibling. It writes the same IIFE to **two** paths
 `page.evaluate`'d by the Puppeteer CLI driver) and
 `site/public/js/detect-antipatterns-browser.js` (the public website overlay).
 So the count is: **2 build scripts → 3 generated bundle files** (`detect.js`,
-the CLI copy, the site copy), all from the **same 5 modules**. None can drift,
-because none is hand-authored.
+the CLI copy, the site copy), all from the **same 5 modules**. The CLI browser
+bundle is generated but tracked and CI-guarded; the extension and site copies are
+ignored and rebuilt or copied as needed. The shared module list keeps the engine
+source aligned, but the artifact identities differ.
 
 ---
 
@@ -303,16 +305,17 @@ was *written* to survive this transform. The Firefox build is staged to a dir
 into `EXT_DIR` moments earlier). So the shipped zip carries the engine even
 though it is gitignored in the repo.
 
-### 4.3 The artifacts are gitignored; the release gate enforces freshness
+### 4.3 The artifacts are gitignored; the release build packages fresh zips
 
 `extension/detector/` is gitignored ([.gitignore:75](../../source/.gitignore)),
 as is the site copy ([.gitignore:105](../../source/.gitignore)). A fresh clone
 has **no** `extension/detector/` directory — the engine bundle exists only after
-`bun run build:extension`. The upstream `CLAUDE.md` "Releases" section closes the
-loop: `scripts/release.mjs` refuses to tag an extension release if
-`bun run build:extension` "produces uncommitted changes," i.e. if the generated
-`extension/detector/` files were not refreshed before the version bump — a
-build-enforced guard against shipping a stale engine.
+`bun run build:extension`. The release path rebuilds `detect.js`,
+`antipatterns.json`, and the Chrome/Firefox zips before tagging, so the shipped
+archives are fresh. Do not read this as a commit-status gate on
+`extension/detector/`: those files are ignored, so `git status --porcelain` and a
+path-limited diff will not prove they were committed. Freshness is enforced by the
+packaging step and zip existence checks, not by tracked detector artifacts.
 
 ### 4.4 The rule count drift (a correction)
 
@@ -321,9 +324,12 @@ build-enforced guard against shipping a stale engine.
 (verified: 26 `category: 'slop'` + 18 `category: 'quality'`; 4 carry a `gated`
 tag), which matches the count in [01a](../01-detector-engine/01a-rule-trinity-and-dispatch.md).
 The generated `antipatterns.json` and the panel's settings list both reflect 44.
-The "41" is stale marketing copy that the build does not validate (the build's
-count-consistency checks cover the website and docs, not the extension store
-listing). A second, softer overstatement sits at
+The "41" is stale marketing copy that the build does not validate. The current
+count-consistency checks cover `site/pages/index.astro`, `README.md`,
+`AGENTS.md`, `.claude-plugin/plugin.json`, and `.claude-plugin/marketplace.json`;
+they do not cover `extension/STORE_LISTING.md` or `README.npm.md`. Historical
+changelog entries that mention 41 are intentionally stripped out of the current
+count check. A second, softer overstatement sits at
 [STORE_LISTING.md:48](../../source/extension/STORE_LISTING.md) — *"Auto-scans
 when DevTools opens, no manual step needed"* — but the **default** `autoScan` is
 `'panel'`, which waits until the user opens the Impeccable panel or sidebar;
@@ -359,10 +365,11 @@ opening DevTools alone does nothing unless the user switched the setting to
 - **AVOID** shipping a hand-maintained rule/feature count in store copy; if you
   must, wire it into the build's count-consistency check so it cannot go stale
   like the "41" here.
-- **ADAPT** the gitignore + release-gate discipline: keep the generated bundle out
-  of git, but make the release refuse to proceed if the artifact is stale relative
-  to source. For YoinkIt that maps to "never tag a release whose shipped engine
-  differs from `capture-animation.js`."
+- **ADAPT** the gitignore + release-package discipline: if the generated bundle
+  stays out of git, make the release rebuild the artifact and validate the shipped
+  zip, rather than relying on `git status` for ignored paths. For YoinkIt that
+  maps to "never tag a release whose shipped engine differs from
+  `capture-animation.js`."
 
 The messaging graph that drives this engine, and the machinery that keeps it
 alive across an MV3 service-worker death, are in

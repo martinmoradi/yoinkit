@@ -29,10 +29,10 @@ the correction is stated inline.
 
 | File | Lines | Role |
 |---|---|---|
-| [`scripts/build.js`](../../source/scripts/build.js) | 794 | The orchestrator. `build()` ordered sequence, the 6 validators + frontmatter gate, root sync, deprecated cleanup, plugin subtree, CF config. |
+| [`scripts/build.js`](../../source/scripts/build.js) | 794 | The orchestrator. `build()` ordered sequence, the early frontmatter gate + 5 late validator calls, root sync, deprecated cleanup, plugin subtree, CF config. |
 | [`scripts/lib/transformers/factory.js`](../../source/scripts/lib/transformers/factory.js) | 326 | `createTransformer(config)`. Per-provider transform plus the agents emission (claude-md top-level + nested codex `.toml` + `openai.yaml` sidecar) and per-provider hook emission. |
 | [`scripts/lib/transformers/providers.js`](../../source/scripts/lib/transformers/providers.js) | 122 | The 13 provider configs. Carries `agentFormat`, `emitHooks`, `hooksManifestRel`, `writeOpenAIMetadata` per provider — the switches the orchestrator reads. |
-| [`scripts/lib/transformers/index.js`](../../source/scripts/lib/transformers/index.js) | 19 | `PROVIDERS` + `createTransformer` re-export, plus 11 named `transformXxx` exports kept as test spy targets. |
+| [`scripts/lib/transformers/index.js`](../../source/scripts/lib/transformers/index.js) | 19 | `PROVIDERS` + `createTransformer` re-export, plus 11 named `transformXxx` exports kept for tests/helpers. |
 | [`scripts/lib/transformers/hooks.js`](../../source/scripts/lib/transformers/hooks.js) | 120 | The 4 hook-manifest builders + `hooksJsonFor()` dispatch. Generation only; no runtime. |
 | [`scripts/lib/zip.js`](../../source/scripts/lib/zip.js) | 71 | `createAllZips` / `createProviderZip`. Universal-only zip, with empty-zip guards that throw. |
 | [`scripts/lib/api-data.js`](../../source/scripts/lib/api-data.js) | 98 | `generateApiData`: static API JSON written into `site/public/_data/api/`. |
@@ -92,7 +92,7 @@ sequenceDiagram
     B->>FS: write site/public/_data/api/*.json, _headers, _redirects, _routes.json
     Note over B: 643-764 release-only block (BUILD_OPTIONS.syncRootOutputs)
     B->>FS: root sync + deprecated cleanup + plugin subtree
-    Note over B: 766-784 validator gauntlet (5 build-failing) + combined exit
+    Note over B: 766-784 validator gauntlet (5 late calls; 4 can currently fail) + combined exit
     B->>V: generateCounts, validateSiteHeader, validateTheme, validateProse, validateSkillProse
     V->>B: any errors → process.exit(1)
     Note over B: 786 ✨ Build complete!
@@ -148,9 +148,11 @@ sequenceDiagram
    `dist/universal/`, then copies each `dist/<provider>/<configDir>` into
    `dist/universal/<configDir>`. Note this is keyed on `configDir`, so `.codex`
    **is** present in the universal bundle (the root-sync exclusion is separate). A
-   `README.txt` listing all 11 visible dot-dir mappings is written
-   ([`build.js:461-482`](../../source/scripts/build.js)) so macOS Finder users do
-   not see an empty folder (every provider dir is a hidden dotfile).
+   `README.txt` is written ([`build.js:461-482`](../../source/scripts/build.js)) so
+   macOS Finder users do not see an empty folder (every provider dir is a hidden
+   dotfile). The assembly copies all **13** provider dirs, but the current README
+   literal lists only **11** and omits `.qoder/` and `.rovodev/`; treat it as a
+   stale generated inventory, not the source of truth.
 
 7. **`await createAllZips(DIST_DIR)`** ([`build.js:633`](../../source/scripts/build.js)).
    See §3 — this is universal-only and throws on a zero-entry/zero-byte archive.
@@ -172,7 +174,8 @@ sequenceDiagram
    plugin subtree — §2 through §5.
 
 10. **The validator gauntlet** ([`build.js:766-784`](../../source/scripts/build.js)) —
-    5 build-failing checks, combined into one `process.exit(1)`. §7.
+    5 late validator calls, combined into one `process.exit(1)`. Four can currently
+    fail; `validateSiteHeader()` is a no-op. §7.
 
 11. **`✨ Build complete!`** ([`build.js:786`](../../source/scripts/build.js)) only
     if every validator returned 0.
@@ -604,12 +607,13 @@ replaced it but the dead branch was never removed.
 defines 11 `transformXxx` named exports (cursor, claude-code, gemini, codex, agents,
 github, kiro, opencode, pi, qoder, rovo-dev). **`trae` and `trae-cn` have no
 named-export spies** — the list stops at `transformRovoDev` and never adds the two
-Trae variants. These exports exist only as stable `spyOn` targets for
-`tests/build.test.js` ([`index.js:4-6`](../../source/scripts/lib/transformers/index.js)
+Trae variants. These exports are partly stable `spyOn` targets and partly direct
+test helpers ([`index.js:4-6`](../../source/scripts/lib/transformers/index.js)
 comment); `build.js` itself uses `createTransformer + PROVIDERS` directly
 ([`build.js:23,624-626`](../../source/scripts/build.js)). So the Trae providers are
-exercised by the real build loop but are not individually spy-able in tests — a gap
-worth noting if a test needs to assert Trae-specific transform behavior.
+exercised by the real build loop but are not individually spy-able in tests. Current
+tests cover the first four providers with spies and direct-call only a subset of
+the remaining named exports; provider-specific coverage is partial.
 
 > **YoinkIt steal — ADAPT for emission, AVOID the drift.** The per-agent `providers:`
 > gate is exactly the right primitive: one source subagent declares *which harnesses
@@ -739,9 +743,11 @@ flowchart LR
 `./plugin/` directory is built. The motivation is in the comment at
 [`build.js:701-706`](../../source/scripts/build.js): the Claude Code marketplace is
 configured with `source: "./plugin"`, so the plugin cache copies only this slim
-directory (~0.3 MB) instead of the entire monorepo (~291 MB on the previous `"./"`
-source). The harness dirs stay where they are because `npx skills add` reads them
-from the GitHub repo at install time.
+directory instead of the entire monorepo. The source comment's `~0.3 MB` is stale:
+this checkout's tracked plugin subtree is 96 files, about 2.1 MB as an archive or
+about 0.6 MB gzipped, still far smaller than the full repo. The harness dirs stay
+where they are because `npx skills add` reads them from the GitHub repo at install
+time.
 
 The build first wipes the four plugin subdirs
 ([`build.js:712-715`](../../source/scripts/build.js)) then rebuilds:
@@ -770,7 +776,8 @@ than being hardcoded.
 `dist/claude-code/.claude/skills/impeccable` → `plugin/skills/impeccable`
 ([`build.js:741-745`](../../source/scripts/build.js)); the claude agents dir →
 `plugin/agents/` ([`build.js:747-749`](../../source/scripts/build.js)). So the plugin
-carries exactly the claude-code skill bundle plus its agents.
+carries the claude-code skill bundle plus the Claude top-level agents emitted for
+that provider (currently one).
 
 ### 8c. `plugin/hooks/hooks.json`
 
@@ -797,14 +804,15 @@ flowchart TD
   DS["dist/claude-code/.claude/skills/impeccable"] --> PS["plugin/skills/impeccable\nbuild.js:741-745"]
   AG2["dist/claude-code/.claude/agents"] --> PA["plugin/agents/\nbuild.js:747-749"]
   HOOK["buildClaudePluginHooksManifest()\n$CLAUDE_PLUGIN_ROOT"] --> PH["plugin/hooks/hooks.json\nbuild.js:755-759"]
-  PM --> MARKET["marketplace source: './plugin'\n~0.3 MB vs ~291 MB"]
+  PM --> MARKET["marketplace source: './plugin'\n~2.1 MB archive / ~0.6 MB gzipped"]
   PS --> MARKET
   PA --> MARKET
   PH --> MARKET
 ```
 
 > **YoinkIt steal — STEAL the slim-subtree pattern.** "Don't make the marketplace
-> copy your whole monorepo" is a clean, measurable win (0.3 MB vs 291 MB). The
+> copy your whole monorepo" is a clean, measurable win even after correcting the
+> stale size comment. The
 > deeper transferable idea: the *distribution unit* should be assembled, not equal
 > to the source tree. YoinkIt ships an MV3 extension + a snippet + skill copies out
 > of one repo; if any of those ever gets a marketplace/registry presence, build a
@@ -817,10 +825,11 @@ flowchart TD
 ## 9. The validator gauntlet
 
 [`build.js:766-784`](../../source/scripts/build.js). After all output is written,
-**5 build-failing validators** run late and their errors are summed into one
+**5 late validator calls** run and their errors are summed into one
 `process.exit(1)`. This is in addition to the *early* `validateSkillFrontmatter`
-gate (§1 step 3), which runs before any transform. So there are 6 build-failing
-checks total: 1 early structural gate + 5 late content/correctness checks.
+gate (§1 step 3), which runs before any transform. Four of the late calls can
+currently fail; `validateSiteHeader()` is retained as a no-op stub that always
+returns 0.
 
 ```js
 const countErrors      = generateCounts(ROOT_DIR, skills, buildDir);   // 767
@@ -939,7 +948,8 @@ To reproduce this orchestration from scratch, the load-bearing facts:
 - **`build()` order is fixed and dependency-driven**: detector copy → read source →
   *frontmatter gate (early exit)* → read version → 13-provider transform loop →
   universal assembly → zip → API/CF config *into `site/public/` (Astro wipes
-  `build/`)* → release-only sync block → *5-validator gauntlet (combined exit)*. Plus
+  `build/`)* → release-only sync block → *5 late validator calls, 4 active
+  failing gates (combined exit)*. Plus
   the `build().catch` non-zero exit ([`build.js:791-794`](../../source/scripts/build.js)).
 - **Default vs release** is one CLI flag: `build:skills` adds `--skip-root-sync`;
   `build:skills:release` does not ([`package.json:43-44`](../../source/package.json)).
@@ -960,13 +970,14 @@ To reproduce this orchestration from scratch, the load-bearing facts:
 - **Hook manifests** are generated by 4 builders; `hooksJsonFor` dispatches
   claude/codex/cursor; the plugin variant (`${CLAUDE_PLUGIN_ROOT}`) is wired only into
   the plugin subtree. Hook *runtime* is [`../05-hook-system/05-hook-system.md`](../05-hook-system/05-hook-system.md).
-- **The plugin subtree** (`./plugin/`) is a slim assembled distribution unit (0.3 MB)
+- **The plugin subtree** (`./plugin/`) is a slim assembled distribution unit (96
+  tracked files, about 2.1 MB archived / 0.6 MB gzipped in this checkout)
   with a trailing-slash `skills: './skills/'` (issue #86) and a plugin-root hook
-  manifest, so the marketplace `source: "./plugin"` doesn't copy the 291 MB monorepo.
-- **6 build-failing checks**: the early `validateSkillFrontmatter` gate, then the late
-  5 (`generateCounts` → [`04d`](04d-command-metadata-and-pin.md); `validateSiteHeader`
-  no-op; `validateTheme` kinpaku guard; `validateProse` user-facing denylist;
-  `validateSkillProse` narrow skill denylist).
+  manifest, so the marketplace `source: "./plugin"` doesn't copy the full monorepo.
+- **1 early build-failing gate plus 5 late validator calls**: `validateSkillFrontmatter`,
+  then `generateCounts` → [`04d`](04d-command-metadata-and-pin.md); `validateSiteHeader`
+  (no-op); `validateTheme` kinpaku guard; `validateProse` user-facing denylist;
+  `validateSkillProse` narrow skill denylist.
 
 The single most transferable idea for YoinkIt across all of this: **the build is a
 gauntlet of cheap-first, fail-loud gates around a fan-out, and the distribution unit

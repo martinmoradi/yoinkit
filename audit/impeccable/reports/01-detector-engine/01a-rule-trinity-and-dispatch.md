@@ -7,7 +7,7 @@ about almost everything**, and exactly **which rule runs in which engine and
 why**. Read this if a fresh agent is going to copy the dispatch shape or reason
 about why a finding shows up from a URL scan but not a file scan.
 
-All `file:line` references are into `../source/cli/engine/` unless noted.
+All `file:line` references are into `../../source/cli/engine/` unless noted.
 
 ---
 
@@ -16,7 +16,7 @@ All `file:line` references are into `../source/cli/engine/` unless noted.
 | Engine | Driver file | Reads from | Has layout? | Resolves modern CSS? |
 |---|---|---|---|---|
 | `regex` | [`engines/regex/detect-text.mjs`](../../source/cli/engine/engines/regex/detect-text.mjs) | raw source text, line by line | no | no — pattern match only |
-| `static-html` | [`engines/static-html/detect-html.mjs`](../../source/cli/engine/engines/static-html/detect-html.mjs) + [`css-cascade.mjs`](../../source/cli/engine/engines/static-html/css-cascade.mjs) | a hand-rolled computed-style object | no (rects are 0) | yes — own cascade resolves `var()`, OKLCH, shorthands, `@layer` |
+| `static-html` | [`engines/static-html/detect-html.mjs`](../../source/cli/engine/engines/static-html/detect-html.mjs) + [`css-cascade.mjs`](../../source/cli/engine/engines/static-html/css-cascade.mjs) | a hand-rolled computed-style object | no — adapters pass `rect: null` | yes — own cascade resolves `var()`, OKLCH, shorthands, `@layer` |
 | `browser` | [`engines/browser/detect-url.mjs`](../../source/cli/engine/engines/browser/detect-url.mjs) → injected bundle | real `getComputedStyle` + `getBoundingClientRect` | yes | yes — it is Chrome |
 | `visual` | [`engines/visual/screenshot-contrast.mjs`](../../source/cli/engine/engines/visual/screenshot-contrast.mjs) | screenshot pixels | yes | yes (pixels) |
 
@@ -34,8 +34,10 @@ not "jsdom."
 ## 2. The trinity, traced end to end through one rule
 
 `side-tab` (the thick colored border on one side of a card, Impeccable's flagship
-"AI tell") is the cleanest worked example because it exists in **all four**
-engines, and three of them share one decision.
+"AI tell") is the cleanest worked example because it exists in **three detector
+engines**: static and browser share one decision, regex re-implements that
+decision from source text, and visual is not applicable because it only settles
+screenshot contrast.
 
 ### The shared decision: `checkBorders` (pure, no DOM)
 
@@ -116,8 +118,8 @@ one per syntactic surface: Tailwind `border-l-4`, CSS `border-left: 4px solid`,
 Each carries its own thresholds (`>=4` plain, `>=2` if rounded), its own
 neutral-color guard (`isNeutralBorderColor`), and its own safe-element guard
 (`isSafeElement`). This is the deliberate cost of the regex tier: the decision is
-**re-implemented**, not shared, so it can drift from `checkBorders`. The other
-three never can.
+**re-implemented**, not shared, so it can drift from `checkBorders`. Static and
+browser cannot drift from the pure core; visual has no `side-tab` rule.
 
 ```mermaid
 flowchart TD
@@ -157,6 +159,8 @@ Rebuild: node scripts/build-browser-detector.js
 if (typeof window === 'undefined') return;
 // --- cli/engine/shared/constants.mjs ---
 ... constants inlined ...
+// --- cli/engine/registry/antipatterns.mjs ---
+... browser-safe ANTIPATTERNS array inlined ...
 // --- cli/engine/shared/color.mjs ---
 ... color inlined ...
 // --- cli/engine/rules/checks.mjs ---
@@ -166,9 +170,12 @@ if (typeof window === 'undefined') return;
 })();
 ```
 
-The build inlines `shared/constants.mjs`, `shared/color.mjs`, `rules/checks.mjs`,
-then `browser/injected/index.mjs`, strips `import`/`export`, and wraps the result
-in one IIFE guarded by `if (typeof window === 'undefined') return;`. So the
+The build inlines `shared/constants.mjs`, a browser-safe slice of
+`registry/antipatterns.mjs`, `shared/color.mjs`, `rules/checks.mjs`, then
+`browser/injected/index.mjs`, strips `import`/`export`, and wraps the result in
+one IIFE guarded by `if (typeof window === 'undefined') return;`. The registry
+extraction keeps the `ANTIPATTERNS` array without dragging Node-only module
+behavior into the page. So the
 `checkElementBordersDOM` that runs inside Chrome **is the exact source function**
 the Node tests import. The two cannot diverge because there is only one source;
 the bundle is a build artifact. The CLI's `detectUrl` reads this file off disk and
@@ -204,8 +211,8 @@ loops:
 - browser: `collectBrowserFindings` ([`injected/index.mjs:1455`](../../source/cli/engine/browser/injected/index.mjs))
 - visual: `captureVisualContrastCandidate` ([`screenshot-contrast.mjs:108`](../../source/cli/engine/engines/visual/screenshot-contrast.mjs))
 
-Legend: `✓` runs · `–` not wired · `△` code path exists but is effectively inert
-in that runtime (the gate it needs is unavailable).
+Legend: `✓` runs · `–` not wired · `△` limited static coverage because rendered
+layout is unavailable.
 
 | Rule | cat | regex | static | browser | visual |
 |---|---|:--:|:--:|:--:|:--:|
@@ -263,7 +270,12 @@ Footnotes (the asymmetries are the interesting part):
 5. static `icon-tile-stack` passes `headingTop: 0` and `siblingBottom: 0` ([`checks.mjs:1825`](../../source/cli/engine/rules/checks.mjs)) so the pure core *skips the vertical-stacking gate* (it treats 0 as "unknown, do not gate"). The browser path supplies real tops/bottoms.
 6. static `oversized-h1` cannot measure viewport share, so it fires on font-size + character count alone; the browser path adds the "dominates ≥28vh or ≥25% of viewport area" gate ([`checks.mjs:2235-2247`](../../source/cli/engine/rules/checks.mjs)).
 7. `low-contrast` is **math** in static and browser (`checkColors` WCAG ratio), then the browser escalates unresolved cases to canvas (Tier 2) and the URL driver escalates further to screenshot pixel-diff (Tier 3, the `visual` column). See [`01c`](01c-color-and-contrast-tiers.md).
-8. these need element rects. The static driver calls `checkElementQuality`/`checkElementClippedOverflow` with `rect: null` ([`checks.mjs:1715`](../../source/cli/engine/rules/checks.mjs)), so the rect-gated branches inside never fire. The code runs; the findings cannot.
+8. these are limited by missing rendered rects. `line-length` and
+   `body-text-viewport-edge` cannot produce their rect-gated findings in static
+   mode. `cramped-padding` still catches child-flush boundary cases from
+   computed styles, and `clipped-overflow-container` still catches
+   style-implied escapes such as negative/100% positioned children; browser
+   layout adds the stronger geometry confirmation.
 9. `text-overflow` needs `scrollWidth`/`clientWidth`, which only a real layout engine has; it is wired only in the browser loop ([`injected/index.mjs:1490`](../../source/cli/engine/browser/injected/index.mjs)).
 10. these three live inside `checkHtmlPatterns` (regex on the HTML string), which the static driver calls ([`detect-html.mjs:211`](../../source/cli/engine/engines/static-html/detect-html.mjs)) and the browser calls on a cloned, footprint-stripped document ([`injected/index.mjs:1554-1558`](../../source/cli/engine/browser/injected/index.mjs)). They are *not* in the regex `detectText` path because `detectText` does not call `checkHtmlPatterns`.
 
@@ -303,16 +315,19 @@ capture spend time / which layers produced spec entries" probe.
 
 ## 6. The "5 places stay in sync" ritual
 
-Adding a rule is a fixed, ordered checklist, enshrined in the upstream
-`CLAUDE.md`. It is the operational cost of the trinity, and it is worth copying
-verbatim as a model for any "one rule, many surfaces" system:
+Adding a rule is a fixed, ordered checklist, captured in upstream `CLAUDE.md`.
+That checklist is still the right operational shape, but some of its path wording
+is stale because `detect-antipatterns.mjs` is now a facade and the current source
+is split across the registry, rule checks, static driver, and injected browser
+bundle. The ritual is the operational cost of the trinity and is worth copying as
+a model for any "one rule, many surfaces" system:
 
 | Where | Kept in sync by |
 |---|---|
-| `ANTIPATTERNS` array + `checkXxx` logic (this engine) | hand-edited |
+| `registry/antipatterns.mjs` + `rules/checks.mjs` + engine wiring | hand-edited |
 | `detect-antipatterns-browser.js` (the in-page bundle) | `build:browser` (concat) |
-| `extension/detector/detect.js` + `antipatterns.json` | `build:extension` |
-| `site/.../counts.js` (`DETECTION_COUNT`) | `build` |
+| `extension/detector/detect.js` + `antipatterns.json` build outputs | `build:extension` |
+| `site/.../counts.js` (`DETECTION_COUNT`) build output | `build` |
 | `SKILL.src.md` + `reference/*.md` (design guidance) | hand-edited if the rule adds guidance |
 
 And the TDD order is **non-negotiable** per that file: (1) fixture HTML with
