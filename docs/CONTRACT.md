@@ -256,9 +256,9 @@ for Recon, and leave out-of-scope Capture internals for the later Capture slice.
 
 Update `README.md` only enough to keep the public command surface faithful to the
 implemented Map workbench. The README should show the new
-`init -> map -> map-gate` flow, state that Capture and full `yoink` commands are
-out of scope until the next slice, and avoid presenting planned pipeline stages
-as already implemented.
+`init -> map -> map-review -> map-gate` flow, state that Capture and full
+`yoink` commands are out of scope until the next slice, and avoid presenting
+planned pipeline stages as already implemented.
 
 Implement the Map workbench slice on a feature branch and keep commits coherent
 and semantic, following the repo guide. Natural commit boundaries are test
@@ -273,6 +273,7 @@ yoinkit recon <run-dir>
 yoinkit static-map <run-dir>
 yoinkit motion-scout <run-dir>
 yoinkit map-report <run-dir>
+yoinkit map-review <run-dir>
 yoinkit map-gate <run-dir>
 ```
 
@@ -283,11 +284,12 @@ yoinkit map <run-dir>
 ```
 
 `yoinkit map` runs `recon -> static-map -> motion-scout -> map-report`, then
-stops before `map-gate` so the human can review Report v0. `map-gate` is a pure
-validator and recorder: it accepts an explicit decision from the agent session
-after human review, checks that the required assertions and coverage allow that
-decision, and writes `04-map-report/gate.json`. It does not decide approval
-itself.
+stops before `map-review` and `map-gate` so the human review remains explicit.
+`map-review` opens the generated Report v0 at the configured primary viewport.
+It is a human acceptance harness, not a gate. `map-gate` is a pure validator and
+recorder: it accepts an explicit decision from the agent session after human
+review, checks that the required assertions and coverage allow that decision,
+and writes `04-map-report/gate.json`. It does not decide approval itself.
 
 If a stage in `yoinkit map` fails, the command stops at that stage, leaves
 completed artifacts in place, writes the stage's escalation or status artifact,
@@ -301,10 +303,17 @@ the stage, status, error, and `errorName` for the stage that stopped
 
 `yoinkit map` is done when tests prove it runs
 `recon -> static-map -> motion-scout -> map-report` in order; stops before
-`map-gate`; stops on the first failed stage with a non-zero exit; leaves
-completed artifacts intact; writes or propagates a stage status artifact; does
-not generate a Report from incomplete prerequisites unless the partial artifact
-is explicit; and prints the Report path on success.
+`map-review` and `map-gate`; stops on the first failed stage with a non-zero
+exit; leaves completed artifacts intact; writes or propagates a stage status
+artifact; does not generate a Report from incomplete prerequisites unless the
+partial artifact is explicit; and prints the Report path on success.
+
+`yoinkit map-review <run-dir>` requires `04-map-report/index.html` and an
+explicit primary viewport in `00-config.json`. It opens the Report in the trusted
+local browser wrapper, sets the viewport to the primary viewport dimensions,
+verifies the live browser `innerWidth` and `innerHeight`, and prints the Report
+path plus the requested and verified viewport. It must not inject the capture
+engine, approve the gate, edit the Page model, or create Capture artifacts.
 
 `init` is a pure run-materialization step. It creates the run directory,
 `00-config.json`, and the minimal `page-model.json` shell. It does not open a
@@ -1006,8 +1015,10 @@ for gate decisions recorded through `map-gate`.
 
 `map-report` does not open a browser by default. It writes
 `04-map-report/index.html` and prints the absolute path, and may also print a
-`file://` URL. Auto-opening is the skill layer's responsibility or a future
-explicit flag.
+`file://` URL. `map-review` is the explicit browser-opening command for human
+review. It opens the static Report without capture-engine injection and sets the
+browser viewport from `00-config.json`, then verifies the live browser viewport
+before returning.
 
 Report v0 must support three view modes:
 

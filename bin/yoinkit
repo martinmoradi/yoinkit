@@ -5,6 +5,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { pathToFileURL } = require('url');
 const {
   applyAssetPolicyOptions,
   parseInitArgs,
@@ -44,11 +45,12 @@ function usage() {
   console.log(`yoinkit
 
 Implemented flow:
-  init -> map -> map-gate
+  init -> map -> map-review -> map-gate
 
 Usage:
   ${initHelp}
   bin/yoinkit map <run-dir>
+  bin/yoinkit map-review <run-dir>
   bin/yoinkit map-gate <run-dir> --approve [--note "..."]
   bin/yoinkit map-gate <run-dir> --reject --reason "..."
   bin/yoinkit map-gate <run-dir> --approve-exception <exception-id> --reason "..." --scope <kind:id>
@@ -3909,6 +3911,90 @@ function mapCommand(argv) {
   console.log(result.artifacts.report);
 }
 
+function reviewViewport(config) {
+  const viewports = Array.isArray(config.viewports) ? config.viewports : [];
+  const primaryId = config.primaryViewport || (viewports[0] && viewports[0].id);
+  const viewport = viewports.find(item => item && item.id === primaryId) || viewports[0];
+  if (!viewport || !Number.isFinite(Number(viewport.width)) || !Number.isFinite(Number(viewport.height))) {
+    throw new Error('map-review requires an explicit primary viewport in 00-config.json');
+  }
+  return {
+    id: viewport.id || primaryId || 'viewport',
+    width: Number(viewport.width),
+    height: Number(viewport.height),
+  };
+}
+
+function mapReviewBrowserBin(env = process.env) {
+  return env.YOINKIT_MAP_REVIEW_BROWSER || AB;
+}
+
+function runMapReviewBrowser(browserBin, args) {
+  const result = spawnSync(browserBin, args, {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: DEFAULT_MAX_OUTPUT + 200_000,
+    env: process.env,
+  });
+  if (result.status !== 0) {
+    const detail = [result.stderr, result.stdout].filter(Boolean).join('\n').trim();
+    throw new Error(`map-review browser command failed: ${browserBin} ${args.map(quote).join(' ')}${detail ? `\n${detail}` : ''}`);
+  }
+  return result.stdout.trim();
+}
+
+function mapReviewViewportProbe() {
+  return '(() => ({ innerWidth, innerHeight, clientWidth: document.documentElement.clientWidth, clientHeight: document.documentElement.clientHeight, devicePixelRatio }))()';
+}
+
+function verifyMapReviewViewport(browserBin, expected) {
+  const stdout = runMapReviewBrowser(browserBin, ['eval', mapReviewViewportProbe(), '--max-output', '200000']);
+  const actual = parseJsonOutput(stdout);
+  if (!actual) return null;
+  const innerWidth = Math.round(Number(actual.innerWidth));
+  const innerHeight = Math.round(Number(actual.innerHeight));
+  if (innerWidth !== expected.width || innerHeight !== expected.height) {
+    throw new Error(`map-review expected browser viewport ${expected.width}x${expected.height}, got ${innerWidth}x${innerHeight}`);
+  }
+  return actual;
+}
+
+function mapReviewCommand(argv) {
+  const { help, positionals } = parseRunDirOnlyArgs(argv, 'map-review');
+  if (help || positionals.length !== 1) {
+    console.log('yoinkit map-review <run-dir>');
+    process.exit(help ? 0 : 1);
+  }
+
+  const runDir = path.resolve(positionals[0]);
+  const configFile = path.join(runDir, '00-config.json');
+  if (!fs.existsSync(configFile)) {
+    throw new Error('map-review requires 00-config.json; run yoinkit init first');
+  }
+  const reportFile = path.join(runDir, '04-map-report', 'index.html');
+  if (!fs.existsSync(reportFile)) {
+    throw new Error('map-review requires Report v0 at 04-map-report/index.html; run yoinkit map or yoinkit map-report first');
+  }
+
+  const config = readJson(configFile);
+  const viewport = reviewViewport(config);
+  const browserBin = mapReviewBrowserBin();
+  const reportUrl = pathToFileURL(reportFile).href;
+
+  appendLog(runDir, `- ${new Date().toISOString()} map-review ${viewport.id} ${viewport.width}x${viewport.height} ${reportUrl}`);
+  runMapReviewBrowser(browserBin, ['open', reportUrl, '--headed']);
+  runMapReviewBrowser(browserBin, ['set', 'viewport', String(viewport.width), String(viewport.height)]);
+  runMapReviewBrowser(browserBin, ['wait', '--load', 'domcontentloaded']);
+  const actualViewport = verifyMapReviewViewport(browserBin, viewport);
+
+  console.log(`Report: ${reportFile}`);
+  console.log(`Viewport: ${viewport.id} ${viewport.width}x${viewport.height}`);
+  if (actualViewport) {
+    console.log(`Browser viewport: ${Math.round(Number(actualViewport.innerWidth))}x${Math.round(Number(actualViewport.innerHeight))}`);
+  }
+  console.log('Review Source, Region, and Gate modes before running map-gate.');
+}
+
 function main() {
   const [command, ...rest] = process.argv.slice(2);
   if (!command || command === '--help' || command === '-h') {
@@ -3922,6 +4008,7 @@ function main() {
   else if (command === 'motion-scout') motionScoutCommand(rest);
   else if (command === 'map-report') mapReportCommand(rest);
   else if (command === 'map-gate') mapGateCommand(rest);
+  else if (command === 'map-review') mapReviewCommand(rest);
   else if (command === 'map') mapCommand(rest);
   else throw new Error(`Unknown command: ${command}`);
 }

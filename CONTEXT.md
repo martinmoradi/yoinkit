@@ -184,6 +184,14 @@ static and runtime-readable clues such as animation registries, CSS transitions,
 keyframes, split reveals, hover affordances, and scroll triggers. It produces
 motion candidates, not measured motion facts.
 
+**Map Review**:
+The human inspection step after [[Report]] v0 is generated and before
+[[Map Gate]]. The human checks the Report at the configured viewport, moving
+through Source, Region, and Gate modes to decide whether the static scaffold,
+Region names, Region placeholders, crops, and motion candidates are ready to be
+approved, rejected, or approved with scoped exceptions. Map Review is not the
+gate record; [[Map Gate]] records the decision.
+
 **Map Gate**:
 The approval point between [[Map]] and [[Capture]] where the human checks that
 the [[Report]] v0's Regions, rects, crops, scroll positions, responsive presence,
