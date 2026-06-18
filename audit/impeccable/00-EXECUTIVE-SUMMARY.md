@@ -1,7 +1,7 @@
 # Impeccable Deep Audit: Executive Summary
 
 > Audit target: [github.com/pbakaus/impeccable](https://github.com/pbakaus/impeccable) (Paul Bakaus). Cloned at `audit/impeccable/source/` (gitignored).
-> Audited: 2026-06-18. Six subsystem deep-dives live in [`reports/`](reports/); the YoinkIt payoff is in [`PATTERNS-FOR-YOINKIT.md`](PATTERNS-FOR-YOINKIT.md).
+> Audited: 2026-06-18. Five subsystem deep-dives live in [`reports/`](reports/); the YoinkIt payoff is in [`PATTERNS-FOR-YOINKIT.md`](PATTERNS-FOR-YOINKIT.md).
 
 ## What Impeccable is
 

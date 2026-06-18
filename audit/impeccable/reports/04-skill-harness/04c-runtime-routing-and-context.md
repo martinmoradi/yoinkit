@@ -196,7 +196,7 @@ manage the skill rather than design anything. So: **23 design commands + 3
 management commands = 26 routable first-words.** The "23 commands" figure
 everyone quotes is the design catalog only; `pin`/`unpin`/`hooks` are the
 escape-hatch tier. (`pin` mechanics → [04d](04d-command-metadata-and-pin.md);
-`hooks` runtime → [06-hook-system.md](../06-hook-system.md).)
+`hooks` runtime → [05-hook-system.md](../05-hook-system/05-hook-system.md).)
 
 > Aside worth flagging for a rebuilder: a *different* 19-name list lives at
 > [`scripts/lib/utils.js:708-712`](../../source/scripts/lib/utils.js)
@@ -834,4 +834,4 @@ produces the substituted `SKILL.md` and the placeholder set
 count enforcement, and the `pin` shim mechanics
 ([04d](04d-command-metadata-and-pin.md)); install/distribution
 ([04e-distribution-and-install.md](04e-distribution-and-install.md)); and the
-hook runtime ([06-hook-system.md](../06-hook-system.md)).
+hook runtime ([05-hook-system.md](../05-hook-system/05-hook-system.md)).
