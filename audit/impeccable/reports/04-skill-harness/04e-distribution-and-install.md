@@ -39,8 +39,8 @@ which `build`/`build:release` then call). Corrections are flagged inline with
 | [`docs/HARNESSES.md`](../../source/docs/HARNESSES.md) | 107 | Human capability matrix of record; header says it informs `scripts/lib/transformers/providers.js` |
 | [`scripts/lib/transformers/providers.js`](../../source/scripts/lib/transformers/providers.js) | 122 | `PROVIDERS` — the **13** build targets |
 | [`scripts/build.js`](../../source/scripts/build.js) | 794 | Build orchestrator; `BUILD_OPTIONS.syncRootOutputs` gates the root harness sync; `.codex` filtered out |
-| [`scripts/release.mjs`](../../source/scripts/release.mjs) | 285 | Per-component tag/publish with the dirty-tree / unpushed / tag-exists / changelog / rebuild-drift guards |
-| [`.github/workflows/sync-generated-output.yml`](../../source/.github/workflows/sync-generated-output.yml) | 98 | CI that runs `build:release` after source lands on `main` and commits generated output back |
+| [`scripts/release.mjs`](../../source/scripts/release.mjs) | 284 | Per-component tag/publish with the dirty-tree / unpushed / tag-exists / changelog / rebuild-drift guards |
+| [`.github/workflows/sync-generated-output.yml`](../../source/.github/workflows/sync-generated-output.yml) | 97 | CI that runs `build:release` after source lands on `main` and commits generated output back |
 | [`package.json`](../../source/package.json) | 110 | The `build*` and `release:*` script wiring (CLI version lives here) |
 | [`CLAUDE.md`](../../source/CLAUDE.md) | 348 | Upstream agent guide; "Generated provider output policy", "Versioning", "Releases" sections (stale on script names) |
 
@@ -65,7 +65,7 @@ flowchart TD
     SRC["skill/ (SKILL.src.md, reference/, scripts/)\nthe ONLY authoring surface"]
     BUILD["scripts/build.js\nbuild:release → syncRootOutputs"]
     ROOT[".claude/ .cursor/ .agents/ ...\n12 committed harness dirs\n(generated artifacts)"]
-    PLUGIN["plugin/\nslim ~0.3 MB subtree\n(generated artifact)"]
+    PLUGIN["plugin/\nslim subtree\n~2.1 MB archive / ~0.6 MB gzipped\n(generated artifact)"]
     DISTZIP["dist/universal.zip + dist/<provider>.zip\n(build output, NOT committed)"]
     SRC --> BUILD --> ROOT
     BUILD --> PLUGIN
@@ -351,9 +351,12 @@ available. Run `npx impeccable update`." This is exactly the verb the in-skill
 appends an `UPDATE_AVAILABLE` line telling the agent to offer `npx impeccable
 update` when a newer skill ships
 ([`context.mjs:172-176`](../../source/skill/scripts/context.mjs)) — and the
-skill-behavior test asserts the agent surfaces it but does **not** auto-run it
-([`CLAUDE.md:186`](../../source/CLAUDE.md)). So `context.mjs` (detect drift) →
-`check`/`update` (resolve it) is a deliberate loop. Cross-link:
+skill-behavior test asserts the agent surfaces it but does **not** auto-run either
+`impeccable update` or the legacy `skills update`
+([`scenarios.test.mjs:346-394`](../../source/tests/skill-behavior/scenarios.test.mjs);
+[`README.md:52-55`](../../source/tests/skill-behavior/README.md)). `CLAUDE.md:186`
+is only a stale summary and still names the old command spelling. So `context.mjs`
+(detect drift) → `check`/`update` (resolve it) is a deliberate loop. Cross-link:
 [`04c`](04c-runtime-routing-and-context.md) owns `context.mjs`.
 
 > **YoinkIt steal — STEAL.** The **copy-per-provider, never symlink-to-one-shared-
@@ -415,8 +418,9 @@ is the marketplace listing. The load-bearing line is
 the marketplace installs from the slim `plugin/` *subtree*, **not** the 291 MB
 monorepo. `plugin/` is a generated artifact (verified committed: 96 tracked files
 under `plugin/`, containing only `.claude-plugin/plugin.json`, `agents/`,
-`hooks/hooks.json`, and `skills/impeccable/**` — the ~0.3 MB the plugin actually
-needs). How `plugin/` is built is owned by
+`hooks/hooks.json`, and `skills/impeccable/**`; `plugin/agents/` currently carries
+one top-level Claude agent. The tracked subtree is about 2.1 MB as an archive or
+about 0.6 MB gzipped). How `plugin/` is built is owned by
 [`04b`](04b-build-pipeline-and-validators.md); the distribution fact is that the
 marketplace points at the subtree so a plugin install does not drag the website,
 the CLI engine, the fixtures, or the eval scaffolding along with it.

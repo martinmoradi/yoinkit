@@ -31,7 +31,7 @@ different file is named. Re-verified against source at audit time
 
 | Part | What it prevents | Mechanism | Anchor |
 |---|---|---|---|
-| **A. No-silent-fires** | the checker going invisible after the model forgets | every file-scanning fire emits *something* (fresh / pending / clean) | doc `:1177-1201` |
+| **A. No-silent-fires** | the checker going invisible after the model forgets | successful UI-file scans, with quiet off and no edit-count suppression, emit *something* (fresh / pending / clean) | doc `:1177-1201` |
 | **B. Per-session dedup** | re-reporting the same finding as if it were new | composite finding-key cache per `(session, file)` | `readCache:425`, `findingCacheKey:748` |
 | **C. Edit-count suppression** | drowning a heavily-edited file in repeated reminders | `bumpEditCount` + a **one-time** notice at threshold+1 | `:551`, `:1367-1380` |
 | **D. Three ack states + ACK_EXTS gate** | nagging on plain logic files; staying silent when a re-mind is due | `renderCleanAck` / `renderPendingAck` gated by `ACK_EXTS ⊂ ALLOWED_EXTS` | `:1205-1223`, `ACK_EXTS:51` |
@@ -77,13 +77,18 @@ the cumulative cost stays bounded across a long active editing session"*
 fresh template is *not* token-bounded the same way — it carries per-finding
 detail and is instead capped by `clampToBudget` to `maxChars` (§5).
 
-**Quiet mode silences #2 and #3 but never #1.** `IMPECCABLE_HOOK_QUIET` (env) or
-`hook.quiet` (config) short-circuits emission *before* the pending/clean
-branches (`runHook:1446`), but the fresh-findings branch (`:1417`) sits *above*
-the quiet check in the ladder, so a genuine finding is never silenced. The
-comment names this directly: quiet *"checks that env before emitting #2 or #3"*
-(`:1193-1194`). Real problems always surface; only the re-nudges and the
-all-clear acks are optional noise.
+That is a presence policy, not an absolute guarantee that every scan talks.
+Successful UI-file scans, with quiet off and edit-count suppression not yet in
+charge, resolve to fresh, pending, or clean output. The ladder still has
+deliberate silent outcomes: detector errors, quiet mode, non-UI ack extensions
+such as `.ts`/`.js`, and post-notice edit-count suppression.
+
+**Quiet mode silences every non-fresh emission.** `IMPECCABLE_HOOK_QUIET` (env)
+or `hook.quiet` (config) short-circuits emission *before* the pending, one-shot
+suppression, and clean branches (`runHook:1446`), but the fresh-findings branch
+(`:1417`) sits *above* the quiet check in the ladder, so a genuine fresh finding
+is never silenced. Real problems still surface; pending re-nudges, clean acks,
+and suppression notices are optional chatter.
 
 ---
 
@@ -108,14 +113,15 @@ matter:
   (`= 8`, `:91`), it sorts sessions by `updatedAt` descending and keeps the
   newest 8 (`:439-448`). Long-lived projects accrue sessions; this keeps the
   file size predictable without any TTL or manual cleanup.
-- **Keep the cache gitignored.** Before writing, it calls
-  `ensureHookGitExcludes(cwd)` (`:451`), which idempotently maintains the cache
-  file (and the local-config + tombstone patterns) inside `.git/info/exclude`
-  rather than the tracked `.gitignore`. The *schema* of that mechanism — the
-  marker block, the worktree-prefix handling, why `.git/info/exclude` over
-  `.gitignore` — belongs to [`05c`](05c-config-and-ignore-model.md); here it only
-  matters that **persisting the cache and hiding it from git are the same
-  call**, so the dedup state can never accidentally get committed.
+- **Keep the cache gitignored, best effort.** Before writing, it calls
+  `ensureHookGitExcludes(cwd)` (`:451`), which idempotently attempts to maintain
+  the cache file (and the local-config + tombstone patterns) inside
+  `.git/info/exclude` rather than the tracked `.gitignore`. The *schema* of that
+  mechanism — the marker block, the worktree-prefix handling, why
+  `.git/info/exclude` over `.gitignore` — belongs to
+  [`05c`](05c-config-and-ignore-model.md); here it only matters that persistence
+  tries to update the local exclude file first. The exclude helper fail-opens, so
+  this is not a hard "can never be committed" guarantee.
 
 ### The composite finding key
 
@@ -313,10 +319,11 @@ single-file fresh-findings message: a header carrying `ENVELOPE_PREFIX`
 `limits.maxFindings` (default 5) `formatFindingLine` rows, an
 `... and N more (see /impeccable audit).` line when truncated, a blank line, and
 the directive footer. If the assembled text exceeds `limits.maxChars` (default
-8000), `clampToBudget` (`:852-873`) pops finding lines one at a time — preserving
-header and footer — until it fits, with a hard `…` truncation as the final
-backstop. **The footer is never dropped**: clamping sacrifices findings, not the
-behavioral instruction.
+8000), `clampToBudget` (`:852-873`) pops finding lines one at a time — trying to
+preserve header and footer — until it fits, with a hard `…` truncation as the
+final backstop. With the default budget the directive should survive; under a
+very low `maxChars`, the final hard slice can still cut any part of the assembled
+message, including the footer.
 
 `renderGroupedTemplate(groups, config, opts)` (`:789-827`) handles the
 multi-file case (several files each with fresh findings, from co-scan expansion).

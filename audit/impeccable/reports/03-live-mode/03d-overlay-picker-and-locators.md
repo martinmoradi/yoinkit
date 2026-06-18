@@ -4,7 +4,7 @@ Companion to [`03-live-mode.md`](03-live-mode.md); this sub-dive owns the in-pag
 
 All `file:line` references are into `../../source/` unless noted.
 
-This is the sub-dive that maps almost 1:1 onto YoinkIt's `pick()` and `on(sel)`. Everything here transfers: the chrome-vs-host discriminator, the 20×20 pickability gate, the capture-phase picker, and above all the **dual locator** (durable structural ref + tolerant snapshot, re-resolved id-first) that answers YoinkIt's hardest open question: *captured selectors drift across reloads and viewports*. The overview ([`03-live-mode.md`](03-live-mode.md)) owns orientation; the server/transport and `/live.js` assembly belong to [`03a-server-transport-and-protocol.md`](03a-server-transport-and-protocol.md); what the agent *does* with a generate event lives in [`03c-variant-lifecycle-and-carbonize.md`](03c-variant-lifecycle-and-carbonize.md); editing mechanics in [`03e-manual-edit-round-trip.md`](03e-manual-edit-round-trip.md); Svelte source write-back in [`03f-framework-source-mapping.md`](03f-framework-source-mapping.md).
+This is the sub-dive that maps almost 1:1 onto YoinkIt's `pick()` and `on(sel)`. Everything here transfers: the chrome-vs-host discriminator, the 20×20 pickability gate, the capture-phase picker, and above all the **redundant identity lesson**: variant recovery uses a picked snapshot plus original-markup/selected-element fallbacks, while manual-edit recovery uses a structural `documentRef`. YoinkIt can intentionally store both, but that is an adaptation of two adjacent mechanisms, not a single exact Impeccable payload. The overview ([`03-live-mode.md`](03-live-mode.md)) owns orientation; the server/transport and `/live.js` assembly belong to [`03a-server-transport-and-protocol.md`](03a-server-transport-and-protocol.md); what the agent *does* with a generate event lives in [`03c-variant-lifecycle-and-carbonize.md`](03c-variant-lifecycle-and-carbonize.md); editing mechanics in [`03e-manual-edit-round-trip.md`](03e-manual-edit-round-trip.md); Svelte source write-back in [`03f-framework-source-mapping.md`](03f-framework-source-mapping.md).
 
 ---
 
@@ -12,7 +12,7 @@ This is the sub-dive that maps almost 1:1 onto YoinkIt's `pick()` and `on(sel)`.
 
 | File | Lines | Role |
 |---|---|---|
-| [`live-browser.js`](../../source/skill/scripts/live-browser.js) | 11,161 | THE injected overlay (IIFE). Owns: init guard, design tokens / Z-band / OKLCH colors, the picker (`handleMouseMove`/`handleClick`), the three selector flavors, the dual-locator re-resolution under HMR, `maybeWarnConditionalAncestor`, hit-proxies, footprint scrub, scroll-lock, variant cycling + param kinds. ~491 `function` declarations, ~all closure-private. |
+| [`live-browser.js`](../../source/skill/scripts/live-browser.js) | 11,161 | THE injected overlay (IIFE). Owns: init guard, design tokens / Z-band / OKLCH colors, the picker (`handleMouseMove`/`handleClick`), selector/ref recovery under HMR, `maybeWarnConditionalAncestor`, hit-proxies, footprint scrub, scroll-lock, variant cycling + param kinds. 468 named `function` declarations, or ~495 broad `function` keyword matches; almost all overlay behavior is closure-private except the debug/mount surfaces. |
 | [`live-browser-dom.js`](../../source/skill/scripts/live-browser-dom.js) | 146 | Shared DOM helpers (factory `createLiveBrowserDomHelpers`): `own`, `pickable`, `liveUiRoot`/`uiAppend`/`uiGetById`, `activeElementDeep`, `defangOutsideHandlers`, `desc`, `makeFrozenAnchor`. |
 | [`live-browser-session.js`](../../source/skill/scripts/live-browser-session.js) | 123 | localStorage session/scroll factory (`createLiveBrowserSessionState`). Used here only for `writeScrollY`/`readScrollY` (scroll-lock + resume position). |
 | [`live/sveltekit-adapter.mjs`](../../source/skill/scripts/live/sveltekit-adapter.mjs) | 274 | Generates `ImpeccableLiveRoot.svelte`, which attaches the shadow root, sets `window.__IMPECCABLE_LIVE_UI_ROOT__` **before** appending the `/live.js` script, and patches `+layout.svelte`. |
@@ -62,15 +62,15 @@ flowchart TB
   end
 
   helpers --> isolation
-  tier2 -.->|"event bubbling blocked"| proxy
+  tier2 -.->|"0x0 shadow host needs body hit targets"| proxy
 
   helpers --> chrome["All chrome via uiAppend(): global bar,<br/>picker highlight, contextual bar, params panel,<br/>edit badge — under the selected root"]
   chrome -. "elementFromPoint → pickable() gate<br/>(skips own() chrome + <20×20 nodes)" .-> body
 ```
 
-## Mermaid 2 — pick → identity → (HMR reload) → re-resolve
+## Mermaid 2 — pick → identities → (HMR reload) → re-resolve
 
-Picking captures *two* independent identities at once: a durable structural ref and a tolerant snapshot. After an HMR reload swaps every node, re-resolution walks a decision ladder that is **id-first** — because an id is unique and survives the build, while component tags and hashed CSS-module class names may not.
+Picking feeds two nearby identity systems. The variant path persists a tolerant snapshot and also falls back through the selected element and original markup. The manual-edit path persists a durable structural ref and re-walks it. After an HMR reload swaps every node, both paths lean on the same core principle: resolve live, validate the candidate, and treat an id as decisive because it is authored and unique while component tags and generated classes may not survive the build.
 
 ```mermaid
 flowchart TB
@@ -147,7 +147,7 @@ function buildTagBlock(syntax, port, filePath) {
 
 `MARKER_OPEN_TEXT = 'impeccable-live-start'` / `MARKER_CLOSE_TEXT = 'impeccable-live-end'` (`:28-29`) bracket the block so removal is a deterministic regex (indent-preserving). `insertTag` (`:390-415`) is careful about anchor semantics: `insertBefore` matches the **last** occurrence (anchors like `</body>` belong at the end, and the literal can appear earlier inside rendered doc-page code blocks), `insertAfter` matches the **first** (`<head>`/`<body>` open near the top). Two floors the user cannot override: `HARD_EXCLUDES = ['**/node_modules/**', '**/.git/**']` (`:60-63`) so the tag never lands in third-party code, and a frozen `LIVE_IGNORE_PATTERNS` list (`:33-53`) covering all `.impeccable/live/*` state plus the generated `src/lib/impeccable/ImpeccableLiveRoot.svelte`.
 
-CSP is handled out-of-band so the `<script>` load + the overlay's `fetch`/`EventSource` to `localhost:PORT` aren't blocked. `detect-csp.mjs` is a depth-capped, 64KB-per-file grep walk (no network, no JS eval) that classifies the project's CSP into one of five shapes — named by *patch mechanism*, not framework:
+CSP is handled partly out-of-band so the `<script>` load + the overlay's `fetch`/`EventSource` to `localhost:PORT` aren't blocked. `detect-csp.mjs` is a depth-capped, 64KB-per-file grep walk (no network, no JS eval) that classifies the project's CSP into one of five shapes — named by *patch mechanism*, not framework:
 
 ```js
 // detect-csp.mjs:146-162  (priority ladder)
@@ -161,7 +161,7 @@ if (hits.metaTag.length > 0)       return { shape: 'meta-tag', signals: hits.met
 return { shape: null, signals: [] };
 ```
 
-`append-arrays` (SvelteKit `kit.csp.directives`, nuxt-security, monorepo helpers) and `append-string` (inline Next/Nuxt headers) are auto-patchable; `middleware`/`meta-tag` are detected but the agent proposes the patch by hand. The classifier output drives a user-facing consent prompt; the agent writes the dev-only localhost entry.
+`append-arrays` (SvelteKit `kit.csp.directives`, nuxt-security, monorepo helpers) and `append-string` (inline Next/Nuxt headers) are auto-patchable; `middleware` is detect-only in the agent contract. `meta-tag` is a nuance: the contract and classifier still describe it as manual, but `live-inject.mjs` has a reversible in-source meta CSP patcher for the actual insertion target, appending localhost to `script-src`/`connect-src` and `blob:` to `img-src`, then reverting on remove. The report should treat that as an implementation/docs mismatch, not a pure hand-patch path.
 
 ---
 
@@ -298,11 +298,11 @@ function usesShadowChromeRoot() {
 
 The design-system panel *also* mounts its own nested shadow root regardless of adapter (`designHost.attachShadow({ mode:'open' })` `:10037`; a second per-tile shadow `:10811`) — a panel-local isolation independent of the page-level one.
 
-> **Note (deliberate, pragmatic stance — not a limitation):** shadow DOM is used **sparingly**. Only SvelteKit (framework owns body) and the design panel get shadow roots; the default path is id-namespaced-in-body. The team judged that full-shadow isolation costs more — every host listener that relies on event bubbling breaks, forcing the hit-proxy re-plumbing below — than it's worth on most pages.
+> **Note (deliberate, pragmatic stance — not a limitation):** shadow DOM is used **sparingly**. Only SvelteKit (framework owns body) and the design panel get shadow roots; the default path is id-namespaced-in-body. The page-level SvelteKit host is fixed, 0×0, and `pointer-events:none`, so some chrome needs a pragmatic body-level hit target. That is the cost paid back by the proxy layer below.
 
 ### The cost shadow DOM imposes: hit-proxies
 
-Shadow DOM blocks event bubbling to host-page listeners. Where the edit badge lives inside a shadow root, its buttons would never receive the host-level pointer interactions the overlay relies on. The fix is a body-level mirror layer that forwards synthetic `MouseEvent`s into the shadow buttons — and it only runs `if (usesShadowChromeRoot())`:
+Events can bubble through a shadow boundary; the source says so for the design panel. The edit-badge proxy exists for a more concrete reason: under the SvelteKit adapter the chrome root is mounted under a 0×0, `pointer-events:none` host, so the overlay creates transparent body-level hit targets positioned over the shadow buttons and forwards synthetic `MouseEvent`s into them. It only runs `if (usesShadowChromeRoot())`:
 
 ```js
 // live-browser.js:4385-4405
@@ -590,7 +590,7 @@ function findLiveElementFromAnchorSnapshot(snapshot) {
 The decision ladder, in order:
 
 1. **id decisive (`:4902-4905`)** — if the snapshot has an id, resolve `getElementById` and return immediately if it's a usable anchor. Nothing else is consulted. Ids are unique and authored, so they survive the build where component tags and hashed module classes do not.
-2. **class-subset (`:4911`)** — among same-tag candidates, require *every* snapshot class to be present (filtered to safe CSS identifiers, so a hashed `_a1b2c3` token that fails `/^[A-Za-z_-][\w-]*$/` is dropped rather than poisoning the match).
+2. **class-subset (`:4911`)** — among same-tag candidates, require *every* snapshot class to be present. The filter drops non-identifier class tokens, not normal hash-like identifiers: `_a1b2c3` matches `/^[A-Za-z_-][\w-]*$/`. So generated class drift can still defeat this rung unless an id resolves first or no classes remain for the text fallback.
 3. **text-needle, both directions (`:4912-4915`)** — only when there is no id *and* no usable class: compare the first 40 chars of the trimmed text content in both directions (live includes snapshot-needle, or snapshot includes live-needle), tolerant of truncation/reflow.
 
 The `isUsableInjectionAnchor` gate (`:4869-4875`) keeps re-resolution from ever landing on chrome or on an existing variant wrapper: it requires the node be in `document.body`, have a parent, *not* `own()`, and *not* be inside `[data-impeccable-variants]`.
@@ -839,7 +839,7 @@ The design language: the variant carries its own tunable surface as CSS vars/att
 
 ## A point in YoinkIt's favor: no public API here
 
-The overlay exposes **no clean public API** the way YoinkIt's `__cap.on/scan/dump` does. Of its ~491 `function` declarations, ~all are closure-private. The only deliberate surface is a debug/mount object:
+The overlay exposes **no clean public API** the way YoinkIt's `__cap.on/scan/dump` does. It has 468 named function declarations, or ~495 broader `function` keyword matches including anonymous functions and comments; almost all overlay behavior is closure-private. The only deliberate surface is a debug/mount object:
 
 ```js
 // live-browser.js:227-237  (excerpted)
@@ -870,7 +870,7 @@ YoinkIt: a human points at elements on a live, real, visible page; the engine in
 
 2. **STEAL — capture-phase `mousemove` + `elementFromPoint` framework-agnostic picker.** `handleMouseMove`/`handleClick` (`:6314-6394`) attached with `useCapture=true` (`:11127-11129`), `preventDefault()/stopPropagation()` on the pick click so the host never sees it. No React/Svelte/synthetic-event dependency — the exact contract for injecting into arbitrary pages. Application: this is the body of `pick()`; resolve by point every frame, never store coordinates.
 
-3. **STEAL (the headline) — dual locator: durable structural ref + tolerant snapshot, re-resolved id-first.** `documentRefForElement` (`tag#id.cls:nth-of-type(n)>…`, `:3474`) as the stable key, plus `{tag,id,classes,text[120]}` snapshot (`:4859`), re-resolved **id-decisive → class-subset → text-needle** (`:4898-4919`). This is the direct answer to *"captured selectors drift across reloads and viewports."* Application: `on(sel)` should store **both** identities and re-resolve live, treating **id as decisive on its own** (`:4879-4882`) — exactly what "drive by selector, never coordinates" demands, because a stored coordinate or a single brittle selector dies on the first reload, while id-first re-resolution survives the build. Bonus: filter snapshot classes through `/^[A-Za-z_-][\w-]*$/` so hashed module classes don't poison the class-subset match (`:4906`).
+3. **STEAL (the headline) — combine the adjacent locator mechanisms: structural ref + tolerant snapshot, re-resolved id-first.** `documentRefForElement` (`tag#id.cls:nth-of-type(n)>…`, `:3474`) is the manual-edit stable key; `{tag,id,classes,text[120]}` snapshot (`:4859`) is the variant recovery key, re-resolved **id-decisive → class-subset → text-needle** (`:4898-4919`). This is the direct answer to *"captured selectors drift across reloads and viewports."* Application: `on(sel)` should intentionally store **both** identities and re-resolve live, treating **id as decisive on its own** (`:4879-4882`) — exactly what "drive by selector, never coordinates" demands, because a stored coordinate or a single brittle selector dies on the first reload, while id-first re-resolution survives the build. Caveat: the class filter only drops non-identifier tokens; hash-like classes such as `_a1b2c3` still participate and may drift.
 
 4. **ADAPT — adapter-selected mount root (one global + body fallback).** `liveUiRoot()` reads `window.__IMPECCABLE_LIVE_UI_ROOT__` and falls back to `document.body` (`live-browser-dom.js:77-81`); all chrome flows through `uiAppend`/`uiGetById`. Application: `__cap`'s `pick()` toolbar exposes the same seam — namespaced-in-body by default, but able to **escalate to a shadow root only on framework-owned pages** (SvelteKit-style) without forking the engine. Adapt, don't copy: YoinkIt's engine is dependency-free, so the global should be settable by a thin per-framework shim, mirroring `sveltekit-adapter.mjs` setting the root *before* the engine script loads (`:182`/`:190`).
 

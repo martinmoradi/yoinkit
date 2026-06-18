@@ -288,10 +288,11 @@ inline (Claude `PostToolUse`/`Edit|Write|MultiEdit`; Codex
 > [`hooks.js:23-26`](../../source/scripts/lib/transformers/hooks.js)) through
 > `buildClaudeSettingsManifest`/`buildCodexHooksManifest`/`buildCursorHooksManifest`,
 > while the runtime version writes the same strings as inline literals inside the
-> `manifest()` thunks. The *shapes* are byte-for-byte equivalent; the *source* is
-> duplicated, maintained by hand. Runtime-repair (here) and build-generation
-> (05e) can drift independently. I am only flagging it here — 05e owns the full
-> duplication census (build, runtime-repair, and the `skills.mjs` installer copy).
+> `manifest()` thunks. The serialized provider manifest shapes are
+> object-equivalent; the *source* is duplicated, maintained by hand.
+> Runtime-repair (here) and build-generation (05e) can drift independently. I am
+> only flagging it here — 05e owns the full duplication census (build,
+> runtime-repair, and the `skills.mjs` installer copy).
 
 ### 3b. `IMPECCABLE_HOOK_COMMAND_MARKERS` — five entries, three of which are tombstones
 
@@ -309,7 +310,7 @@ const IMPECCABLE_HOOK_COMMAND_MARKERS = [
 ```
 
 **Three of these five script names no longer exist as files.** I verified with
-`ls` of `skill/scripts/`: the only hook scripts present are `hook.mjs`,
+`ls` of `skill/scripts/`: the only canonical `hook*` scripts present are `hook.mjs`,
 `hook-lib.mjs`, `hook-before-edit.mjs`, and `hook-admin.mjs`. `hook-probe.mjs`,
 `hook-after-edit.mjs`, and `hook-stop.mjs` are **tombstones of prior hook
 designs** — a probe hook, a separate after-edit hook (since merged into
@@ -421,7 +422,10 @@ that turns the CLI into agent behavior. The load-bearing sections:
 - **The Routing table** ([`:19-28`](../../source/skill/reference/hooks.md)): the
   one-line description per action — the model's map from a user request to a CLI
   action. Note `ignore-rule <id>` already states "for `overused-font`, requires
-  `--all-values`," surfacing the §2c code guard in the prompt.
+  `--all-values`," surfacing the §2c code guard in the prompt. Its `reset`
+  wording is user-friendly but stale/overbroad: implementation preserves
+  non-hook config siblings, and the "Cursor pending queue" file is a legacy
+  tombstone rather than live queue storage.
 - **The Flow** ([`:31-42`](../../source/skill/reference/hooks.md)): resolve the
   action (default `status`) → invoke `node {{scripts_path}}/hook-admin.mjs <action>
   [args...]` → **pass the output through verbatim**, with action-specific

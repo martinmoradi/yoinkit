@@ -263,9 +263,10 @@ the static path and only show up under the browser engine.
 
 A fresh agent copying this cascade must inherit these caveats, not discover them:
 
-- **No layout.** Every rect is `0x0`. Rules that need rendered size are skipped in
-  this path (`rect: null`); see the `△` rows in the [`01a`](01a-rule-trinity-and-dispatch.md)
-  matrix.
+- **No layout.** There is no rendered box tree. Static adapters pass
+  `rect: null`, avoid rect-gated checks, or use explicit CSS dimensions where a
+  rule can tolerate that approximation; see the `△` rows in the
+  [`01a`](01a-rule-trinity-and-dispatch.md) matrix.
 - **`@media` is flattened, not evaluated.** Rules inside every media block apply
   unconditionally, last-by-source-order winning. A `@media (max-width: 600px)`
   override will bleed into the computed style at all sizes. Acceptable because the
@@ -276,10 +277,11 @@ A fresh agent copying this cascade must inherit these caveats, not discover them
   lose to unlayered ones regardless of specificity; this cascade does not. In
   practice Tailwind utilities still resolve because the values are present; the
   ordering is just approximate.
-- **No states.** No `:hover`, `:focus`, `:checked`. Selectors with those
-  pseudo-classes still match (the pseudo is counted as a class, the base selector
-  matches the element), so a `:hover` rule's declarations can apply to the resting
-  element. Another reason the rules gate on "ever set," not "set right now."
+- **No states.** Dynamic pseudo-classes are not modeled. Some stateful selectors
+  match nothing, some unsupported pseudos are caught and profiled as
+  `unsupported-selector`, and none of them means the cascade has a faithful
+  resting-state answer for `:hover`, `:focus`, or `:checked`. Another reason the
+  rules gate on "ever set," not "set right now."
 - **Equal-specificity ties resolve later-wins**, which is correct, but the
   flattening above means "later" can mean "from a different media block," which is
   not how a browser would order them.
@@ -310,14 +312,15 @@ as an active pre-pass.
   too: `collectStaticCssRules` walks into `@layer` blocks in the css-tree AST
   directly (line 711).
 
-Verified across the **entire** source tree (the `cli/engine` copy plus all 16
-generated harness copies under `.claude/`, `.cursor/`, `.agents/`, …): both
-functions appear only at their definition and in the module export list. There is
-no call site anywhere, including tests. A fresh agent lifting this file should
-delete both (and the `normalizeColorForCheck` and `NAMED_COLORS` helpers that only
-`buildBorderOverrideMap` uses) or at minimum know they do nothing. They are the
-archaeological layer that proves the jsdom-to-cascade migration happened and was
-not fully cleaned up.
+Verified across the canonical CLI source plus the 13 distribution copies under
+`.agents/`, `.claude/`, `.cursor/`, `.gemini/`, `.github/`, `.kiro/`,
+`.opencode/`, `.pi/`, `.qoder/`, `.rovodev/`, `.trae/`, `.trae-cn/`, and
+`plugin/`: both functions appear only at their definition and in the module export
+list. There is no call site anywhere, including tests. A fresh agent lifting this
+file should delete both (and the `normalizeColorForCheck` and `NAMED_COLORS`
+helpers that only `buildBorderOverrideMap` uses) or at minimum know they do
+nothing. They are the archaeological layer that proves the jsdom-to-cascade
+migration happened and was not fully cleaned up.
 
 ---
 

@@ -16,7 +16,8 @@ unless noted.
 
 YoinkIt's contract is "drive by selector, never coordinates," because captured page
 coordinates drift with viewport. Impeccable generates exactly the kind of selector
-that contract needs: one that survives reloads and build-mangled class names.
+that contract needs as a baseline: one that is more stable than raw classes and
+resists obvious build-mangled class names.
 
 ### 1.1 Drop the noise — `isLikelyHashedClass` (line 491-497)
 
@@ -69,9 +70,10 @@ return parts.join(' > ');
 
 Four properties make it robust:
 
-1. **`id` is decisive.** If the element or any ancestor has an id, the selector
-   anchors there and stops walking. Ids survive builds; hashed component classes do
-   not.
+1. **`id` is decisive.** If the selected element has an id, the selector is the
+   bare `#id`. If an ancestor has an id, that id anchors the root of the
+   child-combinator path and the walk stops, preserving the descendant segments
+   below it. Ids survive builds; hashed component classes do not.
 2. **It stops as soon as the partial selector is unique.** It does not build the
    full root-to-leaf path; it adds ancestors only until `querySelectorAll` returns
    exactly the target. Shorter selectors are more stable.
@@ -89,7 +91,9 @@ live and detects staleness**:
   `'missing element'` if it is gone ([:1090-1094](../../source/cli/engine/browser/injected/index.mjs)).
 - `captureVisualContrastCandidate` (Tier 3 screenshot) re-resolves the selector
   inside `page.evaluate` and bails if not found
-  ([`screenshot-contrast.mjs:118-150`](../../source/cli/engine/engines/visual/screenshot-contrast.mjs)).
+  ([`screenshot-contrast.mjs:118-150`](../../source/cli/engine/engines/visual/screenshot-contrast.mjs));
+  cleanup re-resolves again and tolerates invalid or stale selectors
+  ([`:159-170`](../../source/cli/engine/engines/visual/screenshot-contrast.mjs)).
 - `addVisualContrastResult` re-resolves before decorating
   ([:1624-1630](../../source/cli/engine/browser/injected/index.mjs)).
 
@@ -135,8 +139,9 @@ cleaner basis for per-frame deltas than `getBoundingClientRect` on the container
 ## 3. Footprint scrubbing — never measure yourself
 
 An engine injected into arbitrary pages must not measure its own injection, or it
-reports the tool instead of the page. Impeccable scrubs its footprint in three
-places, and even extends the courtesy to *other* tools.
+reports the tool instead of the page. Impeccable scrubs its footprint at multiple
+collection and sampling boundaries, and even extends the courtesy to *other*
+tools.
 
 ### 3.1 Skip own + other extensions' nodes (collectBrowserFindings, line 1466-1476)
 
@@ -170,6 +175,12 @@ for (const node of docClone.querySelectorAll('[id^="impeccable-live-"]')) node.r
 const htmlPatternFindings = checkHtmlPatterns(docClone.outerHTML);
 ```
 
+The same scrub discipline appears around visual contrast too:
+`collectVisualContrastCandidates` skips overlay/live nodes before creating pixel
+candidates, and `sampleVisualBackgroundAtPoint` skips overlay nodes while walking
+the `elementsFromPoint` stack. The transferable pattern is "scrub before every
+collection or sampling boundary," not only "hide overlays from final findings."
+
 ### 3.3 The serialized shape (serializeFindings, line 1212-1233)
 
 When findings cross back to Node (extension/Puppeteer), each is serialized with
@@ -189,6 +200,7 @@ same pattern as YoinkIt's `window.__cap`:
 
 ```js
 window.impeccableDetect = detect;            // collect, return serialized findings
+window.impeccableDetectAsync = detectAsync;  // collect + visual contrast, no decoration
 window.impeccableScan = scan;                // collect + decorate overlays
 window.impeccableScanAsync = scanAsync;      // + visual contrast (async)
 window.impeccableCollectVisualContrastCandidates = collectVisualContrastCandidates;
@@ -211,7 +223,7 @@ extension surface in [`02-chrome-extension.md`](../02-chrome-extension/02-chrome
   almost verbatim into `pick()`.** This is the concrete implementation of "drive by
   selector, never coordinates." Drop hashed classes, anchor on id, stop at unique,
   child combinators, depth cap. It emits the stable selector `on(sel)` needs to
-  survive across runs and viewports.
+  survive ordinary runs and viewport drift.
 - **STEAL the round-trip discipline.** Never trust a stored selector as a permanent
   handle. Re-resolve it at use time and surface `stale selector` honestly. For
   YoinkIt's timed-capture recipe (settle, arm, trigger, wait, dump), the element can

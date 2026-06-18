@@ -61,20 +61,23 @@ export function readConfig(cwd) {
 1. **Start from a deep clone of the defaults** (`cloneDefaultConfig` :165-174, not
    the frozen `DEFAULT_CONFIG` itself — the arrays/objects are fresh so a reader
    can't mutate the shared default).
-2. **Read both files in array order, local last** — so anything in
-   `config.local.json` overrides `config.json`. Each file is read with
-   `safeReadJson` (:106-112), which returns `null` on parse failure, so a
+2. **Read both files in array order, local last** — so `config.local.json` wins
+   for scalar hook settings (`enabled`, `quiet`, `auditLog`, `limits`),
+   `designSystem.enabled`, and duplicate ignore-value keys. Each file is read
+   with `safeReadJson` (:106-112), which returns `null` on parse failure, so a
    malformed file is *ignored*, not fatal (the fail-open posture 05a covers, here
-   applied to config).
+   applied to config). The array fields are not simple overrides:
+   `ignoreRules`/`ignoreFiles` are additive unions, and local config cannot remove
+   a shared ignore entry.
 3. **Fold in the back-compat path.** Older configs stored detector filters under
    the `hook` key. So for each file `applyConfigSource` runs first on
    `hookSection` (:151-154) — and `applyConfigSource` itself *also* calls
    `applyDetectorConfigSource` internally (:207) to pick up any detector filters
    that legacy configs left under `hook`. Then `applyDetectorConfigSource` runs on
-   the canonical `detectorSection` (:156-159), and because detector arrays are
-   **merged** (not replaced — see `uniqueStrings`/`mergeIgnoreValues` :185-191),
-   canonical `detector` settings win by being applied last. The comment at
-   :139-141 states this verbatim.
+   the canonical `detectorSection` (:156-159). Canonical `detector` settings are
+   applied after legacy `hook` detector fields; they override scalars/duplicate
+   value entries and extend rule/file arrays. The comment at :139-141 states the
+   precedence goal, but the merge mechanics are more specific than "replace."
 
 `safeReadJson` is the fail-open seam: a half-written `config.json` reads as
 `null`, both `hookSection`/`detectorSection` short-circuit to `null` on a
@@ -161,12 +164,13 @@ This is the actual `.impeccable/config.json` from Impeccable's own repo
 
 Three things to read off it: (1) every `ignoreValue` carries a `reason` and a
 `createdAt` — the suppression is an audited decision, not a silent toggle; (2)
-five of seven entries use `value: "*"` scoped by `files` (a "this whole file is an
-intentional slop demo" suppression); (3) the `hook` subtree here only sets
-`enabled` and `limits` — everything else (`quiet`, `auditLog`, `consent`) is
-absent and falls back to defaults / lives in `config.local.json`. Note this repo's
-own checkout has **no `config.local.json`** (the team config carries `consent`
-nowhere; consent is the per-developer file's job, §4).
+six of seven entries use `value: "*"` scoped by `files` (five color
+suppressions and one font suppression, effectively "this whole file is an
+intentional slop demo"); (3) the `hook` subtree here only sets `enabled` and
+`limits` — everything else (`quiet`, `auditLog`, `consent`) is absent and falls
+back to defaults / lives in `config.local.json`. Note this repo's own checkout
+has **no `config.local.json`** (the team config carries `consent` nowhere;
+consent is the per-developer file's job, §4).
 
 ### Config resolution diagram
 
@@ -204,9 +208,9 @@ and exactly what it gates:
 | Key | Default | Gates | Notes |
 |---|---|---|---|
 | `hook.enabled` | `true` | **automatic hook execution only** | `runHook` bails with `skipped: 'config-disabled'` when `enabled === false` ([`hook-lib.mjs:1316-1319`](../../source/skill/scripts/hook-lib.mjs)). Stops **both** the Claude/Codex post-edit reminders **and** Cursor's pre-write blocking. **Manual `npx impeccable detect` still runs** when disabled ([`hooks.md:9`](../../source/skill/reference/hooks.md)) — `enabled` is purely the hook lifecycle switch. |
-| `hook.quiet` | `false` | the clean/pending **acks** | Silences "looks clean" and "still pending" acks; **findings still surface**. Set by `applyConfigSource` only when `quiet === true` (:201-203). |
+| `hook.quiet` | `false` | non-fresh hook emissions | Silences pending re-nudges, clean acks, and the one-shot suppression notice; **fresh findings still surface**. Set by `applyConfigSource` only when `quiet === true` (:201-203). |
 | `hook.auditLog` | `null` | NDJSON audit-log path | `writeAuditLog` ([`hook-lib.mjs:1123-1150`](../../source/skill/scripts/hook-lib.mjs)) appends one JSON line per invocation. Path may be `~/`-relative, absolute, or project-relative (resolved against the event's project cwd, :1136-1142). Env `IMPECCABLE_HOOK_LOG` **overrides** it (:1129). |
-| `hook.consent` | absent | the install decision | `'accepted'` / `'declined'`, written to **`config.local.json`** by the CLI, never to the shared file. Read/written by `getHookConsent`/`setHookConsent` (§4). |
+| `hook.consent` | absent | the install / enable decision | `'accepted'` / `'declined'`, written to **`config.local.json`** for installer consent by `getHookConsent`/`setHookConsent`; `/impeccable hooks on` also writes local accepted consent through `hook-admin.mjs` (§4). Never read by the hook runtime. |
 | `hook.limits.maxFindings` | `5` | rendered reminder size | caps how many findings render in one reminder. |
 | `hook.limits.maxChars` | `8000` | rendered reminder size | caps total reminder chars (the render/clamp mechanics are 05b's). `numberOr` (:161-163) rejects non-positive values back to the default. |
 
@@ -253,8 +257,9 @@ translator supporting `**` (cross-segment), `*` (within-segment), `?`, and
 `matchesAnyGlob` (:598-614) tests the full normalized path **and** the basename,
 so `*.generated.tsx` catches `src/foo.generated.tsx` without writing `**/`. Matched
 files are skipped in the per-file loop with reason `config-ignore-file` (05a). No
-custom glob engine should exist twice, but it does — the CLI side re-implements
-`globToRegex`/`matchesAnyGlob` byte-for-byte
+custom glob engine should exist twice, but it does — the CLI side duplicates
+`globToRegex` byte-for-byte and keeps `matchesAnyGlob` functionally parallel
+with a small input-normalization difference
 ([`cli/lib/impeccable-config.mjs:376-425`](../../source/cli/lib/impeccable-config.mjs)).
 
 ### Axis 3 — `ignoreValues` (the richest axis: suppress a specific value)
@@ -374,12 +379,14 @@ export function setHookConsent(root, value) {     // :574-583
 
 The shape is the whole lesson: the **team shares `config.json`** (is the hook
 enabled, what's intentionally ignored) while **each developer's install decision
-stays in `config.local.json`** and is guaranteed never committed by
-`ensureConfigGitExclude` (§5). `getHookConsent` reads both with local-wins so a
-developer can locally `decline` a hook the team config has `accepted`, without
-touching the shared file. `setHookConsent` always targets the local file and
-preserves sibling keys (it spreads `existing` and only overwrites `hook.consent`),
-so writing consent never clobbers a developer's private `--local` ignores.
+stays in `config.local.json`** and is kept out of git by best-effort
+`.git/info/exclude` maintenance (§5). `getHookConsent` reads both with local-wins
+so a developer can locally `decline` a hook the team config has `accepted`,
+without touching the shared file. `setHookConsent` always targets the local file
+and preserves sibling keys (it spreads `existing` and only overwrites
+`hook.consent`), so writing consent never clobbers a developer's private
+`--local` ignores. `/impeccable hooks on` records accepted consent too, but via
+`hook-admin.mjs`'s local `writeHookConfig` path rather than the CLI config module.
 
 ---
 
@@ -448,9 +455,11 @@ reach the same ignore semantics by two independently-maintained code paths.
 
 ## 6. The two divergent `.git/info/exclude` writers (a sharp finding)
 
-There are **two independent functions** that write marker-delimited blocks to
-`.git/info/exclude`, with **different markers** and **different pattern sets**.
-This is a real hazard worth naming.
+Inside the hook/config subsystem, there are **two independent functions** that
+write marker-delimited blocks to `.git/info/exclude`, with **different markers**
+and **different pattern sets**. This is a real hazard worth naming. Live mode has
+a third writer outside this slice (`ensureLiveGitIgnores`), and it overlaps some
+of the same local config/state patterns.
 
 ### Writer A — the hook runtime: `ensureHookGitExcludes`
 

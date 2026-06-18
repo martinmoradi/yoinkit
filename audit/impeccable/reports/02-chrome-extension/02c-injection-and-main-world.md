@@ -77,8 +77,9 @@ function injectAndScan() {
 }
 ```
 
-This works even while the **service worker is asleep**, because the content script
-does it directly — no round-trip to the SW. Removing the tag on `onload` is safe:
+Once the content script has received the scan command, this cheap tier does not
+need a second service-worker round trip: the content script appends the tag
+directly and waits for the ready handshake. Removing the tag on `onload` is safe:
 the engine IIFE has already executed synchronously and registered its listeners;
 the tag is just DOM litter at that point.
 
@@ -196,7 +197,7 @@ selected by `EXTENSION_MODE`.
 ## 4. Idempotency — three guards against double-injection
 
 Re-injection is a real hazard (the SW may try twice; the user may re-engage). The
-bridge and the engine are both re-injection-safe at three levels:
+active scan session is re-injection-safe at three levels:
 
 1. **Content script — a window flag.** The bridge IIFE bails if already loaded
    ([content-script.js:13-15](../../source/extension/content/content-script.js)):
@@ -217,6 +218,12 @@ bridge and the engine are both re-injection-safe at three levels:
 The flags are reset on navigation/teardown (see [02b §2,§6](02b-messaging-and-survival.md))
 so a real reload re-arms cleanly — the `csInjected` reset in particular fixed a
 documented popup-only no-op bug.
+
+One caveat matters for YoinkIt: after a `remove` command, the content script marks
+the engine as not injected, but the old MAIN-world engine listener and
+`window.impeccable*` globals remain until page reload. A later scan can append the
+engine file again. If re-engage-after-remove must be clean, add an engine-level
+singleton/version guard or a true full-unload path.
 
 ---
 
@@ -268,8 +275,12 @@ walk over the DOM, not just the main one:
   }
   ```
 - **Visual-contrast candidate loop** ([index.mjs:660-661](../../source/cli/engine/browser/injected/index.mjs))
-  and the **pixel-sample stack walk** ([index.mjs:1039](../../source/cli/engine/browser/injected/index.mjs))
-  each repeat the `.impeccable-*` / `impeccable-live-` skip.
+  repeats the `.impeccable-*` and `[id^="impeccable-live-"]` skips.
+- **Pixel-sample stack walk** ([index.mjs:1039](../../source/cli/engine/browser/injected/index.mjs))
+  skips the `.impeccable-*` overlay classes while walking `elementsFromPoint`.
+  It does not repeat the live-overlay id-prefix skip, which is a useful hardening
+  note for YoinkIt: every capture stack walk should use the full tool-chrome
+  exclusion matrix.
 - **Clone-and-strip before the regex pass** ([index.mjs:1554-1558](../../source/cli/engine/browser/injected/index.mjs)):
   the `checkHtmlPatterns` regex runs on `outerHTML`, which would include the
   inspector's own injected inline styles (transitions on top/left/width/height)
@@ -293,8 +304,10 @@ spotlight backdrop is created lazily on first hover
 ([index.mjs:88-95](../../source/cli/engine/browser/injected/index.mjs)); the
 `remove` command tears all of it down — `clearOverlays()`, removes the style
 element, removes the backdrop, drops the `impeccable-hidden` body class
-([index.mjs:1872-1877](../../source/cli/engine/browser/injected/index.mjs)). So
-the engine can be fully unloaded from a page, leaving no trace.
+([index.mjs:1872-1877](../../source/cli/engine/browser/injected/index.mjs)). This
+is visual-footprint teardown, not full engine unload: page/content-script
+listeners and the public `window.impeccable*` globals remain installed until page
+reload.
 
 ---
 
@@ -336,10 +349,11 @@ target `location.origin` on outbound posts and add a per-injection nonce to the
   captures nothing."* Have `__cap` announce `cap-ready` and have the controller
   arm only on that signal, never on a sleep. ([index.mjs:1855-1912](../../source/cli/engine/browser/injected/index.mjs)
   → [content-script.js:63-69](../../source/extension/content/content-script.js))
-- **STEAL the three idempotency guards.** A window flag on the bridge, a per-tab
-  flag in the SW, and re-post-don't-re-inject in the engine. Capture sessions
-  re-engage constantly; without these you get duplicate listeners and
-  already-declared errors.
+- **STEAL the active-session idempotency guards.** A window flag on the bridge, a
+  per-tab flag in the SW, and re-post-don't-re-inject in the engine. Capture
+  sessions re-engage constantly; without these you get duplicate listeners and
+  already-declared errors. If YoinkIt supports remove-then-rearm without a page
+  reload, add an engine-level singleton/version guard or full unload.
 - **STEAL footprint scrubbing into `scan(root)` and `dump()`.** Skip YoinkIt's own
   `.yoink-*` overlay/picker chrome in *every* walk, clone-and-strip before any
   `outerHTML` pass, and (cheaply) skip `claude-`/`cic-`/agent-browser nodes by id

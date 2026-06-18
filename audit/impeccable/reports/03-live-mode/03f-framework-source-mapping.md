@@ -12,7 +12,7 @@ When the host page is plain HTML or a framework that emits literal text, "drive 
 
 1. **The framework owns `document.body`.** In SvelteKit the layout renders the page; a stray top-level `<div>` you inject would be reconciled away. The adapter's own header says it plainly: *"SvelteKit must not be patched through src/app.html. That file is a document template, not framework-owned component chrome"* (`skill/scripts/live/sveltekit-adapter.mjs:4-7`). So the overlay must mount through a Svelte component (`ImpeccableLiveRoot.svelte`) and a shadow root — that mount/isolation story is **03d's** ([`03d-overlay-picker-and-locators.md`](03d-overlay-picker-and-locators.md)); this file picks up *after* the overlay exists.
 
-2. **The rendered text is not the source text.** The source authored `{count} of {total}`; the live DOM shows `7 of 12`. A literal `indexOf("7 of 12")` against source finds nothing — the source contains `{count}`, `of`, `{total}`, and JS bindings, never the rendered string. To map a live element back to a stable identity (and to make a variant that compiles), you must recover *which expression produced which visible substring*.
+2. **The rendered text is not the source text.** The source authored `{count} of {total}`; the live DOM shows `7 of 12`. A literal `indexOf("7 of 12")` against source finds nothing — the source contains `{count}`, `of`, `{total}`, and JS bindings, never the rendered string. To make a variant compile and later restore source, you need a prop contract for those expressions; literal recovery is best-effort preview support, not the correctness anchor.
 
 3. **The build erases the identifiers you'd reach for.** Component tag names and hashed CSS-module class names don't survive compilation, so a re-resolution that keys on tag+class is brittle. The id, when present, is the one signal that survives — this is the "id is decisive" insight that 03d derives and this file reuses.
 
@@ -47,8 +47,8 @@ flowchart TB
     direction TB
     orig["originalMarkup from route source<br/>e.g. &lt;p class='count'&gt;{count} of {total}&lt;/p&gt;"]
     extract["extractMustacheExpressions()<br/>ordered unique: ['count','total']  :44"]
-    contract["buildPropContract()<br/>[{prop:'count',expr:'count',placeholder:'{count}'},<br/>&nbsp;{prop:'total',expr:'total',placeholder:'{total}'}]  :63"]
-    sub["substituteExprsWithProps()<br/>&lt;p class='count'&gt;{count} of {total}&lt;/p&gt;<br/>(prop names == exprs here; identity)  :82"]
+    contract["buildPropContract()<br/>[{prop:'prop0',expr:'count',placeholder:'{count}'},<br/>&nbsp;{prop:'prop1',expr:'total',placeholder:'{total}'}]  :63"]
+    sub["substituteExprsWithProps()<br/>&lt;p class='count'&gt;{prop0} of {prop1}&lt;/p&gt;  :82"]
     stub["buildVariantStub() + buildPropsScript()<br/>real .svelte file: $props() + markup + &lt;style&gt;  :119/:128"]
     orig --> extract --> contract --> sub --> stub
     contract -. "stored in manifest.propContract +<br/>manifest.originalMarkup  :156-167" .-> manifest[(manifest.json)]
@@ -57,17 +57,17 @@ flowchart TB
   subgraph mount["Mount time — browser (live-browser.js)"]
     direction TB
     live["live picked element<br/>rendered: '7 of 12'"]
-    map["buildSvelteExpressionTextMap()<br/>{count}->'7', {total}->'12'  :5645"]
-    propvals["buildSveltePropValuesFromLiveElement()<br/>{count:'7', total:'12'}  :5219"]
+    map["buildSvelteExpressionTextMap()<br/>best-effort literals; this mixed two-token node<br/>currently yields no entries  :5645"]
+    propvals["buildSveltePropValuesFromLiveElement()<br/>{prop0:'', prop1:''} for this case today  :5219"]
     mountcmp["mount(Component, {props}) — Svelte 5  :5248"]
     live --> map --> propvals --> mountcmp
   end
 
   subgraph accept["Accept time — server (svelte-component.mjs via live-accept.mjs)"]
     direction TB
-    chosen["chosen v{N}.svelte markup<br/>(prop-bound: {count}, {total})"]
+    chosen["chosen v{N}.svelte markup<br/>(prop-bound: {prop0}, {prop1})"]
     merge["mergeOriginalTopLevelAttrs()<br/>restore original class/attrs on root  :646"]
-    restore["substitutePropsWithExprs()<br/>{count}->{count}, {total}->{total}<br/>(reverse the contract)  :90"]
+    restore["substitutePropsWithExprs()<br/>{prop0}->{count}, {prop1}->{total}<br/>(reverse the contract)  :90"]
     css["sanitizeAcceptedSvelteCss + bakeParamValuesInCss<br/>scope selectors, inline var(--p-*)  :310/:298"]
     write["splice into route source line range<br/>sourceStartLine..sourceEndLine  :537-562"]
     chosen --> merge --> restore --> css --> write
@@ -86,15 +86,13 @@ The artifact that makes this bidirectional is **one object, the prop contract**,
 ```mermaid
 flowchart LR
   src["source text node<br/>'{count} of {total}'"] --> tok["tokens = match(/\\{[^{}]+\\}/g)<br/>['{count}','{total}']"]
-  live["live rendered text<br/>'7 of 12'"] --> matcher
-  tok --> matcher["expressionTextMatcher(sourceText, tokens)  :5688<br/>build regex from STATIC parts:<br/>^(.*?) of (.*?)$  with \\s+ -> \\s*"]
-  matcher --> rx["RegExp: /^(.*?)\\s*of\\s*(.*?)$/"]
-  live --> rx
-  rx --> caps["match groups: ['7','12']"]
-  caps --> mapout["map.set('{count}','7')<br/>map.set('{total}','12')"]
+  live["live rendered text<br/>'7 of 12'"] --> caller
+  tok --> caller["current caller checks:<br/>tokens.length === 1 ? regex<br/>else only whitespace-only equality"]
+  caller --> miss["mixed literal + two tokens<br/>does not call expressionTextMatcher today"]
+  miss --> mapout["map entries: none<br/>prop0/prop1 fall back to '' for preview"]
 ```
 
-The matcher turns the **static, literal fragments** of the source text (`""`, `" of "`, `""`) into anchored regex literals and replaces each `{expr}` with a non-greedy capture group `(.*?)`. Whitespace in the static parts is relaxed (`\s+` → `\s*`) so a source-side `{count} of {total}` still aligns with a rendered `7 of 12` even if the framework collapsed or inserted whitespace. The capture-group values are the recovered expression values.
+`expressionTextMatcher` itself can turn the **static, literal fragments** of the source text (`""`, `" of "`, `""`) into anchored regex literals and replace each `{expr}` with a non-greedy capture group `(.*?)`. Whitespace in the static parts is relaxed (`\s+` → `\s*`). But the current caller only invokes that matcher for single-token nodes, so `{count} of {total}` currently yields no map entries. The binding round-trip still works because accept uses the persisted prop contract, not the recovered preview literals.
 
 ---
 
@@ -259,7 +257,7 @@ let newLines = [
 
 The merge-back of root attributes (`mergeOriginalTopLevelAttrs`, `:646`) handles a subtle case: the agent's variant may have dropped or rewritten the root element's `class`/attributes, but the original markup carried framework-meaningful attributes (event bindings, `class:` directives, `bind:`, etc.). It re-parses both opening tags, **unions the class lists** (`mergeStaticClassAttr`, `:713` — variant classes first, then any original ones not already present, deduped), and re-adds any original non-class attribute the variant is missing (`:669-672`). It bails out entirely if the two root tags differ (`:650`) — it will not graft a `<div>`'s attributes onto a `<section>`.
 
-> **Correction:** the draft Diagram 3 box labels the accept step `inlineSvelteComponentAccept → substitutePropsWithExprs → write variant back into route source` with no mention of carbonize. Verified: the Svelte accept **always sets `carbonize: false`** (it is hardcoded in `resultBase`, `svelte-component.mjs:508`), because there is no leftover `[data-impeccable-*]` wrapper in source to clean up — the variant lived in `node_modules/.impeccable-live/<id>/`, never in the route file, so accept is a clean splice + session removal (`removeSvelteComponentSession`, `:566`). The carbonize-cleanup TODO branch in `live-accept.mjs:114` is therefore dead for this path. This is a real divergence from the plain-DOM accept that 03c documents.
+> **Correction:** the draft Diagram 3 box labels the accept step `inlineSvelteComponentAccept → substitutePropsWithExprs → write variant back into route source` with no mention of carbonize. Verified: the Svelte accept **always sets `carbonize: false`** (it is hardcoded in `resultBase`, `svelte-component.mjs:508`). The variants live in `node_modules/.impeccable-live/<id>/` during preview, but accept reads the chosen `v{N}.svelte`, restores the original bindings, splices the result into the route source line range, and removes the temp session (`removeSvelteComponentSession`, `:566`). Carbonize is false because no plain-DOM variant wrapper/carbonize marker remains in source after that splice. The carbonize-cleanup TODO branch in `live-accept.mjs:114` is therefore dead for this path. This is a real divergence from the plain-DOM accept that 03c documents.
 
 ---
 
@@ -315,10 +313,10 @@ function buildSvelteExpressionTextMap(sourceOriginal, liveOriginal) {
 
 `sourceOriginal` here is the **parsed `manifest.originalMarkup`** (the source-shaped DOM, mustaches intact), and `liveOriginal` is the **live picked element** (rendered text). Note the alignment strategy: it walks both DOMs' text nodes in document order and pairs the *i*-th source-with-mustache node against the next live text node. This is positional, not structural — fragile if the framework reorders text nodes, but for the common case (text nodes appear in the same order they were authored) it's correct and cheap.
 
-The three branches handle the realistic shapes:
+The three branches handle a subset of realistic shapes:
 - **`{count}` alone** in a text node → the entire rendered text *is* the value; no regex needed.
-- **`{count} of {total}` mixed with literals** → fall through to `expressionTextMatcher`, the multi-token regex case (Trace 2 below the matcher).
-- **`{a} {b}` separated only by whitespace** → the source normalizes to `"{a} {b}"` and each token maps to its own adjacent live text node.
+- **`{count} of {total}` mixed with literals** → currently recovers nothing, because the matcher is only called inside the single-token branch.
+- **`{a} {b}` separated only by whitespace** → handled coarsely: every token from that source text node receives the same paired live text string.
 
 The matcher itself:
 
@@ -341,7 +339,7 @@ function expressionTextMatcher(sourceText, tokens) {
 
 For `sourceText = "{count} of {total}"` and `tokens = ["{count}"]` (the single-token call site at `:5672`), the static slices are `""` (before `{count}`) and `" of {total}"` (after). So the pattern is `^(.*?) of \{total\}$` against `7 of 12` — which would *fail*, because the live text has no literal `{total}`. That is exactly why the single-token branch only fires when there's one token in the node; the genuinely multi-mustache `{count} of {total}` node hits the `tokens.length === 1` guard with `tokens = ['{count}', '{total}']`... no — `match(/\{[^{}]+\}/g)` returns **both** tokens, so `tokens.length === 2`, and the node falls to the final branch which only handles the pure-`{a} {b}` whitespace-separated case (`normalizePreviewText(sourceText) === tokens.join(' ')`, i.e. `"{count} of {total}"` vs `"{count} {total}"` — not equal). 
 
-> **Correction / sharp edge:** so for a node like `{count} of {total}` (two mustaches around a literal `of`), `buildSvelteExpressionTextMap` recovers **nothing** — neither the single-token branch nor the join-equality branch matches, and `expressionTextMatcher` is only ever called with a *single* token (`:5672`). The recovered map is therefore best-effort: it nails `{count}`-alone nodes and `{a} {b}` whitespace pairs, and silently yields empty for mixed literal-plus-multi-mustache nodes. Downstream, `buildSveltePropValuesFromLiveElement` (`:5219`) tolerates the gap — `values[entry.prop] = map.get(token) || ''` — so an unrecovered binding just renders an empty string in the preview; the *binding itself is still restored correctly on accept* via the contract, since accept does not depend on the recovered literal at all. The literal recovery is a **preview convenience, not a correctness requirement**. The worked `{count} of {total}` example is the case the matcher is *designed* around (the static `" of "` becomes `\s*of\s*`), but the current single-token call path doesn't actually exercise the multi-token branch of `expressionTextMatcher` — a latent capability the matcher has but the caller doesn't reach. Treat the matcher's multi-token power as the *intent*, and the single-token call site as the *current reality*.
+> **Correction / sharp edge:** so for a node like `{count} of {total}` (two mustaches around a literal `of`), `buildSvelteExpressionTextMap` recovers **nothing** — neither the single-token branch nor the join-equality branch matches, and `expressionTextMatcher` is only ever called with a *single* token (`:5672`). The recovered map is therefore best-effort: it nails `{count}`-alone nodes and handles `{a} {b}` whitespace-only pairs coarsely by assigning the same paired live string to every token from that node; it silently yields empty for mixed literal-plus-multi-mustache nodes. Downstream, `buildSveltePropValuesFromLiveElement` (`:5219`) tolerates the gap — `values[entry.prop] = map.get(token) || ''` — so an unrecovered binding just renders an empty string in the preview; the *binding itself is still restored correctly on accept* via the contract, since accept does not depend on the recovered literal at all. The literal recovery is a **preview convenience, not a correctness requirement**. The worked `{count} of {total}` example is the case the matcher is *designed* around (the static `" of "` becomes `\s*of\s*`), but the current single-token call path doesn't actually exercise the multi-token branch of `expressionTextMatcher` — a latent capability the matcher has but the caller doesn't reach. Treat the matcher's multi-token power as the *intent*, and the single-token call site as the *current reality*.
 
 The map feeds prop values straight into the Svelte 5 `mount()`:
 
@@ -396,7 +394,7 @@ function elementMatchesOriginalMarkup(liveEl, origContent) {
   if (liveEl.tagName !== origContent.tagName) return false;
 
   const origClasses = normalizeElementClassName(origContent).split(/\s+/).filter(Boolean)
-    .filter((name) => /^[A-Za-z_-][\w-]*$/.test(name));           // drop hashed/weird class tokens
+    .filter((name) => /^[A-Za-z_-][\w-]*$/.test(name));           // drop non-identifier class tokens
   if (origClasses.length > 0 && !origClasses.every((name) => liveEl.classList.contains(name))) return false;
 
   const origText = (origContent.textContent || '').trim();
@@ -409,7 +407,7 @@ function elementMatchesOriginalMarkup(liveEl, origContent) {
 }
 ```
 
-The comment at `:4879-4881` is the single decisive insight reused from 03d: **a matching id ends the comparison immediately** — no tag check, no class check, no text check — because ids are unique and survive the build, whereas component tag names and hashed CSS-module classes do not. When there's no id, it degrades: tag must match, then *all* well-formed original classes must be present, and if there are *no* classes to lean on it falls back to a bidirectional 40-char text-prefix containment check (works for `{count}`-style rendered text where the source-original and live differ only in the expression's value, as long as the first 40 chars overlap).
+The comment at `:4879-4881` is the single decisive insight reused from 03d: **a matching id ends the comparison immediately** — no tag check, no class check, no text check — because ids are unique and survive the build, whereas component tag names and hashed CSS-module classes do not. When there's no id, it degrades: tag must match, then *all* well-formed original classes must be present, and if there are *no* classes to lean on it falls back to a bidirectional 40-char text-prefix containment check. That fallback is literal prefix/substring matching only; it does not understand mustaches, so pure `{count}` vs `7` fails and even `Count: {count}` vs `Count: 7` only works if enough literal prefix overlaps.
 
 The ladder that uses both:
 
@@ -550,7 +548,7 @@ For YoinkIt this means: after HMR or a transition replaces the tracked node, `on
 
 ### ADAPT — literal↔expression text recovery (record "this string is dynamic, bound to X", not the frozen literal)
 
-`buildSvelteExpressionTextMap` (`:5645`) + `expressionTextMatcher` (`:5688`) recover *which expression produced which visible substring*: source `{count} of {total}` aligned against rendered `7 of 12`. For YoinkIt's hard problem — "the live DOM shows rendered text/values, but the source authored them via framework expressions" — this is the mechanism to adapt, **inverted**. Impeccable recovers the literal to render a preview; YoinkIt should recover the *binding* to annotate the spec. When a captured element's visible text was rendered from an expression, the emitted spec should record **"this layer's text is dynamic, bound to `{count}`"** rather than freezing the literal `7` into the spec (which would mislead the recreating agent into hardcoding `7`). The technique to adapt:
+`buildSvelteExpressionTextMap` (`:5645`) + `expressionTextMatcher` (`:5688`) show the intended mechanism for recovering *which expression produced which visible substring*, but the current caller only recovers simple cases such as `{count}` alone and misses mixed multi-token text like `{count} of {total}`. For YoinkIt's hard problem — "the live DOM shows rendered text/values, but the source authored them via framework expressions" — this is still the mechanism to adapt, **inverted**, with honest confidence levels. Impeccable recovers literals only as preview convenience; YoinkIt should recover or annotate the *binding* when evidence supports it. When a captured element's visible text was rendered from an expression, the emitted spec should record **"this layer's text is dynamic, bound to `{count}`"** rather than freezing the literal `7` into the spec (which would mislead the recreating agent into hardcoding `7`). The technique to adapt:
 - Anchor the **static fragments** of any available source/template text as regex literals with relaxed whitespace (`\s+` → `\s*`), and treat the gaps as the dynamic bindings — that's `expressionTextMatcher`'s whole trick.
 - Where no source text is available (YoinkIt often only has the live DOM), the weaker signal is: a text node whose value matches a numeric/short/variable shape, or that changes between captures, is *probably* an expression — flag it as dynamic in the spec rather than asserting the literal.
 - Note Impeccable's own honesty here (Trace 2 correction): the recovery is **best-effort** and tolerant of misses (`map.get(token) || ''`). YoinkIt should likewise degrade gracefully — an unrecovered binding becomes "text (possibly dynamic)" in the spec, not a hard failure.

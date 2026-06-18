@@ -94,8 +94,10 @@ strings. Three functions turn those into `{r,g,b,a}`:
 
 The design-system extractor adds `hslToRgb` for `hsl()` palette tokens
 ([`design-system.mjs:203`](../../source/cli/engine/design-system.mjs)). Together these
-mean the detector can read a color literal in essentially any form a 2026 stylesheet
-emits.
+cover the formats the detector needs most for Tailwind v4 and design-system
+checks: RGB, hex, OKLCH, plus HSL in design-system parsing. Neutral-color
+classification is broader than contrast RGB parsing, because it can classify
+LCH/OKLab/Lab/HSL/HWB without converting every one of those formats to RGB.
 
 ---
 
@@ -135,12 +137,16 @@ the text is opaque. It cannot handle anything that needs pixels.
 
 ---
 
-## 3. Tier 2 — in-page canvas sampling (browser, free)
+## 3. Tier 2 — in-page visual background resolution (browser, free)
 
 When Tier 1 cannot trust the math (the background is an image, the text sits over a
-gradient, alpha stacks), the in-page engine samples **actual painted pixels** with
-a `<canvas>`, still inside the page, no screenshot needed. This is the part the
-overview under-described; it is a substantial pixel-sampling engine.
+gradient, alpha stacks), the in-page engine resolves the background under the
+text without taking a screenshot. It uses canvas for drawable underlays and loaded
+CSS background images, analytic worst-stop math for gradients, parsed color math
+for solid backgrounds, and recursive alpha blending for semi-transparent
+background-color layers. This is the part the overview under-described; it is a
+substantial visual-resolution engine, but not every Tier 2 result is a painted
+pixel sample.
 
 ### 3.1 Candidate selection — what even needs Tier 2
 
@@ -265,7 +271,7 @@ is a clean handoff:
 ```mermaid
 flowchart TD
   T1["Tier 1: checkColors WCAG math\nstatic + browser, free"]
-  T2["Tier 2: in-page canvas sampling\nimpeccableAnalyzeVisualContrast\nsamples painted px, p10 ratio"]
+  T2["Tier 2: in-page visual resolution\nimpeccableAnalyzeVisualContrast\ncanvas or analytic bg, p10 ratio"]
   T3["Tier 3: screenshot render-twice-and-diff\ncaptureVisualContrastCandidate\nisolate glyph px, measure revealed bg"]
   DONE1["emit / suppress"]
   DONE2["emit / suppress"]
@@ -284,12 +290,13 @@ two pixel paths are disjoint by design: canvas (Tier 2) reads input pixels and
 cannot see `background-clip:text`/filters/blend; screenshots (Tier 3) see the
 composited output but cost a render. Each covers what the other cannot.
 
-| Failure mode | Tier 1 math | Tier 2 canvas | Tier 3 screenshot |
+| Failure mode | Tier 1 math | Tier 2 visual resolver | Tier 3 screenshot |
 |---|:--:|:--:|:--:|
 | solid resolvable bg, opaque text | ✓ exact | — | — |
-| gradient background | worst-stop estimate | ✓ sampled | ✓ |
+| gradient background | worst-stop estimate | analytic worst-stop / in-page estimate | ✓ |
 | background image / `<img>` underlay | ✗ | ✓ painted-rect sample | ✓ |
-| translucent stacked layers | ✗ | ✓ recursive blend | ✓ |
+| semi-transparent background-color layers | ✗ | ✓ recursive blend | ✓ |
+| CSS `opacity` stack | ✗ | ✗ (bails) | ✓ only here |
 | `background-clip: text` gradient text | ✗ | ✗ (bails) | ✓ only here |
 | `filter` / `mix-blend-mode` / `backdrop-filter` | ✗ | ✗ (bails) | ✓ only here |
 | cross-origin tainted image | ✗ | ✗ (taint) | ✓ |

@@ -40,7 +40,7 @@ flowchart TD
 
   subgraph PATH1["① Build emission (every bun run build)"]
     FAC["factory.js:308-315\nif config.emitHooks → hooksJsonFor()"]
-    BUNDLE["committed bundle manifests\n.claude/skills/.../ etc. provider dirs"]
+    BUNDLE["generated bundle manifests\nprovider dirs + dist/universal"]
   end
 
   subgraph PATH2["② Release root sync (build:release ONLY)"]
@@ -49,8 +49,8 @@ flowchart TD
     PLUG["buildClaudePluginHooksManifest()\n→ plugin/hooks/hooks.json :755-759"]
   end
 
-  subgraph PATH3["③ Project install (npx impeccable skills install)"]
-    INSTALL["skills.mjs copyProviderHooks :1259\nREADS committed bundle, merges into USER project"]
+  subgraph PATH3["③ Project install/update (npx impeccable skills install/update)"]
+    INSTALL["skills.mjs copyProviderHooks :1259\nREADS extracted bundle, merges into USER project"]
     USERPROJ["user's .claude/settings.local.json\n.cursor/hooks.json · .codex/hooks.json"]
   end
 
@@ -73,13 +73,16 @@ flowchart TD
 |---|---|---|---|---|---|
 | ① | Build emission | [`factory.js:308-315`](../../source/scripts/lib/transformers/factory.js) | every `bun run build` | provider bundle dirs (`<providerDir>/<configDir>/<rel>`) | `hooks.js` |
 | ② | Release root sync + plugin | [`build.js:407-420`](../../source/scripts/build.js), called [`:676`](../../source/scripts/build.js); plugin [`:755-759`](../../source/scripts/build.js) | `build:release` **only** | repo-root `.claude/settings.json` etc. + `plugin/hooks/hooks.json` | `hooks.js` |
-| ③ | Project install | [`skills.mjs:1259-1301`](../../source/cli/bin/commands/skills.mjs) | `npx impeccable skills install/update/link` | **user's** project, gitignored `settings.local.json` for Claude | reads ①'s committed bundle |
+| ③ | Project install/update | [`skills.mjs:1259-1301`](../../source/cli/bin/commands/skills.mjs) | `npx impeccable skills install/update` | **user's** project, gitignored `settings.local.json` for Claude | reads ①'s extracted/generated bundle |
 | ④ | Runtime repair | `hook-admin.mjs:309` (→ [`05d`](05d-admin-cli-and-contract.md)) | `/impeccable hooks on` | user's project dests | `HOOK_MANIFEST_TARGETS` (own copy) |
 
-Paths ① and ② are about *this* repo (generate the committed artifacts). Path ③ is
-the live path into someone else's codebase. Path ④ is the runtime twin owned by
-05d. Only ① and ② read from `hooks.js`; ③ reads ①'s *output*; ④ hardcodes its own.
-That asymmetry is the duplication census in §6 — get it precise.
+Paths ① and ② are about *this* repo: path ① emits bundle manifests under
+`dist/<provider>/<configDir>/<rel>` and `dist/universal`; path ② release-syncs
+tracked root/plugin copies of the same shapes. Path ③ is the live path into
+someone else's codebase and reads an extracted bundle, not the tracked root
+copies directly. Path ④ is the runtime twin owned by 05d. Only ① and ② read from
+`hooks.js`; ③ reads ①'s *output*; ④ hardcodes its own. That asymmetry is the
+duplication census in §6 — get it precise.
 
 ### The critical default-vs-release distinction
 
@@ -361,10 +364,12 @@ record** a decision — so a CI run or piped install doesn't lock in an `accepte
 that the developer never actually saw; the next interactive run can still prompt.
 Consent is recorded *only* when a human is actually asked.
 
-Call sites — there are several entry points, all using the same consent + copy
-contract: `:1497`/`:1529` (install), `:1563`/`:1582` (update), `:1717`/`:1751`
-(link). Each pairs `decideHookInstall(...) && copyProviderHooks(...)`. The install
-path additionally filters to *missing* targets before copying via
+Call sites — there are several install/update entry points, all using the same
+consent + copy contract: existing install uses `:1497`/`:1529`, fresh install
+uses `:1563`/`:1582`, and update uses `:1717-1718` and `:1751-1752`. Each pairs
+`decideHookInstall(...) && copyProviderHooks(...)`. `skills link` currently links
+skill folders only; it does not install or repair hooks. The install path
+additionally filters to *missing* targets before copying via
 `hookInstalledForProvider` ([`:1508`](../../source/cli/bin/commands/skills.mjs)),
 so an update only tops up the hooks a project is actually missing.
 
@@ -391,7 +396,7 @@ These two are the genuine drift hazard: edit a matcher in `hooks.js` and you mus
 mirror it in `hook-admin.mjs` by hand.
 
 **`skills.mjs` is NOT a third shape definition.** It does **not** hardcode the
-manifest JSON — `copyProviderHooks` *reads* the committed bundled manifest
+manifest JSON — `copyProviderHooks` *reads* the generated bundled manifest
 (`readJsonFile(src, ...)`, [`:1276`](../../source/cli/bin/commands/skills.mjs)) and
 merges it. It is a **consumer** of definition #1's output, not a third source of
 truth. What `skills.mjs` *does* duplicate from `hook-admin.mjs` is the
@@ -461,7 +466,7 @@ shape sources.
 `hooksJsonFor('claude'|'codex'|'cursor')` from one `transformers/hooks.js`-style
 module emits a `PostToolUse` (Claude/Codex) / `preToolUse` (Cursor) manifest whose
 command runs YoinkIt's spec-validator on edited UI/animation files; `bun run build`
-emits the committed bundle; `yoinkit hooks install` reads that bundle, runs the
+emits the generated bundle; `yoinkit hooks install` reads that bundle, runs the
 consent gate, and merges into the user's gitignored local settings — never
 clobbering, never double-firing, asking once. The runtime side of that hook (what
 the validator emits back into the turn) follows Impeccable's directive-footer

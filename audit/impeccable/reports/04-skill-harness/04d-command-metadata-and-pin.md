@@ -23,7 +23,9 @@ corrections are called out inline as **[CORRECTION]**.
 
 | File | Lines | Role |
 |---|---|---|
-| [`skill/scripts/command-metadata.json`](../../source/skill/scripts/command-metadata.json) | 94 | The SSOT for command *copy*: `{description, argumentHint}` per command. **23 keys.** Read by the build's `{{command_hint}}` expansion, by `pin.mjs`, and by the OG-image generator. |
+| [`skill/scripts/command-metadata.json`](../../source/skill/scripts/command-metadata.json) | 94 | The SSOT for command *copy*: `{description, argumentHint}` per command. **23 keys.** Read by the build's `{{command_hint}}` expansion, `pin.mjs`, OG-image count, API data, and docs pages. |
+| [`scripts/lib/api-data.js`](../../source/scripts/lib/api-data.js) | 98 | Turns metadata + site taglines into public API JSON. Another metadata consumer. |
+| [`site/pages/docs/[...slug].astro`](../../source/site/pages/docs/%5B...slug%5D.astro) | — | Reads metadata for docs page props. A direct site consumer of command copy. |
 | [`skill/scripts/pin.mjs`](../../source/skill/scripts/pin.mjs) | 214 | The `pin`/`unpin` shim generator. Walks to project root, finds harness dirs, writes a marker-stamped redirect `SKILL.md`. Carries its own `VALID_COMMANDS` (23) and `HARNESS_DIRS` (11). |
 | [`scripts/build.js`](../../source/scripts/build.js) | 794 | Build orchestrator. `generateCounts` (lines 33–113) is the count authority + validator. |
 | [`scripts/lib/transformers/factory.js`](../../source/scripts/lib/transformers/factory.js) | 326 | Per-provider transform. Lines 208–224 expand `{{command_hint}}` from the metadata keys, grouped by `SKILL_CATEGORIES`. |
@@ -35,7 +37,7 @@ corrections are called out inline as **[CORRECTION]**.
 
 ---
 
-## 1. `command-metadata.json` as the copy SSOT, and its three consumers
+## 1. `command-metadata.json` as the copy SSOT, and its direct consumers
 
 The file is a flat object keyed by command name. Every value is exactly two
 keys ([`command-metadata.json:1-94`](../../source/skill/scripts/command-metadata.json)):
@@ -95,9 +97,13 @@ flowchart TD
   C1["BUILD — {{command_hint}} expansion\nfactory.js:208-224\nObject.keys() grouped by SKILL_CATEGORIES\n→ the parent skill's argument-hint"]
   C2["pin.mjs — loadCommandMetadata\npin.mjs:79-85 → generatePinnedSkill:90-107\nstamps shim's description + argument-hint"]
   C3["OG card — getCommandCount\ngenerate-og-image.js:37-42\nObject.keys().length → 'N commands' on the card"]
+  C4["API data — api-data.js:44-70\nmetadata + taglines → commands.json"]
+  C5["Docs pages — docs/[...slug].astro:12-27\nmetadata → page props"]
   SRC --> C1
   SRC --> C2
   SRC --> C3
+  SRC --> C4
+  SRC --> C5
 ```
 
 **Consumer A — the build, `{{command_hint}}` expansion.**
@@ -192,6 +198,13 @@ list enumerates but this report defers (§5): `site/scripts/data.js`
 `commandCategories`/`commandProcessSteps` and `framework-viz.js`
 `commandSymbols`/`commandNumbers`.
 
+One active site mirror should not be deferred: `site/data/sub-pages-data.ts` is
+imported by the Astro docs index/sidebar/pages, and it is currently stale. It has
+`teach` but no `init`, while the router, metadata, build-side
+`scripts/lib/sub-pages-data.js`, and `site/scripts/data.js` all use `init`. The
+docs index groups commands by exact category equality, so this is a live example
+of the warning below: count checks do not catch identity skew.
+
 ### Reconciling the four different numbers
 
 The counts genuinely differ, and the differences are *meaningful*, not bugs:
@@ -243,9 +256,9 @@ five prose docs the validator guards (§3): `index.astro`, README, `AGENTS.md`,
 
 So the precise truth: **adding a command is a ~10-touch manual fan-out.** The
 "single source of truth" framing holds only for the two things actually
-de-duplicated — the description string (write once in metadata, three consumers
-read it) and the *numeric count* (derive once from the router, validator catches
-prose drift). The *identity* of a command is copied by hand into ~6 code lists,
+de-duplicated — the description string (write once in metadata, at least five
+direct consumers read it) and the *numeric count* (derive once from the router,
+validator catches prose drift). The *identity* of a command is copied by hand into ~6 code lists,
 and the only automated guard is the count validator, which catches a *miscount*
 but **cannot** catch identity skew (e.g. metadata has `audit` but `VALID_COMMANDS`
 spells it `audtit`, or `SKILL_CATEGORIES` is missing it). Those failures surface
@@ -399,7 +412,9 @@ flowchart TD
   mechanism; replicate it for whatever historical region your docs have.
 - **AVOID** over-trusting a *count* validator as a proxy for *content*
   correctness. As §2 showed, this catches a wrong number but not a wrong list. It
-  is necessary, not sufficient.
+  is necessary, not sufficient. Add exact set-equality checks for active maps such
+  as `site/data/sub-pages-data.ts`, and fail on extras like `teach` or omissions
+  like `init`.
 
 ---
 
@@ -531,14 +546,14 @@ is `$` ([`04a`](04a-single-source-transform.md) covers the placeholder table), t
 shim says `{{command_prefix}}impeccable audit` where it should say
 `$impeccable audit`. It is wrong, just usually-survivable.
 
-**The fix is one line of intent:** substitute the prefix at shim-write time.
-`pin.mjs` already knows it is writing into a specific harness dir
-([`pin.mjs:124`](../../source/skill/scripts/pin.mjs) iterates `harnessDirs`), so it
-could map each harness to its prefix and `.replace(/\{\{command_prefix\}\}/g, …)`
-on the content before `writeFileSync` — or `loadCommandMetadata`-style import the
-`PROVIDER_PLACEHOLDERS` table from `utils.js`. The shim is generated per-harness
-already; making it prefix-correct per-harness is a small extension of the loop
-that already exists.
+**The fix is one line of intent, but it belongs inside the harness loop:** substitute
+the prefix at shim-write time. `pin.mjs` currently builds `content` once before it
+iterates `harnessDirs`, so the fix needs to generate or replace shim content inside
+that loop, deriving prefix from the harness dir (`.agents`/Codex → `$`, slash
+providers → `/`) before `writeFileSync`. Also fix or neutralize the success
+message, which hardcodes `/${command}` even when the target harness is Codex. The
+shim is generated per-harness already; making it prefix-correct per-harness is a
+small extension of the loop that already exists.
 
 ```mermaid
 stateDiagram-v2
