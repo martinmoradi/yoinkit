@@ -3929,6 +3929,23 @@ function mapGateCommand(argv) {
     console.log('yoinkit map-gate <run-dir> (--approve [--note "..."] | --reject --reason "..." | --approve-exception <exception-id> --reason "..." --scope <kind:id> [--expires-after-stage STAGE])');
     process.exit(flags.help ? 0 : 1);
   }
+  const action = flags.approveException
+    ? 'approve-exception'
+    : (flags.reject ? 'reject' : 'approve');
+  const allowedFlags = {
+    approve: ['note'],
+    reject: ['reason'],
+    'approve-exception': ['reason', 'scope', 'expiresAfterStage'],
+  }[action];
+  const optionName = { note: '--note', reason: '--reason', scope: '--scope', expiresAfterStage: '--expires-after-stage' };
+  for (const name of Object.keys(optionName)) {
+    if (flags[name] !== undefined && !allowedFlags.includes(name)) {
+      const hint = action === 'approve' && name === 'reason'
+        ? '; record approval context with --note instead'
+        : '';
+      throw new Error(`map-gate --${action} does not accept ${optionName[name]}${hint}`);
+    }
+  }
   if (flags.reject && !(typeof flags.reason === 'string' && flags.reason.trim())) {
     throw new Error('map-gate --reject requires --reason with a human-readable reason');
   }
@@ -3940,7 +3957,7 @@ function mapGateCommand(argv) {
   }
   const runDir = path.resolve(positionals[0]);
   const gate = runMapWorkbenchMapGate(runDir, {
-    action: flags.approveException ? 'approve-exception' : (flags.reject ? 'reject' : 'approve'),
+    action,
     note: flags.note,
     reason: flags.reason,
     exceptionId: flags.approveException,
