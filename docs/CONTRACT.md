@@ -123,9 +123,10 @@ These timestamps support audit trails, stale-artifact checks, and handoffs.
 
 Gate-approved or gate-consumed projections include input hashes for freshness.
 Report v0 snapshot metadata and `gate.json` include hashes of `page-model.json`,
-Static Map assertions and coverage, and Motion Scout assertions and coverage.
-Other stage outputs may start with timestamps only until they need stronger
-freshness checks.
+`00-config.json`, Recon page state, Static Map measurements, Static Map
+assertions and coverage, Motion Scout candidates, and Motion Scout assertions
+and coverage. Other stage outputs may start with timestamps only until they need
+stronger freshness checks.
 
 Minimum shape:
 
@@ -902,8 +903,10 @@ approval or rejection; it does not infer either from the Report.
 
 Because the human approves the Report, `map-gate --approve` must fail when
 `04-map-report/index.html` is missing or stale relative to `page-model.json` and
-the assertion or coverage inputs. V0 may use simple hashes or mtimes; the
-required recovery is to rerun `map-report`.
+the full Report v0 input set: config, Recon page state, Static Map measurements,
+Static Map assertions and coverage, Motion Scout candidates, and Motion Scout
+assertions and coverage. V0 may use simple hashes or mtimes; the required
+recovery is to rerun `map-report`.
 
 Map Gate can pass with zero motion candidates when Motion Scout completed its
 discovery checklist and found no applicable motion sources. It cannot pass when
