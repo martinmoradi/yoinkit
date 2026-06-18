@@ -40,40 +40,18 @@ every time. Agents should save JSON from `window.__capLast` /
 
 ## Repeatable local pipeline CLI
 
-`bin/yoinkit` is the first small orchestration layer around
-`bin/capture-browser`. It creates run folders, opens the target with the engine
-injected, saves `__cap.map()`, runs manifest-defined captures, stores timeline
-JSON, assembles `animations.json`, renders `animations.md`, and writes a compact
-`report.md`. It also writes `page-state.json`, a small readiness log that records
-whether the page looked ready, stuck behind a loader, or blocked by a challenge /
-rate limiter before map and capture phases.
+`bin/yoinkit` currently implements the pre-gate Map workbench. It materializes a
+run, proves Recon, Static Map, Motion Scout, and Report v0 artifacts, then stops
+at the Map Gate so human review remains explicit. Capture, full yoink, Spec
+generation, implementation, Report edit-back, and later improve loops are not
+public CLI commands in this slice.
 
-The recommended flow is two commands:
-
-```bash
-RUN="$(./bin/yoinkit scout https://mammothmurals.com/ | awk '/^Run:/ {print $2}')"
-./bin/yoinkit yoink "$RUN"
-```
-
-`scout` creates the run folder, maps the page, and proposes a capture manifest.
-Review `capture-plan.md` / `manifest.proposed.json`, edit selectors if needed,
-then `yoink <run-dir>` runs those captures, assembles the yoinked motion spec,
-and writes the report.
-
-For a fully automatic pass, accepting the proposed plan without review:
-
-```bash
-./bin/yoinkit yoink https://mammothmurals.com/
-```
-
-Map workbench is in progress. The implemented stage-runner commands are:
+The implemented flow is `init -> map -> map-gate`:
 
 ```bash
 RUN="$(./bin/yoinkit init https://mammothmurals.com/)"
-./bin/yoinkit recon "$RUN"
-./bin/yoinkit static-map "$RUN"
-./bin/yoinkit motion-scout "$RUN"
-REPORT="$(./bin/yoinkit map-report "$RUN")"
+REPORT="$(./bin/yoinkit map "$RUN")"
+# Open "$REPORT" and review Report v0 before deciding.
 ./bin/yoinkit map-gate "$RUN" --approve --note "Report v0 approved for Capture"
 ```
 
@@ -82,6 +60,21 @@ REPORT="$(./bin/yoinkit map-report "$RUN")"
 is supplied. It resolves viewport shorthand and the primary viewport, then
 stops. It does not open a browser, map the page, propose captures, or write
 later-stage artifacts.
+
+`map` runs `recon -> static-map -> motion-scout -> map-report`, then stops before
+Map Gate. On success it prints the absolute Report v0 path. If a stage fails,
+it stops there, exits non-zero, preserves completed artifacts, and writes or
+propagates the failing stage's status artifact.
+
+Direct stage reruns are available when you need deterministic repair of one
+pre-gate step:
+
+```bash
+./bin/yoinkit recon "$RUN"
+./bin/yoinkit static-map "$RUN"
+./bin/yoinkit motion-scout "$RUN"
+REPORT="$(./bin/yoinkit map-report "$RUN")"
+```
 
 `recon` reads that run configuration, probes the configured viewport set, writes
 `01-recon/` evidence, and updates only Recon-owned page-level facts in
@@ -154,137 +147,24 @@ explicit and persisted into `00-config.json` before the stage runs:
 ./bin/yoinkit static-map "$RUN" --strict-skipped-assets
 ```
 
-The legacy prototype commands remain available when you want to step through or
-rerun one capture phase:
-
-```bash
-./bin/yoinkit map runs/mammothmurals.com/2026-06-15-run
-./bin/yoinkit plan runs/mammothmurals.com/2026-06-15-run
-./bin/yoinkit capture runs/mammothmurals.com/2026-06-15-run manifest.proposed.json
-./bin/yoinkit assemble runs/mammothmurals.com/2026-06-15-run
-./bin/yoinkit report runs/mammothmurals.com/2026-06-15-run
-```
-
-You can also run all phases from a hand-authored manifest:
-
-```bash
-./bin/yoinkit run manifest.json
-```
-
-Artifacts are written under `runs/<domain>/<date>-<slug>/`:
+Pre-gate artifacts live in the run directory:
 
 ```text
-map.json
-page-state.json
-manifest.json
-manifest.proposed.json
-capture-plan.json
-capture-plan.md
-capture-results.json
-animations.json
-animations.md
-timelines/<capture-id>.json
-report.md
-run-log.md
+00-config.json
+page-model.json
+01-recon/page-state.json
+01-recon/viewport-manifest.json
+01-recon/source-metadata.json
+02-static-map/measurements.json
+02-static-map/assertions.json
+02-static-map/coverage.md
+03-motion-scout/motion-candidates.json
+03-motion-scout/assertions.json
+03-motion-scout/coverage.md
+04-map-report/index.html
+04-map-report/report-snapshot.json
+04-map-report/gate.json
 ```
-
-Manifest captures are deliberately small. The CLI supports `hover`, `click`,
-`scroll` / `scroll-reveal`, and `boot` / `load`:
-
-```json
-{
-  "url": "https://mammothmurals.com/",
-  "viewport": [1280, 800],
-  "captureStrategy": "reuse-page",
-  "captureGroups": {
-    "main-page-after-intro": { "resetScroll": true }
-  },
-  "captures": [
-    {
-      "id": "faq-accordion",
-      "type": "click",
-      "root": "div.g_faq_item.w-dyn-item",
-      "action": "click div.g_faq_item.w-dyn-item",
-      "fresh": true,
-      "waitMs": 900
-    },
-    {
-      "id": "hero-load",
-      "type": "boot",
-      "fresh": true,
-      "seedReuse": true,
-      "boot": { "selectors": ["h1", "[class*=split]"], "ms": 4000 },
-      "waitMs": 4300
-    }
-  ]
-}
-```
-
-For automation, the CLI always finalizes with `dump({ copy:false })` or
-`bootDump({ copy:false })` and saves from the returned object. It does not read
-from the clipboard.
-
-By default, generated manifests use `captureStrategy: "reuse-page"`. The runner
-opens a fresh page for `boot` / `load`, then can reuse that settled page for
-ordinary hover, scroll, and manual captures in the same `group`. This avoids
-replaying long intro overlays and avoids hammering a site with one full
-navigation per capture. Per-capture controls:
-
-- `fresh: true` forces a new page for that capture.
-- `group: "name"` batches reusable captures on the same loaded page.
-- `setupAction` runs before a capture, after any group setup.
-- `resetAction` runs after a capture; click captures only reuse by default when
-  they provide one.
-- `reusePage: true` opts a stateful capture into reuse; `reusePage: false` opts
-  out.
-- `seedReuse: true` on a boot/load capture lets the settled post-load page seed
-  a reusable group, usually `main-page-after-intro`.
-
-Agents should edit these fields when the page demands judgment. For example, a
-site with a long hero intro should do one boot/load capture, let it seed the
-main group, and then run the hover/scroll captures on that settled page. A modal
-or menu flow should either be `fresh: true` or include a reliable `resetAction`.
-
-The assembler is intentionally conservative. Registry-backed ScrollTrigger
-tweens and CSS loops are marked `measured`; CSS hover timings, callback-only
-ScrollTriggers, and structural split reveals are marked `unknown - verify` until
-a live timeline capture proves their deltas. Manifest captures can override
-labels, mechanisms, notes, confidence, and pattern IDs when a human has better
-context.
-
-Empty captures are preserved as `unknown - verify` entries instead of crashing
-assembly. Capture action failures are recorded with `status: "error"` and the
-pipeline continues to the next manifest item. `report.md` calls these out under
-**Empty Captures** or **Failed Captures** so selector misses, hidden elements,
-covered hover points, and bad trigger recipes stay visible during calibration.
-
-Before it maps or captures, the CLI waits for the page to become stable and
-records the outcome. If the page appears rate-limited, captcha/challenge gated,
-or otherwise blocked, it records that blocker and stops spending additional
-visits on the target. Fresh opens are throttled by a small polite delay
-(`--open-delay-ms`, default `750`) because a full run can otherwise look like a
-burst of reloads to a production site. The readiness behavior can be tuned with
-`--ready-timeout-ms`, `--ready-stable-ms`, or disabled with `--no-ready-wait`.
-
-Hover/click captures also run a selector preflight. The CLI checks that the
-target exists before scrolling, then verifies the hovered/clicked point is not
-covered after scroll/settle. Preflight failures are saved as normal
-`status: "error"` capture results, so a bad selector explains itself without
-aborting the whole pipeline.
-
-`plan` reads `map.json` and writes `manifest.proposed.json` plus
-`capture-plan.md`. It proposes boot captures for split reveals, scroll captures
-for callback-only ScrollTriggers, representative CSS hovers by timing group,
-one tight accordion click when FAQ/accordion selectors are present, and a
-deduped set of representative hover candidates. Review the generated selectors
-before passing the proposed manifest to `capture`.
-
-The planner applies a few conservative selector preferences learned from the
-Mammoth calibration: prefer interaction owners over child decoration layers,
-avoid generated Webflow node IDs and generic bare tags, derive accordion roots
-from the mapped site selectors, click the best-looking accordion trigger while
-scanning the item root, and treat obvious in-view marquees as manual loop
-captures rather than scroll reveals.
 
 ## Two ways to load it
 
