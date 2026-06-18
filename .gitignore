@@ -6,6 +6,7 @@
 # Local captures / scratch
 *.animation.json
 runs/
+yoink-runs/
 /tmp/
 
 # Cloned source for audit (not ours)
