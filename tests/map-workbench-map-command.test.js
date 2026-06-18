@@ -43,6 +43,17 @@ function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
+function writeFakeBrowser(cwd) {
+  const file = path.join(cwd, 'fake-capture-browser.js');
+  fs.writeFileSync(file, `#!/usr/bin/env bun
+'use strict';
+const fs = require('fs');
+fs.appendFileSync(process.env.YOINKIT_FAKE_BROWSER_LOG, JSON.stringify(process.argv.slice(2)) + '\\n');
+`);
+  fs.chmodSync(file, 0o755);
+  return file;
+}
+
 function runCli(cwd, args, env = {}) {
   return spawnSync(process.execPath, [BIN, ...args], {
     cwd,
@@ -190,6 +201,78 @@ test('yoinkit map runs the pre-gate Map workbench sequence and stops before Map 
   expect(new Date(motionScout.generatedAt).getTime()).toBeLessThanOrEqual(new Date(report.generatedAt).getTime());
 });
 
+test('yoinkit map-review opens Report v0 at the primary viewport', () => {
+  const cwd = tempDir();
+  const runDir = createRun(cwd);
+  const env = writeStageFixtures(cwd);
+  const mapResult = runCli(cwd, ['map', runDir], env);
+  expect(mapResult.status).toBe(0);
+
+  const browserLog = path.join(cwd, 'browser-log.jsonl');
+  const fakeBrowser = writeFakeBrowser(cwd);
+  const result = runCli(cwd, ['map-review', runDir], Object.assign({}, env, {
+    YOINKIT_MAP_REVIEW_BROWSER: fakeBrowser,
+    YOINKIT_FAKE_BROWSER_LOG: browserLog,
+  }));
+
+  const reportFile = path.join(runDir, '04-map-report', 'index.html');
+  expect(result.status).toBe(0);
+  expect(result.stdout).toContain(reportFile);
+  expect(result.stdout).toContain('desktop 1280x800');
+  const calls = fs.readFileSync(browserLog, 'utf8').trim().split('\n').map(line => JSON.parse(line));
+  expect(calls.slice(0, 3)).toEqual([
+    ['open', `file://${reportFile}`, '--headed'],
+    ['set', 'viewport', '1280', '800'],
+    ['wait', '--load', 'domcontentloaded'],
+  ]);
+  expect(calls[3][0]).toBe('eval');
+  expect(calls[3][1]).toContain('innerWidth');
+  expect(calls[3][2]).toBe('--max-output');
+});
+
+test('yoinkit map-review uses the configured primary viewport', () => {
+  const cwd = tempDir();
+  const runDir = path.join(cwd, 'run');
+  const init = runCli(cwd, [
+    'init',
+    'https://example.com/source',
+    '--run-dir',
+    runDir,
+    '--viewport',
+    'desktop=1280x800',
+    '--viewport',
+    'mobile=390x844',
+    '--primary-viewport',
+    'mobile',
+  ]);
+  expect(init.status).toBe(0);
+  const reportFile = path.join(runDir, '04-map-report', 'index.html');
+  fs.mkdirSync(path.dirname(reportFile), { recursive: true });
+  fs.writeFileSync(reportFile, '<!doctype html><title>Review</title>');
+
+  const browserLog = path.join(cwd, 'browser-log.jsonl');
+  const fakeBrowser = writeFakeBrowser(cwd);
+  const result = runCli(cwd, ['map-review', runDir], {
+    YOINKIT_MAP_REVIEW_BROWSER: fakeBrowser,
+    YOINKIT_FAKE_BROWSER_LOG: browserLog,
+  });
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toContain('mobile 390x844');
+  const calls = fs.readFileSync(browserLog, 'utf8').trim().split('\n').map(line => JSON.parse(line));
+  expect(calls[1]).toEqual(['set', 'viewport', '390', '844']);
+});
+
+test('yoinkit map-review requires generated Report v0 HTML', () => {
+  const cwd = tempDir();
+  const runDir = createRun(cwd);
+
+  const result = runCli(cwd, ['map-review', runDir]);
+
+  expect(result.status).toBe(1);
+  expect(result.stderr).toContain('map-review requires Report v0 at 04-map-report/index.html');
+});
+
 test('yoinkit map stops at Recon when Recon reports a real blocker', () => {
   const cwd = tempDir();
   const runDir = createRun(cwd);
@@ -270,9 +353,10 @@ test('yoinkit help presents the implemented Map workbench surface without legacy
   const result = runCli(cwd, ['--help']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toContain('init -> map -> map-gate');
+  expect(result.stdout).toContain('init -> map -> map-review -> map-gate');
   expect(result.stdout).toContain('bin/yoinkit init <url>');
   expect(result.stdout).toContain('bin/yoinkit map <run-dir>');
+  expect(result.stdout).toContain('bin/yoinkit map-review <run-dir>');
   expect(result.stdout).toContain('bin/yoinkit map-gate <run-dir> --approve');
   expect(result.stdout).toContain('bin/yoinkit recon <run-dir>');
   expect(result.stdout).toContain('bin/yoinkit static-map <run-dir>');

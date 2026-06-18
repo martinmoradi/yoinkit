@@ -132,15 +132,16 @@ Recon -> Static Map -> Motion Scout -> Map Report -> Map Gate -> Capture -> Spec
 ```
 
 The CLI is a **stage runner**, not the product brain. Commands such as `init`,
-`recon`, `static-map`, `motion-scout`, `map-report`, `map-gate`, `capture`,
-`merge-pass`, `spec`, and `validate` perform repeatable work against
+`recon`, `static-map`, `motion-scout`, `map-report`, `map-review`, `map-gate`,
+`capture`, `merge-pass`, `spec`, and `validate` perform repeatable work against
 `00-config.json` and the run artifacts. They do not decide what is worth
 capturing, whether a Report is good, or when the product has succeeded; those
 judgment calls stay in the agent session and the human gates.
 
 For the first Map slice, `yoinkit map <run-dir>` is only a convenience wrapper
 for `recon -> static-map -> motion-scout -> map-report`. It stops before
-`map-gate`; the gate command records the human-reviewed decision separately.
+`map-review` and `map-gate`; review opens the generated Report at the configured
+viewport, while the gate command records the human-reviewed decision separately.
 
 The existing `bin/yoinkit` is prototype material, not the architecture to
 preserve. Reuse working browser-driving, artifact-writing, map/capture, and

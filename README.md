@@ -46,12 +46,12 @@ at the Map Gate so human review remains explicit. Capture, full yoink, Spec
 generation, implementation, Report edit-back, and later improve loops are not
 public CLI commands in this slice.
 
-The implemented flow is `init -> map -> map-gate`:
+The implemented flow is `init -> map -> map-review -> map-gate`:
 
 ```bash
 RUN="$(./bin/yoinkit init https://mammothmurals.com/)"
 REPORT="$(./bin/yoinkit map "$RUN")"
-# Open "$REPORT" and review Report v0 before deciding.
+./bin/yoinkit map-review "$RUN"
 ./bin/yoinkit map-gate "$RUN" --approve --note "Report v0 approved for Capture"
 ```
 
@@ -62,9 +62,9 @@ stops. It does not open a browser, map the page, propose captures, or write
 later-stage artifacts.
 
 `map` runs `recon -> static-map -> motion-scout -> map-report`, then stops before
-Map Gate. On success it prints the absolute Report v0 path. If a stage fails,
-it stops there, exits non-zero, preserves completed artifacts, and writes or
-propagates the failing stage's status artifact.
+Map Review and Map Gate. On success it prints the absolute Report v0 path. If a
+stage fails, it stops there, exits non-zero, preserves completed artifacts, and
+writes or propagates the failing stage's status artifact.
 
 Direct stage reruns are available when you need deterministic repair of one
 pre-gate step:
@@ -110,10 +110,20 @@ The HTML embeds the Page model projection, assertion and coverage snapshots,
 motion candidates, and input hashes, while linking crops and copied asset
 evidence by relative path. It does not open a browser by default.
 
-Review the Report before crossing into Capture. `map-gate` records the explicit
-human decision in `04-map-report/gate.json`; it never decides approval by itself.
-Final approval requires a fresh Report v0, passing required assertions, complete
-required coverage, reasoned unknowns, and approved blocking exceptions:
+Review the Report before crossing into Capture. `map-review` opens
+`04-map-report/index.html` in the trusted local browser wrapper, sets the browser
+to the run's primary viewport from `00-config.json`, verifies the live browser
+viewport, and leaves Source, Region, and Gate mode review to the human. It does
+not inject the capture engine, approve the gate, or write Capture artifacts:
+
+```bash
+./bin/yoinkit map-review "$RUN"
+```
+
+`map-gate` records the explicit human decision in `04-map-report/gate.json`; it
+never decides approval by itself. Final approval requires a fresh Report v0,
+passing required assertions, complete required coverage, reasoned unknowns, and
+approved blocking exceptions:
 
 ```bash
 ./bin/yoinkit map-gate "$RUN" --approve --note "Report v0 approved for Capture"
@@ -169,8 +179,9 @@ page-model.json
 04-map-report/stage-status.json (failure-only)
 ```
 
-`yoinkit map` stops before `map-gate`; `04-map-report/gate.json` appears only
-after `yoinkit map-gate`. If `yoinkit map` stops on a failed stage, the
+`yoinkit map` stops before `map-review` and `map-gate`;
+`04-map-report/gate.json` appears only after `yoinkit map-gate`. If
+`yoinkit map` stops on a failed stage, the
 failure-only `stage-status.json` records the stage, status, error, and
 `errorName`.
 
