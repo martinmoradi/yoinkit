@@ -215,12 +215,12 @@ YoinkIt already ships an MV3 extension. These are the hardening patterns Impecca
 ### F2. Wire deterministic checks into provider-native hooks: ADAPT (longer-term)
 **Impeccable:** Hooks run the detector automatically on edits. Two models share one core (`hook-lib.mjs`): a post-edit *surface* (Claude Code, Codex) injects findings back as context, and a pre-write *block* (Cursor) denies bad writes before they land. The central contract is "never break the agent's turn": every failure path is fail-open. Anti-nag machinery (dedup cache, edit-count suppression, a deny-to-allow loop-breaker after repeated denials) keeps it from becoming noise.
 **YoinkIt:** Less central to YoinkIt today, but if YoinkIt ever wants to validate a capture or a generated recreation automatically inside the agent loop, the post-edit surface model plus the fail-open contract and anti-nag patterns are the template. The "never break the turn" discipline is the key transferable principle.
-**Refs:** `skill/scripts/hook.mjs:47-61`, `hook-lib.mjs:726,1519`, `hook-before-edit.mjs:444`. See [report 06](reports/06-hook-system.md).
+**Refs:** `skill/scripts/hook.mjs:47-61`, `hook-lib.mjs:726,1519`, `hook-before-edit.mjs:444`. See [report 05](reports/05-hook-system/05-hook-system.md).
 
 ### F3. Two-tier config with an ask-once-remembered consent: STEAL (when config arrives)
 **Impeccable:** `.impeccable/config.json` (team-shared) plus `.impeccable/config.local.json` (per-developer, gitignored via `.git/info/exclude` rather than `.gitignore`). Consent for the hook is asked once and remembered per developer. Detector ignores live in three axes (rules, file globs, value matches).
 **YoinkIt:** When YoinkIt grows project config (default driver, viewport sets, ignore lists), this split plus ask-once consent is a clean model.
-**Refs:** `skill/scripts/lib/impeccable-config.mjs:561-594`. See [report 06 config model](reports/06-hook-system.md).
+**Refs:** `cli/lib/impeccable-config.mjs:561-594`. See [report 05 config model](reports/05-hook-system/05c-config-and-ignore-model.md).
 
 ---
 
