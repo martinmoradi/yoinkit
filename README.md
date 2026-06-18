@@ -155,16 +155,24 @@ page-model.json
 01-recon/page-state.json
 01-recon/viewport-manifest.json
 01-recon/source-metadata.json
+01-recon/stage-status.json (failure-only)
 02-static-map/measurements.json
 02-static-map/assertions.json
 02-static-map/coverage.md
+02-static-map/stage-status.json (failure-only)
 03-motion-scout/motion-candidates.json
 03-motion-scout/assertions.json
 03-motion-scout/coverage.md
+03-motion-scout/stage-status.json (failure-only)
 04-map-report/index.html
 04-map-report/report-snapshot.json
-04-map-report/gate.json
+04-map-report/stage-status.json (failure-only)
 ```
+
+`yoinkit map` stops before `map-gate`; `04-map-report/gate.json` appears only
+after `yoinkit map-gate`. If `yoinkit map` stops on a failed stage, the
+failure-only `stage-status.json` records the stage, status, error, and
+`errorName`.
 
 ## Two ways to load it
 
