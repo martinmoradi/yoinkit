@@ -49,21 +49,25 @@ yoink-runs/{slug}/
 ├── 01-recon/
 │   ├── page-state.json
 │   ├── viewport-manifest.json
-│   └── source-metadata.json
+│   ├── source-metadata.json
+│   └── stage-status.json (failure-only)
 ├── 02-static-map/
 │   ├── measurements.json
 │   ├── assertions.json
 │   ├── coverage.md
+│   ├── stage-status.json (failure-only)
 │   ├── crops/
 │   └── assets/
 ├── 03-motion-scout/
 │   ├── motion-candidates.json
 │   ├── coverage.md
-│   └── assertions.json
+│   ├── assertions.json
+│   └── stage-status.json (failure-only)
 ├── 04-map-report/
 │   ├── index.html
 │   ├── report-snapshot.json
-│   └── gate.json
+│   ├── gate.json
+│   └── stage-status.json (failure-only)
 ├── 05-capture/
 │   ├── passes/
 │   │   └── pass-001/
@@ -114,8 +118,9 @@ config.
 
 Every JSON artifact carries its own `schemaVersion`, including `00-config.json`,
 `page-model.json`, `measurements.json`, `assertions.json`,
-`motion-candidates.json`, and `gate.json`. Markdown coverage files may include
-generated metadata but do not need a formal schema version.
+`motion-candidates.json`, `stage-status.json`, and `gate.json`. Markdown
+coverage files may include generated metadata but do not need a formal schema
+version.
 
 Stage JSON outputs and gate records include stage-level timestamps such as
 `generatedAt` or `updatedAt`. They do not need timestamps on every nested item.
@@ -289,6 +294,10 @@ completed artifacts in place, writes the stage's escalation or status artifact,
 and exits non-zero. It must not generate a best-effort Report from incomplete
 prerequisites unless the failed stage deliberately produced a partial artifact
 with honest coverage failures.
+
+The failure-only status artifact is `NN-<stage>/stage-status.json`. It records
+the stage, status, error, and `errorName` for the stage that stopped
+`yoinkit map`.
 
 `yoinkit map` is done when tests prove it runs
 `recon -> static-map -> motion-scout -> map-report` in order; stops before
