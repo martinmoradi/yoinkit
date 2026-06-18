@@ -247,6 +247,11 @@ test('yoinkit map-report writes a portable static HTML projection with embedded 
   expect(html).toContain('href="../02-static-map/assets/hero-logo.svg"');
   expect(html).toContain('../../../etc/passwd');
   expect(html).not.toMatch(/href="[^"]*etc\/passwd/);
+  expect(html).not.toContain('.report-mode { overflow: auto;');
+  expect(html).toContain('<div class="source-stack">');
+  expect(html).toContain('<article class="source-card" data-region-id="region-launch-faster">');
+  expect(html).toContain('.region-crop { display: block; width: 100%; height: auto;');
+  expect(html).toContain('object-fit: contain; object-position: left top;');
   expect(html).toContain('<strong>hash</strong>');
   expect(html).toContain('style="left:0px;top:72px;width:1280px;height:620px;"');
 

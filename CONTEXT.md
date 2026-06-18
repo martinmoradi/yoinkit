@@ -94,11 +94,11 @@ pointer vs touch) and part-marked by the human in observe (a [[Note]] like "this
 is the mobile menu").
 
 **Report**:
-The human-facing *projection* of the [[Page model]]: a scroll-accurate HTML
-scaffold mirroring the source page's real dimensions, with correctly sized
-[[Region placeholder]]s pinned at their real positions and captured motion,
-crops, embedded [[Clip]]s, and verify-flags attached where they happen. Built to
-be *looked at and assessed*, not implemented.
+The human-facing *projection* of the [[Page model]]: visual source evidence,
+scroll-accurate Region debugging, correctly sized [[Region placeholder]]s pinned
+at their real positions, captured motion, crops, embedded [[Clip]]s, and
+verify-flags attached where they happen. Built to be *looked at and assessed*,
+not implemented.
 Written to disk and opened in a browser — it never re-enters an agent's context.
 It *accretes* across capture passes (each pass merges in, it is not regenerated)
 and is meant to make *gaps* visible: blank regions are the parts not yet captured.
