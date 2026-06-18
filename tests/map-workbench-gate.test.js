@@ -1946,6 +1946,35 @@ test('yoinkit map-gate --reject requires a human-readable reason', () => {
   expect(fs.existsSync(path.join(mapReportDir(config.runDir), 'gate.json'))).toBe(false);
 });
 
+test('yoinkit map-gate --approve rejects --reason and points to --note', () => {
+  const cwd = tempDir();
+  const config = prepareGateRun(cwd);
+
+  const result = runGate(cwd, [config.runDir, '--approve', '--reason', 'should have used a note']);
+
+  expect(result.status).toBe(1);
+  expect(result.stderr).toContain('map-gate --approve does not accept --reason');
+  expect(result.stderr).toContain('--note');
+  expect(fs.existsSync(path.join(mapReportDir(config.runDir), 'gate.json'))).toBe(false);
+});
+
+for (const { name, args, message } of [
+  { name: 'reject with scope', args: ['--reject', '--reason', 'no', '--scope', 'region:region-hero'], message: 'map-gate --reject does not accept --scope' },
+  { name: 'reject with note', args: ['--reject', '--reason', 'no', '--note', 'audit'], message: 'map-gate --reject does not accept --note' },
+  { name: 'approve-exception with note', args: ['--approve-exception', 'exception-hero-crop', '--reason', 'r', '--scope', 'region:region-hero', '--note', 'audit'], message: 'map-gate --approve-exception does not accept --note' },
+]) {
+  test(`yoinkit map-gate rejects cross-action flags: ${name}`, () => {
+    const cwd = tempDir();
+    const config = prepareGateRun(cwd);
+
+    const result = runGate(cwd, [config.runDir, ...args]);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(message);
+    expect(fs.existsSync(path.join(mapReportDir(config.runDir), 'gate.json'))).toBe(false);
+  });
+}
+
 test('runMapGate rejects direct rejection calls without a human-readable reason', () => {
   const cwd = tempDir();
   const config = prepareGateRun(cwd);
