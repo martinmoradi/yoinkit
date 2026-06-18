@@ -90,10 +90,9 @@ One `yoink` pipeline, two capture modes, plus a separate downstream skill:
      cost — it never re-enters an agent. Human edits
      (rename, importance, verify, note) write *back into* the page model. It has
      explicit view modes:
-     - **Source mode** renders source-like evidence first: region crops where
-       available, measured static visuals and tokens as fallbacks, exact Region
-       rects and scroll positions. It answers whether the static scaffold
-       resembles the source.
+     - **Source mode** renders source-like evidence first: viewport-aligned
+       Region screenshots where available, measured static visuals and tokens as
+       fallbacks. It answers whether the visual evidence resembles the source.
      - **Region mode** adds artificial debug overlays: low-opacity tints, inset
        non-layout-affecting borders, hover outlines, labels, and tooltips with
        Region name, rect, scroll-Y, viewport presence, and gaps. It answers
