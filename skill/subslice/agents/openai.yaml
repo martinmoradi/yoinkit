@@ -1,6 +1,0 @@
-interface:
-  display_name: "Subslice"
-  short_description: "Cross-check one audit subslice deeply"
-  default_prompt: "Use $subslice to verify and write notes for one audit subslice."
-policy:
-  allow_implicit_invocation: false
