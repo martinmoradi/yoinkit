@@ -2,7 +2,8 @@
 
 **Subsystem:** Impeccable's **persisted design-memory** — the durable,
 git-tracked, `schemaVersion`-stamped `.impeccable/design.json` captured from a
-project and committed into its repo. Its `extensions.motion` block (read in the
+project and committed into its repo (the *sidecar half* of a Stitch-standard root
+`DESIGN.md` pair; 06a §1). Its `extensions.motion` block (read in the
 context of its `colorMeta` / `typographyMeta` / `shadows` / `breakpoints` /
 `roundedMeta` siblings), the LLM **generation** path that writes it
 (`/impeccable document`), the documented **v1→v2 migration** and the
@@ -42,9 +43,11 @@ root.
 >
 > - [`06a-the-persisted-artifact.md`](06a-the-persisted-artifact.md): the full
 >   `design.json` schema anatomy — the motion block read in the context of its five
->   sibling extension blocks, `components`, and `narrative` — plus the three-file
->   git-tracked `.impeccable/` directory, versioning, and the real-≠-demo-≠-spec
->   schema looseness.
+>   sibling extension blocks, `components`, and `narrative` — the `DESIGN.md` *pairing*
+>   (the sidecar is "what Stitch's schema rejects," motion among the exiles), the
+>   three-layer derivation, the **lossy motion projection** (the memory kept 1 of ~16
+>   real motion values), the three-file git-tracked `.impeccable/` directory,
+>   versioning, and the real-≠-demo-≠-spec-≠-fixture schema looseness.
 > - [`06b-generation-and-migration.md`](06b-generation-and-migration.md): the
 >   LLM-driven generation path (`/impeccable document`, "extensions only",
 >   never-silently-overwrite, seed mode), the day-zero synthesis rule, the v1→v2
@@ -68,9 +71,22 @@ root.
 > `motion` block, the register doctrines) are accurate to the line. The stale or
 > imprecise specifics, each fixed in a sub-dive:
 >
-> - **`.impeccable/` is a three-file directory, not one sidecar.** `git ls-files
->   .impeccable/` returns `config.json`, `design.json`, **and** `live/config.json`
->   — a multi-concern committed store, not a lone artifact. (06a §1)
+> - **`.impeccable/` is a three-file directory, *and* `design.json` is only half the
+>   memory.** `git ls-files .impeccable/` returns `config.json`, `design.json`, **and**
+>   `live/config.json` — a multi-concern committed store. More importantly,
+>   `design.json` is the *sidecar* to a Stitch-standard root `DESIGN.md` (`DESIGN.md`
+>   is 497 lines, not even in `.impeccable/`). The sidecar is **defined by negation** —
+>   it holds exactly what Stitch's Zod frontmatter schema rejects (`document.md:429`:
+>   "only accepts `colors`, `typography`, `rounded`, `spacing`, `components`"), and
+>   **motion is one of the rejects** (`document.md:47`). Motion is thin because it is a
+>   guest in a static-token format, not because Impeccable was careless. (06a §1)
+> - **The sidecar is *extracted and rolled up*, not "synthesised."** The survey calls
+>   the values "synthesised in OKLCH." For the real artifact that is wrong: the
+>   frontmatter mirrors `site/styles/kinpaku-tokens.css` verbatim (`DESIGN.md:5-7`), and
+>   the sidecar's 9 `colorMeta` families are a *semantic rollup* of the frontmatter's
+>   ~60 flat tokens — each `tonalRamp` is gathered real stops, which is why ramp length
+>   varies 3→25 instead of the spec's synthesised "8-step." Synthesis is the day-zero
+>   fallback, not what happened here. (06a §2c, §3a)
 > - **`mdNewerThanJson` is a reader-side mtime heuristic, not a `document.md` /
 >   generation field.** The survey files it under generation/migration. It does not
 >   exist in `document.md`; it is computed by comparing mtimes in
@@ -93,10 +109,12 @@ root.
 >   component primitives, `:317` about tonal ramps; no directive synthesizes motion.
 >   The only motion default is the `ease-standard` example at `:265`. A *measured*
 >   memory must never synthesize motion — the catch. (06b §2, 06d §9)
-> - **The three "same-schema" instances disagree.** colorMeta `description` and
->   `roundedMeta` are present in the real artifact but **absent** from the demo;
->   `shadows` is 4 tokens in the real artifact and empty `[]` in the demo. The schema
->   is a bag of optional blocks validated by tolerance, not a strict contract. (06a §3a, §6)
+> - **The four "same-schema" instances disagree** (real, demo, `document.md` spec, and
+>   a sveltekit test fixture). colorMeta `description` and `roundedMeta` are present in
+>   the real artifact but **absent** from the demo; `shadows` is 4 tokens in the real
+>   artifact and empty `[]` in the demo; the fixture even renames the top-level keys
+>   (`version`/`source` instead of `schemaVersion`/`title`). The schema is a bag of
+>   optional blocks validated by tolerance, not a strict contract. (06a §3a, §6)
 > - **The `Register` field is the third-priority signal, not an override.** Per
 >   `source/CLAUDE.md`, Setup selects on **task cue → surface in focus → the
 >   `register` field** (first match wins). The demo's value is `brand`
@@ -113,8 +131,11 @@ re-verified this session.
 
 | File | Lines | Role |
 |---|---|---|
+| **The design memory is a two-file pair** | | |
+| [`DESIGN.md`](../../source/DESIGN.md) (repo root) | 497 | **The senior half.** Stitch-standard frontmatter (normative token primitives: `colors{}` ~60 flat, `typography{}`, `rounded`, `spacing`, `components`) + 6 prose sections. The reader's allowed *fonts* come from here. (06a §1) |
+| [`site/styles/kinpaku-tokens.css`](../../source/site/styles/kinpaku-tokens.css) + [`tokens.css`](../../source/site/styles/tokens.css) | — | The actual source of truth the frontmatter "mirrors verbatim" (`DESIGN.md:5-7`); home of `--ks-ease`, `--ease-out`, the `--duration-*` ladder. (06a §2c, §3d) |
 | **The committed `.impeccable/` directory** | | |
-| [`.impeccable/design.json`](../../source/.impeccable/design.json) | 419 | **The design memory.** `schemaVersion 2`, `extensions` (6 token blocks incl. `motion`), `components`, `narrative`. (06a) |
+| [`.impeccable/design.json`](../../source/.impeccable/design.json) | 419 | **The sidecar half / design memory.** "Extensions only": `schemaVersion 2`, `extensions` (6 token blocks incl. `motion`), `components`, `narrative`. The reader's allowed *colors* + *radii* come from here. (06a) |
 | [`.impeccable/config.json`](../../source/.impeccable/config.json) | 84 | The detector/hook ignore model — not design memory. ([`05c`](../05-hook-system/05c-config-and-ignore-model.md)) |
 | [`.impeccable/live/config.json`](../../source/.impeccable/live/config.json) | 6 | Live-mode injection config. (06a §1) |
 | **Generation + migration** | | |
@@ -139,13 +160,16 @@ re-verified this session.
 
 ## 1. Orientation: a memory, three disciplines, one conditioner
 
-Impeccable's design memory is one committed file backed by three disciplines and
-conditioned by one field:
+Impeccable's design memory is a committed artifact (the sidecar half of a `DESIGN.md`
+pair, 06a §1) backed by three disciplines and conditioned by one field:
 
 - **The artifact** ([`06a`](06a-the-persisted-artifact.md)) — `.impeccable/design.json`,
   `schemaVersion: 2`, a bag of optional token-metadata blocks (`extensions.colorMeta`
   … `extensions.motion`), self-contained `components`, and a `narrative` of human
-  intent. Committed to git, alongside `config.json` and `live/config.json`.
+  intent. Committed to git, alongside `config.json` and `live/config.json`. It is the
+  **junior half of a two-file memory**: the *sidecar* to a Stitch-standard root
+  `DESIGN.md`, carrying exactly what Stitch's frontmatter schema rejects — and motion
+  is one of those exiles (06a §1).
 - **Generation** ([`06b`](06b-generation-and-migration.md)) — `/impeccable document`
   has an **LLM write** the memory: `DESIGN.md` prose, then the sidecar as "extensions
   only", with day-zero synthesis, never-silently-overwrite, seed mode, and a
@@ -210,6 +234,18 @@ sibling blocks — carrying a *single easing curve* and **no duration**. The dur
 of Impeccable's actual hover transitions (180ms) lives inline in `components[].css`
 (`:285`), not in the motion token. So the authored artifact tokenises the *curve*
 (reusable) and leaves the *duration* uncaptured.
+
+**The memory is a lossy projection of the project's own motion** (06a §3d). The
+same repo's CSS uses `var(--ks-ease)` **112 times** at **eight distinct inline
+durations** (180ms × 56, down to 360ms × 1), plus a *second* easing (`--ease-out`)
+and a five-step duration ladder (`--duration-fast` … `--duration-slowest`,
+[`tokens.css:59-63`](../../source/site/styles/tokens.css)). The memory recorded **1**
+of roughly **16** real motion values; the single most-used value in the whole system
+— the 180ms default — appears **56 times in CSS and zero times in the memory**.
+Motion is also the least-documented dimension in the file: 1 of 31 extension tokens
+(1.7% of the bytes), and **0** of the 11 narrative rules / 8 dos / 10 donts mention
+it. In the authored memory motion is an afterthought; in YoinkIt's measured memory
+it is the whole point.
 
 That asymmetry is the report's hinge. A **measured** memory has the opposite
 pressure: YoinkIt measures duration cleanly first and most often *cannot* read
@@ -338,9 +374,16 @@ named sub-dive, with tags matching the survey's scheme (**ADOPT** a pattern/sche
 
 ## Appendix: surprises / risks / drift
 
-- **`.impeccable/` is three tracked files.** `git ls-files` returns `config.json`,
-  `design.json`, `live/config.json` — a multi-concern committed store. The survey's
-  one-file framing undersells the directory. (06a §1)
+- **`.impeccable/` is three tracked files, and `design.json` is a *sidecar*.** `git
+  ls-files` returns `config.json`, `design.json`, `live/config.json` — a multi-concern
+  committed store. And `design.json` is only the junior half of the design memory: the
+  sidecar to a Stitch-standard root `DESIGN.md`, holding what Stitch's frontmatter
+  schema rejects. (06a §1)
+- **Motion is homeless in the inherited format.** The Stitch `DESIGN.md` Zod schema
+  has no motion slot (`document.md:47,429`); motion is exiled into the free-form
+  `extensions` bag. That is *why* `extensions.motion` is one row, and the strongest
+  argument that YoinkIt cannot fork Impeccable's format — a motion tool must make
+  motion the top-level subject, not an extensions guest. (06a §1a, §2b)
 - **A v1 `design.json` reads as empty, not migrated.** No reader branches on
   `schemaVersion` ([`design-system.mjs`](../../source/cli/engine/design-system.mjs)
   has none; [`live-server.mjs:545`](../../source/skill/scripts/live-server.mjs) only a
@@ -352,20 +395,27 @@ named sub-dive, with tags matching the survey's scheme (**ADOPT** a pattern/sche
   and [`live-server.mjs:574`](../../source/skill/scripts/live-server.mjs) — the
   hand-sync hazard [`05c`](../05-hook-system/05c-config-and-ignore-model.md) §5 warns
   about, here in the design-memory slice. (06b §4, 06c §4)
-- **The schema is loose: real ≠ demo ≠ spec.** The real artifact, the worked-example
-  demo, and the `document.md` schema disagree on `description`, `roundedMeta`,
-  `shadows` emptiness, and `motion[].duration`. The reader tolerates it (every block
-  guarded by `typeof`), which is a feature to copy and a precision trap for anyone
-  citing "the schema." (06a §6)
+- **The schema is loose: real ≠ demo ≠ spec ≠ fixture.** The real artifact, the
+  worked-example demo, the `document.md` schema, and a sveltekit test fixture disagree
+  on `description`, `roundedMeta`, `shadows` emptiness, `motion[].duration`, ramp
+  length (3–25 extracted vs a synthesised 8), and even the top-level key names (the
+  fixture uses `version`/`source`). The reader tolerates it (every block guarded by
+  `typeof` / `Array.isArray`), which is a feature to copy and a precision trap for
+  anyone citing "the schema." (06a §6)
 - **Fonts are enforced from the prose frontmatter, colors/radii from the sidecar.**
   The allowed-font axis reads `frontmatter.typography`
   ([`design-system.mjs:275`](../../source/cli/engine/design-system.mjs)), not
   `typographyMeta`. Enforcement reads **both halves** of the memory, which is why the
   panel must merge them. (06c §2)
-- **The motion token is curve-only; the duration is uncaptured.** `ks-ease` is a
-  curve referenced at 180ms in component CSS (`design.json:285`); the token has no
-  duration. The authored artifact's blind spot (uncaptured timing) is exactly the
-  measured memory's strength. (06a §3d)
+- **The motion token is curve-only, lossy, and not even self-consistent.** `ks-ease`
+  is a curve referenced at 180ms in component CSS (`design.json:285`); the token has no
+  duration. The same repo's CSS uses the curve 112 times at 8 inline durations, plus a
+  second easing and a 5-step duration ladder — the memory kept 1 of ~16 motion values,
+  and the 180ms default (56 uses in CSS) is captured 0 times. Worse, one of the six
+  shipped components (the Live Picker Bar, `design.json:325`) uses generic `0.15s ease`,
+  not `ks-ease` at all — the authored memory drifts from even its own artifact. The
+  blind spot (uncaptured, idealized timing) is exactly the measured memory's strength.
+  (06a §3d)
 - **The `Register` field is a fallback, not a switch.** Task cue → surface → field,
   first match wins (`source/CLAUDE.md`). The "one-field conditioner" holds only when
   the first two are absent or agree. (06c §5)
